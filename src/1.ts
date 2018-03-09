@@ -23,6 +23,8 @@ function enterFrame() {
     if (!context)
         return;
     y++;
+    // x = getMousePosX(event);
+    // y = getMousePosY(event);
     canvas.width = 400;
     canvas.height = 600;
     context.drawImage(image, 0, 0);
@@ -35,9 +37,32 @@ function enterFrame() {
     requestAnimationFrame(enterFrame);
 }
 
+// setInterval(function () {
+//     x = getMousePosX(event);
+//     y = getMousePosY(event);
+// }, 10);
+
+window.onmousemove = function () {
+    var e = this.event || this.window.event;
+    // x = getMousePosX(e)
+    var mousePos = mousePosition(e);
+    x = mousePos.x;
+    y = mousePos.y;
+}
+
 window.onclick = function () {
     x = getMousePosX(event);
     y = getMousePosY(event);
+}
+
+function mousePosition(ev: any) {
+    if (ev.pageX || ev.pageY) {//firefox、chrome等浏览器
+        return { x: ev.pageX, y: ev.pageY };
+    }
+    return {// IE浏览器
+        x: ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+        y: ev.clientY + document.body.scrollTop - document.body.clientTop
+    };
 }
 
 function getMousePosX(event: any) {

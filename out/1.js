@@ -21,6 +21,8 @@ function enterFrame() {
     if (!context)
         return;
     y++;
+    // x = getMousePosX(event);
+    // y = getMousePosY(event);
     canvas.width = 400;
     canvas.height = 600;
     context.drawImage(image, 0, 0);
@@ -31,10 +33,30 @@ function enterFrame() {
     context.fillText("hello houyi", 0, 100);
     requestAnimationFrame(enterFrame);
 }
+// setInterval(function () {
+//     x = getMousePosX(event);
+//     y = getMousePosY(event);
+// }, 10);
+window.onmousemove = function () {
+    var e = this.event || this.window.event;
+    // x = getMousePosX(e)
+    var mousePos = mousePosition(e);
+    x = mousePos.x;
+    y = mousePos.y;
+};
 window.onclick = function () {
     x = getMousePosX(event);
     y = getMousePosY(event);
 };
+function mousePosition(ev) {
+    if (ev.pageX || ev.pageY) {
+        return { x: ev.pageX, y: ev.pageY };
+    }
+    return {
+        x: ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+        y: ev.clientY + document.body.scrollTop - document.body.clientTop
+    };
+}
 function getMousePosX(event) {
     var e = event || window.event;
     return e.clientX;
