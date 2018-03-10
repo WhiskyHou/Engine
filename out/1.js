@@ -39,8 +39,15 @@ function enterFrame() {
     context.drawImage(player, player_x, player_y);
     requestAnimationFrame(enterFrame);
 }
+requestAnimationFrame(enterFrame);
+/**
+ * 鼠标移动、点击事件
+ */
 window.onmousemove = setPlayerPosAsMousePos;
 window.onclick = text;
+/**
+ * 鼠标移动事件 —— 玩家移动飞机
+ */
 function setPlayerPosAsMousePos(event) {
     var event = event || window.event;
     var mousePos = mousePosition(event);
@@ -108,4 +115,3 @@ var Enemy = /** @class */ (function () {
     }
     return Enemy;
 }());
-requestAnimationFrame(enterFrame);

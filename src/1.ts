@@ -9,6 +9,7 @@
 // }, 1000);
 
 
+
 /**
  * Main-Loop
  */
@@ -42,11 +43,19 @@ function enterFrame() {
 
     requestAnimationFrame(enterFrame);
 }
+requestAnimationFrame(enterFrame);
 
+
+/**
+ * 鼠标移动、点击事件
+ */
 window.onmousemove = setPlayerPosAsMousePos;
-
 window.onclick = text;
 
+
+/**
+ * 鼠标移动事件 —— 玩家移动飞机
+ */
 function setPlayerPosAsMousePos(event: any) {
     var event = event || window.event;
     var mousePos = mousePosition(event);
@@ -57,10 +66,10 @@ function setPlayerPosAsMousePos(event: any) {
     if (y >= 0 && y <= 540)
         player_y = y;
 }
-
 function mousePosition(ev: any) {
     return { x: ev.clientX, y: ev.clientY };
 }
+
 
 /**
  * 鼠标点击事件 —— 玩家开火 方法集
@@ -141,5 +150,3 @@ class Enemy {
         this.hp = 5;
     }
 }
-
-requestAnimationFrame(enterFrame);
