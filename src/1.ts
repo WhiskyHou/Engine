@@ -22,6 +22,10 @@ var bg = new Image();
 bg.src = './assets/bg_400_600.jpg';
 var enemy = new Image();
 enemy.src = './assets/enemy_60.png';
+var enemy_f22 = new Image();
+enemy_f22.src = './assets/enemy_80.png';
+var enemy_warship = new Image();
+enemy_warship.src = './assets/enemy_160_300.png';
 
 
 /**
@@ -35,7 +39,7 @@ window.onload = function () {
         return;
     requestAnimationFrame(enterFrame);
     // requestAnimationFrame(makeEnemy);
-    setInterval(makeEnemy, 1000);
+    setInterval(makeEnemyTest, 500);
 }
 
 
@@ -67,12 +71,15 @@ function getRandomPosX(): number {
     var x = Math.floor(Math.random() * 341);
     return x;
 }
+function makeEnemyTest() {
+    var temp = new EnemyF22();
+}
 function makeEnemy() {
     if (!enemyLoad)
         return;
     enemyLoad = false;
     enemy_x = getRandomPosX();
-    enemy_y = 30;
+    enemy_y = -30;
     requestAnimationFrame(updateEnemy);
 }
 function updateEnemy() {
@@ -98,7 +105,7 @@ function updateEnemy() {
  * 鼠标移动、点击事件
  */
 window.onmousemove = setPlayerPosAsMousePos;
-window.onclick = fireNormal;
+window.onclick = text;
 
 
 /**
@@ -130,7 +137,7 @@ function mousePosition(ev: any) {
 var list = new Array();
 function text(ev: any) {
     var bullet = new PlayerBullet(player_x, player_y);
-    bullet.fire();
+    // bullet.fire();
     // list.push(bullet);
     // fireNormal();
 }
@@ -164,6 +171,7 @@ function fireNormalFrame() {
  * 玩家子弹 类
  * 
  * 测试失败 —— 通过 requestAnimationFrame() 访问的成员函数 无法调用对象属性值
+ *            **修正** 通过 requestAnimationFrame(() => this.fire()) 调用就可以！！！
  */
 class PlayerBullet {
     public x: number;
@@ -171,39 +179,109 @@ class PlayerBullet {
     constructor(px: number, py: number) {
         this.x = px + 28;
         this.y = py + 10;
-        // requestAnimationFrame(this.fireUpdate);
+        requestAnimationFrame(() => this.fire());
     }
     fire() {
-        requestAnimationFrame(this.fireUpdate);
-    }
-    fireUpdate() {
         if (!context)
             return;
-        this.y -= 10;
-        console.log(this.y);
-        console.log(this.x);
+        this.y -= 15;
+        // console.log(this.y);
+        // console.log(this.x);
         context.rect(this.x, this.y, 4, 20);
         context.fillStyle = 'red';
         context.fill();
         if (this.y < -20)
             return;
-        requestAnimationFrame(this.fireUpdate);
+        requestAnimationFrame(() => this.fire());
     }
 }
 
 
 /**
- * 敌人飞机 类
+ * 敌人飞机 普通
  * 
- * 尚未编写
  */
 class Enemy {
+    img: HTMLImageElement;
     x: number;
     y: number;
     hp: number;
     constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.hp = 5;
+        this.img = enemy;
+        this.x = this.getRandomPos();
+        this.y = -60;
+        this.hp = 2;
+        requestAnimationFrame(() => this.make());
+    }
+    getRandomPos(): number {
+        var x = Math.floor(Math.random() * 341);
+        return x;
+    }
+    make(): void {
+        if (!context)
+            return;
+        this.y += 5;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(() => this.make());
+    }
+}
+
+
+/**
+ * 敌人飞机 F22
+ * 
+ */
+class EnemyF22 {
+    img: HTMLImageElement;
+    x: number;
+    y: number;
+    hp: number;
+    constructor() {
+        this.img = enemy_f22;
+        this.x = this.getRandomPos();
+        this.y = -80;
+        this.hp = 4;
+        requestAnimationFrame(() => this.make());
+    }
+    getRandomPos(): number {
+        var x = Math.floor(Math.random() * 321);
+        return x;
+    }
+    make(): void {
+        if (!context)
+            return;
+        this.y += 8;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(() => this.make());
+    }
+}
+
+
+/**
+ * 敌人飞机 歼星舰
+ * 
+ */
+class EnemyWarship {
+    img: HTMLImageElement;
+    x: number;
+    y: number;
+    hp: number;
+    constructor() {
+        this.img = enemy_warship;
+        this.x = this.getRandomPos();
+        this.y = -300;
+        this.hp = 30;
+        requestAnimationFrame(() => this.make());
+    }
+    getRandomPos(): number {
+        var x = Math.floor(Math.random() * 241);
+        return x;
+    }
+    make(): void {
+        if (!context)
+            return;
+        this.y += 2;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(() => this.make());
     }
 }

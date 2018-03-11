@@ -20,6 +20,10 @@ var bg = new Image();
 bg.src = './assets/bg_400_600.jpg';
 var enemy = new Image();
 enemy.src = './assets/enemy_60.png';
+var enemy_f22 = new Image();
+enemy_f22.src = './assets/enemy_80.png';
+var enemy_warship = new Image();
+enemy_warship.src = './assets/enemy_160_300.png';
 /**
  * 窗口启动
  *
@@ -31,7 +35,7 @@ window.onload = function () {
         return;
     requestAnimationFrame(enterFrame);
     // requestAnimationFrame(makeEnemy);
-    setInterval(makeEnemy, 1000);
+    setInterval(makeEnemyTest, 500);
 };
 /**
  * 主画面加载
@@ -58,12 +62,15 @@ function getRandomPosX() {
     var x = Math.floor(Math.random() * 341);
     return x;
 }
+function makeEnemyTest() {
+    var temp = new EnemyF22();
+}
 function makeEnemy() {
     if (!enemyLoad)
         return;
     enemyLoad = false;
     enemy_x = getRandomPosX();
-    enemy_y = 30;
+    enemy_y = -30;
     requestAnimationFrame(updateEnemy);
 }
 function updateEnemy() {
@@ -87,7 +94,7 @@ function updateEnemy() {
  * 鼠标移动、点击事件
  */
 window.onmousemove = setPlayerPosAsMousePos;
-window.onclick = fireNormal;
+window.onclick = text;
 /**
  * 鼠标移动事件 —— 玩家移动飞机
  */
@@ -115,7 +122,7 @@ function mousePosition(ev) {
 var list = new Array();
 function text(ev) {
     var bullet = new PlayerBullet(player_x, player_y);
-    bullet.fire();
+    // bullet.fire();
     // list.push(bullet);
     // fireNormal();
 }
@@ -147,41 +154,109 @@ function fireNormalFrame() {
  * 玩家子弹 类
  *
  * 测试失败 —— 通过 requestAnimationFrame() 访问的成员函数 无法调用对象属性值
+ *            **修正** 通过 requestAnimationFrame(() => this.fire()) 调用就可以！！！
  */
 var PlayerBullet = /** @class */ (function () {
     function PlayerBullet(px, py) {
+        var _this = this;
         this.x = px + 28;
         this.y = py + 10;
-        // requestAnimationFrame(this.fireUpdate);
+        requestAnimationFrame(function () { return _this.fire(); });
     }
     PlayerBullet.prototype.fire = function () {
-        requestAnimationFrame(this.fireUpdate);
-    };
-    PlayerBullet.prototype.fireUpdate = function () {
+        var _this = this;
         if (!context)
             return;
-        this.y -= 10;
-        console.log(this.y);
-        console.log(this.x);
+        this.y -= 15;
+        // console.log(this.y);
+        // console.log(this.x);
         context.rect(this.x, this.y, 4, 20);
         context.fillStyle = 'red';
         context.fill();
         if (this.y < -20)
             return;
-        requestAnimationFrame(this.fireUpdate);
+        requestAnimationFrame(function () { return _this.fire(); });
     };
     return PlayerBullet;
 }());
 /**
- * 敌人飞机 类
+ * 敌人飞机 普通
  *
- * 尚未编写
  */
 var Enemy = /** @class */ (function () {
     function Enemy() {
-        this.x = 0;
-        this.y = 0;
-        this.hp = 5;
+        var _this = this;
+        this.img = enemy;
+        this.x = this.getRandomPos();
+        this.y = -60;
+        this.hp = 2;
+        requestAnimationFrame(function () { return _this.make(); });
     }
+    Enemy.prototype.getRandomPos = function () {
+        var x = Math.floor(Math.random() * 341);
+        return x;
+    };
+    Enemy.prototype.make = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y += 5;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(function () { return _this.make(); });
+    };
     return Enemy;
+}());
+/**
+ * 敌人飞机 F22
+ *
+ */
+var EnemyF22 = /** @class */ (function () {
+    function EnemyF22() {
+        var _this = this;
+        this.img = enemy_f22;
+        this.x = this.getRandomPos();
+        this.y = -80;
+        this.hp = 4;
+        requestAnimationFrame(function () { return _this.make(); });
+    }
+    EnemyF22.prototype.getRandomPos = function () {
+        var x = Math.floor(Math.random() * 321);
+        return x;
+    };
+    EnemyF22.prototype.make = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y += 8;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(function () { return _this.make(); });
+    };
+    return EnemyF22;
+}());
+/**
+ * 敌人飞机 歼星舰
+ *
+ */
+var EnemyWarship = /** @class */ (function () {
+    function EnemyWarship() {
+        var _this = this;
+        this.img = enemy_warship;
+        this.x = this.getRandomPos();
+        this.y = -300;
+        this.hp = 30;
+        requestAnimationFrame(function () { return _this.make(); });
+    }
+    EnemyWarship.prototype.getRandomPos = function () {
+        var x = Math.floor(Math.random() * 241);
+        return x;
+    };
+    EnemyWarship.prototype.make = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y += 2;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(function () { return _this.make(); });
+    };
+    return EnemyWarship;
 }());
