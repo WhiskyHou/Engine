@@ -30,6 +30,8 @@ var enemy_supply = new Image();
 enemy_supply.src = './assets/enemy_100.png';
 var supply = new Image();
 supply.src = './assets/supply_100.png';
+var bulletList: BulletNormal[] = new Array();
+var enemyList: Enemy[] = new Array();
 
 
 /**
@@ -126,7 +128,46 @@ function enterFrame() {
         context.fillText('普通弹药', 20, 580);
     context.fillText('HP:' + player_hp.toString(), 320, 580);
 
+    // 重大bug！！！！！
+    checkKnock();
+
     requestAnimationFrame(enterFrame);
+}
+
+
+/**
+ * 敌机和子弹碰撞检测
+ * 
+ * 重大bug！！！！！
+ */
+function checkKnock() {
+    var num_bullet = bulletList.length;
+    var num_enemy = enemyList.length;
+    if (num_bullet === 0 || num_enemy === 0)
+        return;
+
+    for (var i = 0; i < num_bullet; i++) {
+        if (!bulletList[i].alive) {
+            bulletList.splice(i, 1);
+            i--;
+        }
+    }
+    for (var j = 0; j < num_enemy; j++) {
+        if (!enemyList[j].alive) {
+            enemyList.splice(j, 1);
+            j--;
+        }
+    }
+    for (var i = 0; i < num_bullet; i++) {
+        for (var j = 0; j < num_enemy; j++) {
+            if (bulletList[i].x >= enemyList[j].x &&
+                bulletList[i].x <= (enemyList[j].x + 56) &&
+                bulletList[i].y <= (enemyList[j].y + 60)) {
+                bulletList[i].alive = false;
+                enemyList[j].hp -= 2;
+            }
+        }
+    }
 }
 
 
@@ -145,6 +186,7 @@ function getRandomPosX(): number {
 }
 function makeEnemyTest() {
     var temp = new Enemy();
+    enemyList.push(temp);
 }
 function makeEnemyF22() {
     var temp = new EnemyF22();
@@ -225,10 +267,13 @@ function text(ev: any) {
     fireSwitch = !fireSwitch;
     if (fireSwitch) {
         temp = setInterval(function () {
-            if (fireMode)
+            if (fireMode) {
                 var bullet = new BulletSpecial(player_x, player_y);
-            else
+            }
+            else {
                 var bullet = new BulletNormal(player_x, player_y);
+                bulletList.push(bullet);
+            }
         }, 250);
     }
     else
@@ -288,10 +333,12 @@ class BulletNormal {
     public x: number;
     public y: number;
     public ap: number;
+    public alive: boolean;
     constructor(px: number, py: number) {
         this.x = px + 28;
         this.y = py + 10;
         this.ap = 2;
+        this.alive = true;
         requestAnimationFrame(() => this.fire());
     }
     fire() {
@@ -301,7 +348,7 @@ class BulletNormal {
         context.rect(this.x, this.y, 4, 20);
         context.fillStyle = 'red';
         context.fill();
-        if (this.y < -20)
+        if (this.y < -20 || !this.alive)
             return;
         requestAnimationFrame(() => this.fire());
     }
@@ -316,10 +363,12 @@ class BulletSpecial {
     public x: number;
     public y: number;
     public ap: number;
+    public alive: boolean;
     constructor(px: number, py: number) {
         this.x = px + 26;
         this.y = py + 10;
         this.ap = 4;
+        this.alive = true;
         requestAnimationFrame(() => this.fire());
     }
     fire() {
@@ -329,7 +378,7 @@ class BulletSpecial {
         context.rect(this.x, this.y, 8, 16);
         context.fillStyle = 'yellow';
         context.fill();
-        if (this.y < -16)
+        if (this.y < -16 || !this.alive)
             return;
         requestAnimationFrame(() => this.fire());
     }
@@ -344,12 +393,14 @@ class Enemy {
     img: HTMLImageElement;
     x: number;
     y: number;
-    hp: number;
+    public hp: number;
+    public alive: boolean;
     constructor() {
         this.img = enemy;
         this.x = this.getRandomPos();
         this.y = -60;
         this.hp = 2;
+        this.alive = true;
         requestAnimationFrame(() => this.make());
     }
     getRandomPos(): number {
@@ -361,6 +412,8 @@ class Enemy {
             return;
         this.y += 3;
         context.drawImage(this.img, this.x, this.y);
+        if (this.hp <= 0)
+            this.alive = false;
         requestAnimationFrame(() => this.make());
     }
 }
