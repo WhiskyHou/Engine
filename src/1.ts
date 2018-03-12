@@ -145,19 +145,22 @@ function checkKnock() {
     var num_enemy = enemyList.length;
     if (num_bullet === 0 || num_enemy === 0)
         return;
+    // for (var i = 0; i < num_bullet; i++)
+    //     if (!bulletList[i].alive)
+    //         console.log(bulletList[i].alive);
 
-    for (var i = 0; i < num_bullet; i++) {
-        if (!bulletList[i].alive) {
-            bulletList.splice(i, 1);
-            i--;
-        }
-    }
-    for (var j = 0; j < num_enemy; j++) {
-        if (!enemyList[j].alive) {
-            enemyList.splice(j, 1);
-            j--;
-        }
-    }
+    // for (var i = 0; i < num_bullet; i++) {
+    //     if (!bulletList[i].alive) {
+    //         // bulletList.splice(i, 1);
+    //         // i--;
+    //     }
+    // }
+    // for (var j = 0; j < num_enemy; j++) {
+    //     if (!enemyList[j].alive) {
+    //         enemyList.splice(j, 1);
+    //         j--;
+    //     }
+    // }
     for (var i = 0; i < num_bullet; i++) {
         for (var j = 0; j < num_enemy; j++) {
             if (bulletList[i].x >= enemyList[j].x &&
@@ -187,6 +190,7 @@ function getRandomPosX(): number {
 function makeEnemyTest() {
     var temp = new Enemy();
     enemyList.push(temp);
+    // enemyList.push(new Enemy());
 }
 function makeEnemyF22() {
     var temp = new EnemyF22();
@@ -273,6 +277,7 @@ function text(ev: any) {
             else {
                 var bullet = new BulletNormal(player_x, player_y);
                 bulletList.push(bullet);
+                // bulletList.push(new BulletNormal(player_x, player_y));
             }
         }, 250);
     }
@@ -340,6 +345,7 @@ class BulletNormal {
         this.ap = 2;
         this.alive = true;
         requestAnimationFrame(() => this.fire());
+        // console.log("fuck");
     }
     fire() {
         if (!context)
@@ -348,7 +354,9 @@ class BulletNormal {
         context.rect(this.x, this.y, 4, 20);
         context.fillStyle = 'red';
         context.fill();
-        if (this.y < -20 || !this.alive)
+        if (this.y <= -20)
+            this.alive = false;
+        if (!this.alive)
             return;
         requestAnimationFrame(() => this.fire());
     }
@@ -412,8 +420,10 @@ class Enemy {
             return;
         this.y += 3;
         context.drawImage(this.img, this.x, this.y);
-        if (this.hp <= 0)
+        if (this.hp <= 0 || this.y >= 600)
             this.alive = false;
+        if (!this.alive)
+            return;
         requestAnimationFrame(() => this.make());
     }
 }
