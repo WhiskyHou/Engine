@@ -24,6 +24,10 @@ var enemy_f22 = new Image();
 enemy_f22.src = './assets/enemy_80.png';
 var enemy_warship = new Image();
 enemy_warship.src = './assets/enemy_160_300.png';
+var enemy_supply = new Image();
+enemy_supply.src = './assets/enemy_100.png';
+var supply = new Image();
+supply.src = './assets/supply_100.png';
 /**
  * 窗口启动
  *
@@ -33,10 +37,65 @@ enemy_warship.src = './assets/enemy_160_300.png';
 window.onload = function () {
     if (!context)
         return;
+    // requestAnimationFrame(menuFrame);
     requestAnimationFrame(enterFrame);
     // requestAnimationFrame(makeEnemy);
-    setInterval(makeEnemyTest, 500);
+    setInterval(makeEnemyTest, 1000);
+    setInterval(makeEnemyF22, 5000);
+    setInterval(makeEnemySupply, 10000);
+    setInterval(makeEnemyWarship, 30000);
 };
+/**
+ * 菜单界面
+ *
+ * 有bug，暂时不能用
+ */
+var menuShow = 0;
+function menuFrame() {
+    if (!context)
+        return;
+    canvas.width = 400;
+    canvas.height = 600;
+    context.drawImage(bg, 0, 0);
+    menuShow = setInterval(makeEnemy, 2000);
+    context.fillStyle = 'black';
+    context.font = '40px Arial';
+    context.fillText('飞机大战', 120, 120);
+    if (menuShow === 1) {
+        requestAnimationFrame(gameFrame);
+        return;
+    }
+    requestAnimationFrame(menuFrame);
+}
+/**
+ * 游戏界面
+ *
+ * 有bug，暂时不能用
+ */
+var swap = false;
+function gameFrame() {
+    if (!context)
+        return;
+    if (menuShow === 1) {
+        canvas.width = 400;
+        canvas.height = 600;
+        context.drawImage(player, player_x, player_y);
+        context.fillStyle = 'black';
+        context.font = '24px Arial';
+        if (fireMode)
+            context.fillText('高爆弹药', 20, 580);
+        else
+            context.fillText('普通弹药', 20, 580);
+        if (!swap) {
+            setInterval(makeEnemyTest, 1000);
+            setInterval(makeEnemyF22, 5000);
+            setInterval(makeEnemySupply, 10000);
+            setInterval(makeEnemyWarship, 30000);
+            swap = true;
+        }
+        requestAnimationFrame(gameFrame);
+    }
+}
 /**
  * 主画面加载
  */
@@ -47,13 +106,20 @@ function enterFrame() {
     canvas.height = 600;
     context.drawImage(bg, 0, 0);
     context.drawImage(player, player_x, player_y);
+    context.fillStyle = 'black';
+    context.font = '24px Arial';
+    if (fireMode)
+        context.fillText('高爆弹药', 20, 580);
+    else
+        context.fillText('普通弹药', 20, 580);
+    context.fillText('HP:' + player_hp.toString(), 320, 580);
     requestAnimationFrame(enterFrame);
 }
-// requestAnimationFrame(enterFrame);
 /**
  * 随机刷新敌人
  *
  * 存在问题 —— 同开火一样，无法同时存在多个对象，只能等当前对象销毁之后才能开始下一对象
+ *            **修正**  问题同开火一样，已解决，这里大部分代码没用了
  */
 var enemy_x = getRandomPosX();
 var enemy_y = 0;
@@ -63,7 +129,16 @@ function getRandomPosX() {
     return x;
 }
 function makeEnemyTest() {
+    var temp = new Enemy();
+}
+function makeEnemyF22() {
     var temp = new EnemyF22();
+}
+function makeEnemySupply() {
+    var temp = new EnemySupply();
+}
+function makeEnemyWarship() {
+    var temp = new EnemyWarship();
 }
 function makeEnemy() {
     if (!enemyLoad)
@@ -91,15 +166,17 @@ function updateEnemy() {
     requestAnimationFrame(updateEnemy);
 }
 /**
- * 鼠标移动、点击事件
+ * 鼠标键盘移动、点击事件
  */
 window.onmousemove = setPlayerPosAsMousePos;
 window.onclick = text;
+window.onkeydown = keyDown;
 /**
  * 鼠标移动事件 —— 玩家移动飞机
  */
 var player_x = 0;
 var player_y = 0;
+var player_hp = 2;
 function setPlayerPosAsMousePos(event) {
     var event = event || window.event;
     var mousePos = mousePosition(event);
@@ -118,10 +195,23 @@ function mousePosition(ev) {
  *
  * 存在问题 —— 只能一发一发打，上一发子弹如果未消失再次开火，上一发直接消失并且下一发的飞行速度会将上一发叠加
  *            **暂时修正**  设置判断量，如果当前子弹未销毁，不能开火
+ *            **修正**  子弹类的问题解决，这里的方法就没用了
  */
 var list = new Array();
+var fireSwitch = false;
+var temp = 0;
 function text(ev) {
-    var bullet = new PlayerBullet(player_x, player_y);
+    fireSwitch = !fireSwitch;
+    if (fireSwitch) {
+        temp = setInterval(function () {
+            if (fireMode)
+                var bullet = new BulletSpecial(player_x, player_y);
+            else
+                var bullet = new BulletNormal(player_x, player_y);
+        }, 250);
+    }
+    else
+        window.clearInterval(temp);
     // bullet.fire();
     // list.push(bullet);
     // fireNormal();
@@ -151,25 +241,37 @@ function fireNormalFrame() {
     requestAnimationFrame(fireNormalFrame);
 }
 /**
- * 玩家子弹 类
+ * 键盘点击事件
+ */
+var fireMode = false;
+function keyDown(ev) {
+    var key = ev.keyCode ? ev.keyCode : ev.which;
+    if (90 === key) {
+        fireMode = !fireMode;
+    }
+    else if (89 === key) {
+        menuShow = 1;
+    }
+}
+/**
+ * 玩家子弹 普通
  *
  * 测试失败 —— 通过 requestAnimationFrame() 访问的成员函数 无法调用对象属性值
  *            **修正** 通过 requestAnimationFrame(() => this.fire()) 调用就可以！！！
  */
-var PlayerBullet = /** @class */ (function () {
-    function PlayerBullet(px, py) {
+var BulletNormal = /** @class */ (function () {
+    function BulletNormal(px, py) {
         var _this = this;
         this.x = px + 28;
         this.y = py + 10;
+        this.ap = 2;
         requestAnimationFrame(function () { return _this.fire(); });
     }
-    PlayerBullet.prototype.fire = function () {
+    BulletNormal.prototype.fire = function () {
         var _this = this;
         if (!context)
             return;
         this.y -= 15;
-        // console.log(this.y);
-        // console.log(this.x);
         context.rect(this.x, this.y, 4, 20);
         context.fillStyle = 'red';
         context.fill();
@@ -177,7 +279,33 @@ var PlayerBullet = /** @class */ (function () {
             return;
         requestAnimationFrame(function () { return _this.fire(); });
     };
-    return PlayerBullet;
+    return BulletNormal;
+}());
+/**
+ * 玩家子弹 特殊
+ *
+ */
+var BulletSpecial = /** @class */ (function () {
+    function BulletSpecial(px, py) {
+        var _this = this;
+        this.x = px + 26;
+        this.y = py + 10;
+        this.ap = 4;
+        requestAnimationFrame(function () { return _this.fire(); });
+    }
+    BulletSpecial.prototype.fire = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y -= 12;
+        context.rect(this.x, this.y, 8, 16);
+        context.fillStyle = 'yellow';
+        context.fill();
+        if (this.y < -16)
+            return;
+        requestAnimationFrame(function () { return _this.fire(); });
+    };
+    return BulletSpecial;
 }());
 /**
  * 敌人飞机 普通
@@ -200,7 +328,7 @@ var Enemy = /** @class */ (function () {
         var _this = this;
         if (!context)
             return;
-        this.y += 5;
+        this.y += 3;
         context.drawImage(this.img, this.x, this.y);
         requestAnimationFrame(function () { return _this.make(); });
     };
@@ -227,7 +355,7 @@ var EnemyF22 = /** @class */ (function () {
         var _this = this;
         if (!context)
             return;
-        this.y += 8;
+        this.y += 5;
         context.drawImage(this.img, this.x, this.y);
         requestAnimationFrame(function () { return _this.make(); });
     };
@@ -254,9 +382,57 @@ var EnemyWarship = /** @class */ (function () {
         var _this = this;
         if (!context)
             return;
-        this.y += 2;
+        this.y += 1;
         context.drawImage(this.img, this.x, this.y);
         requestAnimationFrame(function () { return _this.make(); });
     };
     return EnemyWarship;
+}());
+/**
+ * 敌人飞机 补给
+ *
+ */
+var EnemySupply = /** @class */ (function () {
+    function EnemySupply() {
+        var _this = this;
+        this.img = enemy_supply;
+        this.x = this.getRandomPos();
+        this.y = -100;
+        this.hp = 12;
+        requestAnimationFrame(function () { return _this.make(); });
+    }
+    EnemySupply.prototype.getRandomPos = function () {
+        var x = Math.floor(Math.random() * 301);
+        return x;
+    };
+    EnemySupply.prototype.make = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y += 2;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(function () { return _this.make(); });
+    };
+    return EnemySupply;
+}());
+/**
+ * 补给箱
+ */
+var Supply = /** @class */ (function () {
+    function Supply(x, y) {
+        var _this = this;
+        this.img = supply;
+        this.x = x;
+        this.y = y;
+        requestAnimationFrame(function () { return _this.make(); });
+    }
+    Supply.prototype.make = function () {
+        var _this = this;
+        if (!context)
+            return;
+        this.y += 1;
+        context.drawImage(this.img, this.x, this.y);
+        requestAnimationFrame(function () { return _this.make(); });
+    };
+    return Supply;
 }());
