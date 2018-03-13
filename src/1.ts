@@ -85,6 +85,8 @@ function menuFrame() {
     if (menuShow === 2) {
         emmm2();
     } if (menuShow === 3) {
+        emmm3();
+    } if (menuShow === 4) {
         emmm4();
     } if (menuShow === 5) {
         emmm5();
@@ -101,6 +103,8 @@ function menuFrame() {
     } if (menuShow === 11) {
         emmm11();
     } if (menuShow === 12) {
+        emmm12();
+    } if (menuShow === 13) {
         emmm13();
     } if (menuShow === 14) {
         emmm14();
