@@ -57,6 +57,7 @@ window.onload = function () {
  * 菜单界面
  *
  * 有bug，暂时不能用
+ * 修改了，可以用了
  */
 var menuShow = 0;
 function menuFrame() {
