@@ -191,6 +191,7 @@ function enterFrame() {
         context.fillText('高爆弹药', 20, 580);
     else
         context.fillText('普通弹药', 20, 580);
+    context.fillText('得分:' + player_score.toString(), 160, 580);
     context.fillText('HP:' + player_hp.toString(), 320, 580);
 
     // 重大bug！！！！！
@@ -239,6 +240,7 @@ function checkKnock() {
                 bulletList[i].y <= (enemyList[j].y + 60)) {
                 bulletList[i].alive = false;
                 enemyList[j].hp -= bulletList[i].ap;
+                player_score++;
             }
         }
     }
@@ -251,6 +253,7 @@ function checkKnock() {
                 bulletList[i].y <= (enemyF22List[j].y + 80)) {
                 bulletList[i].alive = false;
                 enemyF22List[j].hp -= bulletList[i].ap;
+                player_score += 2;
             }
         }
     }
@@ -263,6 +266,7 @@ function checkKnock() {
                 bulletList[i].y <= (enemySupplyList[j].y + 100)) {
                 bulletList[i].alive = false;
                 enemySupplyList[j].hp -= bulletList[i].ap;
+                player_score++;
             }
         }
     }
@@ -275,6 +279,7 @@ function checkKnock() {
                 bulletList[i].y <= (enemyWarshipList[j].y + 300)) {
                 bulletList[i].alive = false;
                 enemyWarshipList[j].hp -= bulletList[i].ap;
+                player_score += 10;
             }
         }
     }
@@ -288,6 +293,7 @@ function checkKnock() {
                 bulletSpecialList[i].y <= (enemyList[j].y + 60)) {
                 bulletSpecialList[i].alive = false;
                 enemyList[j].hp -= bulletSpecialList[i].ap;
+                player_score++;
             }
         }
     }
@@ -300,6 +306,7 @@ function checkKnock() {
                 bulletSpecialList[i].y <= (enemyF22List[j].y + 80)) {
                 bulletSpecialList[i].alive = false;
                 enemyF22List[j].hp -= bulletSpecialList[i].ap;
+                player_score += 2;
             }
         }
     }
@@ -312,6 +319,7 @@ function checkKnock() {
                 bulletSpecialList[i].y <= (enemySupplyList[j].y + 100)) {
                 bulletSpecialList[i].alive = false;
                 enemySupplyList[j].hp -= bulletSpecialList[i].ap;
+                player_score++;
             }
         }
     }
@@ -324,6 +332,7 @@ function checkKnock() {
                 bulletSpecialList[i].y <= (enemyWarshipList[j].y + 300)) {
                 bulletSpecialList[i].alive = false;
                 enemyWarshipList[j].hp -= bulletSpecialList[i].ap;
+                player_score += 10;
             }
         }
     }
@@ -401,6 +410,7 @@ window.onkeydown = keyDown;
 var player_x = 0;
 var player_y = 0;
 var player_hp = 2;
+var player_score = 0;
 function setPlayerPosAsMousePos(event: any) {
     var event = event || window.event;
     var mousePos = mousePosition(event);
