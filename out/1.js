@@ -553,66 +553,70 @@ var BulletSpecial = /** @class */ (function () {
  * 敌人飞机 普通
  *
  */
-var Enemy = /** @class */ (function () {
-    function Enemy() {
-        var _this = this;
-        this.img = enemy;
-        this.x = this.getRandomPos();
-        this.y = -60;
-        this.hp = 2;
-        this.alive = true;
-        requestAnimationFrame(function () { return _this.make(); });
-    }
-    Enemy.prototype.getRandomPos = function () {
-        var x = Math.floor(Math.random() * 341);
-        return x;
-    };
-    Enemy.prototype.make = function () {
-        var _this = this;
-        if (!context)
-            return;
-        this.y += 3;
-        context.drawImage(this.img, this.x, this.y);
-        if (this.hp <= 0 || this.y >= 600)
-            this.alive = false;
-        if (!this.alive)
-            return;
-        requestAnimationFrame(function () { return _this.make(); });
-    };
-    return Enemy;
-}());
+// class Enemy {
+//     img: HTMLImageElement;
+//     x: number;
+//     y: number;
+//     public hp: number;
+//     public alive: boolean;
+//     constructor() {
+//         this.img = enemy;
+//         this.x = this.getRandomPos();
+//         this.y = -60;
+//         this.hp = 2;
+//         this.alive = true;
+//         requestAnimationFrame(() => this.make());
+//     }
+//     getRandomPos(): number {
+//         var x = Math.floor(Math.random() * 341);
+//         return x;
+//     }
+//     make(): void {
+//         if (!context)
+//             return;
+//         this.y += 3;
+//         context.drawImage(this.img, this.x, this.y);
+//         if (this.hp <= 0 || this.y >= 600)
+//             this.alive = false;
+//         if (!this.alive)
+//             return;
+//         requestAnimationFrame(() => this.make());
+//     }
+// }
 /**
  * 敌人飞机 F22
  *
  */
-var EnemyF22 = /** @class */ (function () {
-    function EnemyF22() {
-        var _this = this;
-        this.img = enemy_f22;
-        this.x = this.getRandomPos();
-        this.y = -80;
-        this.hp = 4;
-        this.alive = true;
-        requestAnimationFrame(function () { return _this.make(); });
-    }
-    EnemyF22.prototype.getRandomPos = function () {
-        var x = Math.floor(Math.random() * 321);
-        return x;
-    };
-    EnemyF22.prototype.make = function () {
-        var _this = this;
-        if (!context)
-            return;
-        this.y += 5;
-        context.drawImage(this.img, this.x, this.y);
-        if (this.hp <= 0 || this.y >= 600)
-            this.alive = false;
-        if (!this.alive)
-            return;
-        requestAnimationFrame(function () { return _this.make(); });
-    };
-    return EnemyF22;
-}());
+// class EnemyF22 {
+//     img: HTMLImageElement;
+//     x: number;
+//     y: number;
+//     hp: number;
+//     public alive: boolean;
+//     constructor() {
+//         this.img = enemy_f22;
+//         this.x = this.getRandomPos();
+//         this.y = -80;
+//         this.hp = 4;
+//         this.alive = true;
+//         requestAnimationFrame(() => this.make());
+//     }
+//     getRandomPos(): number {
+//         var x = Math.floor(Math.random() * 321);
+//         return x;
+//     }
+//     make(): void {
+//         if (!context)
+//             return;
+//         this.y += 5;
+//         context.drawImage(this.img, this.x, this.y);
+//         if (this.hp <= 0 || this.y >= 600)
+//             this.alive = false;
+//         if (!this.alive)
+//             return;
+//         requestAnimationFrame(() => this.make());
+//     }
+// }
 /**
  * 敌人飞机 歼星舰
  *
