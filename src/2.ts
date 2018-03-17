@@ -77,11 +77,19 @@ class Player extends Bitmap {
 
 
 class MenuState extends State {
-    onEnter(): void {
+    title?: TextField;
+    bg?: Bitmap;
 
+    onEnter(): void {
+        this.title = new TextField("飞机Dark战", 80, 120, 40);
+        this.bg = new Bitmap(0, 0, bg)
+        const container = new DisplayObjectContainer(0, 0);
+        container.addChild(this.bg);
+        container.addChild(this.title);
+        stage.addChild(container);
     }
     onUpdate(): void {
-
+        // console.log(this.title);
     }
     onExit(): void {
 
@@ -103,10 +111,18 @@ class PlayingState extends State {
 
 
 
+const stage = new Stage();
+var fsm = new StateMachine();
+fsm.replaceState(new MenuState());
+
 
 
 function onTicker(context: CanvasRenderingContext2D) {
-
+    fsm.update();
+    context.clearRect(0, 0, stageWidth, stageHeight);
+    context.save();
+    stage.draw(context);
+    context.restore();
 }
 
 
@@ -116,6 +132,5 @@ function enterFrame() {
     onTicker(context);
     requestAnimationFrame(enterFrame);
 }
-
 requestAnimationFrame(enterFrame);
 

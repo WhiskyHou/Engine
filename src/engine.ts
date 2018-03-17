@@ -105,7 +105,7 @@ abstract class DisplayObject extends EventDispatcher {
         // 根据 local属性 算出 localMatirx
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         // 获得父容器的 globalMatrix，如果父容器是浏览器窗口，也就是树的根，赋值为单位矩阵
-        const parentGlobalMatrix = this.parent ? this.globalMatrix : new math.Matrix();
+        const parentGlobalMatrix = this.parent ? this.parent.globalMatrix : new math.Matrix();
         // localMatrix x乘 父容器的globalMatrix，获得本对象的 globalMatrix
         const globalMatrix = math.matrixAppendMatrix(this.localMatrix, parentGlobalMatrix);
         this.globalMatrix = globalMatrix;
@@ -227,9 +227,9 @@ class TextField extends DisplayObject {
     }
 
     render(context: CanvasRenderingContext2D) {
-        context.fillStyle = "black";
-        context.font = this.size.toString() + " Arial";
-        context.fillText(this.text, this.x, this.y + this.size);
+        context.fillStyle = 'black';
+        context.font = this.size.toString() + 'px Arial';
+        context.fillText(this.text, 0, this.size);
     }
 }
 

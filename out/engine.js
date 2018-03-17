@@ -100,7 +100,7 @@ var DisplayObject = /** @class */ (function (_super) {
         // 根据 local属性 算出 localMatirx
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         // 获得父容器的 globalMatrix，如果父容器是浏览器窗口，也就是树的根，赋值为单位矩阵
-        var parentGlobalMatrix = this.parent ? this.globalMatrix : new math.Matrix();
+        var parentGlobalMatrix = this.parent ? this.parent.globalMatrix : new math.Matrix();
         // localMatrix x乘 父容器的globalMatrix，获得本对象的 globalMatrix
         var globalMatrix = math.matrixAppendMatrix(this.localMatrix, parentGlobalMatrix);
         this.globalMatrix = globalMatrix;
@@ -211,9 +211,9 @@ var TextField = /** @class */ (function (_super) {
         return _this;
     }
     TextField.prototype.render = function (context) {
-        context.fillStyle = "black";
-        context.font = this.size.toString() + " Arial";
-        context.fillText(this.text, this.x, this.y + this.size);
+        context.fillStyle = 'black';
+        context.font = this.size.toString() + 'px Arial';
+        context.fillText(this.text, 0, this.size);
     };
     return TextField;
 }(DisplayObject));

@@ -82,8 +82,15 @@ var MenuState = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     MenuState.prototype.onEnter = function () {
+        this.title = new TextField("飞机Dark战", 80, 120, 40);
+        this.bg = new Bitmap(0, 0, bg);
+        var container = new DisplayObjectContainer(0, 0);
+        container.addChild(this.bg);
+        container.addChild(this.title);
+        stage.addChild(container);
     };
     MenuState.prototype.onUpdate = function () {
+        // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
     };
@@ -102,7 +109,15 @@ var PlayingState = /** @class */ (function (_super) {
     };
     return PlayingState;
 }(State));
+var stage = new Stage();
+var fsm = new StateMachine();
+fsm.replaceState(new MenuState());
 function onTicker(context) {
+    fsm.update();
+    context.clearRect(0, 0, stageWidth, stageHeight);
+    context.save();
+    stage.draw(context);
+    context.restore();
 }
 function enterFrame() {
     if (!context)
