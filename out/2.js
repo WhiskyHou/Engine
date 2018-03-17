@@ -84,10 +84,22 @@ var MenuState = /** @class */ (function (_super) {
     MenuState.prototype.onEnter = function () {
         this.title = new TextField("飞机Dark战", 80, 120, 40);
         this.bg = new Bitmap(0, 0, bg);
+        this.player = new Bitmap(0, 0, player);
         var container = new DisplayObjectContainer(0, 0);
-        container.addChild(this.bg);
-        container.addChild(this.title);
         stage.addChild(container);
+        container.rotation = 0;
+        container.addChild(this.bg);
+        container.addChild(this.player);
+        container.addChild(this.title);
+        this.player.addEventListener(function () {
+            console.log("click");
+        });
+        this.title.addEventListener(function () {
+            console.log("fu*k");
+        });
+        this.bg.addEventListener(function () {
+            console.log("???");
+        });
     };
     MenuState.prototype.onUpdate = function () {
         // console.log(this.title);
@@ -119,6 +131,13 @@ function onTicker(context) {
     stage.draw(context);
     context.restore();
 }
+canvas.onclick = function (event) {
+    var offsetX = event.offsetX;
+    var offsetY = event.offsetY;
+    var hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    if (hitResult)
+        hitResult.dispatchEvent();
+};
 function enterFrame() {
     if (!context)
         return;

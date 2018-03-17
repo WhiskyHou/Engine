@@ -47,7 +47,7 @@ var StateMachine = /** @class */ (function () {
  * listeners: Function[]                    函数数组，储存事件触发后的回调函数
  *
  * dispatchEvent()                          执行每个回调函数
- * addEventDispatcher(callback: Function)   接受一个回调函数，并添加到函数数组
+ * addEventListener(callback: Function)   接受一个回调函数，并添加到函数数组
  */
 var EventDispatcher = /** @class */ (function () {
     function EventDispatcher() {
@@ -59,7 +59,7 @@ var EventDispatcher = /** @class */ (function () {
             listener();
         }
     };
-    EventDispatcher.prototype.addEventDispatcher = function (callback) {
+    EventDispatcher.prototype.addEventListener = function (callback) {
         this.listeners.push(callback);
     };
     return EventDispatcher;
@@ -145,7 +145,7 @@ var DisplayObjectContainer = /** @class */ (function (_super) {
         var displayObjectList = this.children;
         var hitTestResult = null;
         // 反向遍历，先从后绘制的(在上层显示的)开始判断
-        for (var i = displayObjectList.length; i >= 0; --i) {
+        for (var i = displayObjectList.length - 1; i >= 0; --i) {
             // 获取 当前子节点
             var currentChild = displayObjectList[i];
             // 获取 当前子节点的 localMatrix
@@ -157,7 +157,7 @@ var DisplayObjectContainer = /** @class */ (function (_super) {
             var currentChildRelativePoint = math.pointAppendMatrix(point, currentChildInvertLocalMatrix);
             // 子节点计算碰撞
             var result = currentChild.hitTest(currentChildRelativePoint);
-            if (!result) {
+            if (result) {
                 hitTestResult = result;
                 break;
             }

@@ -40,17 +40,18 @@ class StateMachine {
  * listeners: Function[]                    函数数组，储存事件触发后的回调函数
  * 
  * dispatchEvent()                          执行每个回调函数
- * addEventDispatcher(callback: Function)   接受一个回调函数，并添加到函数数组
+ * addEventListener(callback: Function)   接受一个回调函数，并添加到函数数组
  */
 class EventDispatcher {
     private listeners: Function[] = [];
 
     dispatchEvent() {
-        for (let listener of this.listeners)
+        for (let listener of this.listeners) {
             listener();
+        }
     }
 
-    addEventDispatcher(callback: Function) {
+    addEventListener(callback: Function) {
         this.listeners.push(callback);
     }
 }
@@ -150,11 +151,12 @@ class DisplayObjectContainer extends DisplayObject {
     }
 
     hitTest(point: math.Point) {
+
         const displayObjectList = this.children;
         let hitTestResult: DisplayObject | null = null;
 
         // 反向遍历，先从后绘制的(在上层显示的)开始判断
-        for (var i = displayObjectList.length; i >= 0; --i) {
+        for (var i = displayObjectList.length - 1; i >= 0; --i) {
             // 获取 当前子节点
             const currentChild = displayObjectList[i];
             // 获取 当前子节点的 localMatrix
@@ -167,7 +169,7 @@ class DisplayObjectContainer extends DisplayObject {
 
             // 子节点计算碰撞
             const result = currentChild.hitTest(currentChildRelativePoint);
-            if (!result) {
+            if (result) {
                 hitTestResult = result;
                 break;
             }

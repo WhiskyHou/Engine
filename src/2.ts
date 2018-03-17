@@ -79,14 +79,30 @@ class Player extends Bitmap {
 class MenuState extends State {
     title?: TextField;
     bg?: Bitmap;
+    player?: Bitmap;
 
     onEnter(): void {
         this.title = new TextField("飞机Dark战", 80, 120, 40);
         this.bg = new Bitmap(0, 0, bg)
+        this.player = new Bitmap(0, 0, player);
+
         const container = new DisplayObjectContainer(0, 0);
-        container.addChild(this.bg);
-        container.addChild(this.title);
         stage.addChild(container);
+        container.rotation = 0;
+        container.addChild(this.bg);
+        container.addChild(this.player);
+        container.addChild(this.title);
+
+
+        this.player.addEventListener(() => {
+            console.log("click");
+        })
+        this.title.addEventListener(() => {
+            console.log("fu*k");
+        })
+        this.bg.addEventListener(() => {
+            console.log("???")
+        })
     }
     onUpdate(): void {
         // console.log(this.title);
@@ -124,6 +140,17 @@ function onTicker(context: CanvasRenderingContext2D) {
     stage.draw(context);
     context.restore();
 }
+
+
+canvas.onclick = function (event) {
+    const offsetX = event.offsetX;
+    const offsetY = event.offsetY;
+
+    const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    if (hitResult)
+        hitResult.dispatchEvent();
+}
+
 
 
 function enterFrame() {
