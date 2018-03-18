@@ -150,6 +150,27 @@ class DisplayObjectContainer extends DisplayObject {
             this.children.splice(index);
     }
 
+    deleteAll() {
+        while (true) {
+            if (0 == this.children.length) {
+                break;
+            }
+            this.children.splice(0);
+        }
+    }
+
+    // 接收一个全局的点坐标，返回这个点相对于此容器的点坐标
+    getLocalPos(point: math.Point): math.Point {
+        if (!this.parent) {
+            return point;
+        }
+        var fatherPos: math.Point = this.parent.getLocalPos(point);
+        var invertLocalMatrix = math.invertMatrix(this.localMatrix);
+        var pointRelativeMe = math.pointAppendMatrix(fatherPos, invertLocalMatrix);
+
+        return pointRelativeMe;
+    }
+
     render(context: CanvasRenderingContext2D) {
         const renderList = this.children;
         for (let renderObj of renderList)

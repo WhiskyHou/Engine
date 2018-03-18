@@ -139,6 +139,24 @@ var DisplayObjectContainer = /** @class */ (function (_super) {
         if (index != -1)
             this.children.splice(index);
     };
+    DisplayObjectContainer.prototype.deleteAll = function () {
+        while (true) {
+            if (0 == this.children.length) {
+                break;
+            }
+            this.children.splice(0);
+        }
+    };
+    // 接收一个全局的点坐标，返回这个点相对于此容器的点坐标
+    DisplayObjectContainer.prototype.getLocalPos = function (point) {
+        if (!this.parent) {
+            return point;
+        }
+        var fatherPos = this.parent.getLocalPos(point);
+        var invertLocalMatrix = math.invertMatrix(this.localMatrix);
+        var pointRelativeMe = math.pointAppendMatrix(fatherPos, invertLocalMatrix);
+        return pointRelativeMe;
+    };
     DisplayObjectContainer.prototype.render = function (context) {
         var renderList = this.children;
         for (var _i = 0, renderList_1 = renderList; _i < renderList_1.length; _i++) {

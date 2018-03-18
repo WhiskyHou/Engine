@@ -98,23 +98,21 @@ var MenuState = /** @class */ (function (_super) {
         _this.tip = new TextField("鼠标控制移动，空格开火，Z键切换模式", 20, 400, 20);
         _this.next = new TextField("点击鼠标开始游戏", 120, 500, 20);
         _this.bg = new Bitmap(0, 0, bg);
+        _this.container = new DisplayObjectContainer(0, 0);
         return _this;
     }
     MenuState.prototype.onEnter = function () {
-        var container = new DisplayObjectContainer(0, 0);
-        stage.addChild(container);
-        container.addChild(this.bg);
-        container.addChild(this.tip);
-        container.addChild(this.next);
-        container.addChild(this.title);
+        stage.addChild(this.container);
+        this.container.addChild(this.bg);
+        this.container.addChild(this.tip);
+        this.container.addChild(this.next);
+        this.container.addChild(this.title);
     };
     MenuState.prototype.onUpdate = function () {
         // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
-        stage.deleteChild(this.title);
-        stage.deleteChild(this.bg);
-        stage.deleteChild(this.bg);
+        stage.deleteChild(this.container);
     };
     return MenuState;
 }(State));
@@ -126,17 +124,31 @@ var PlayingState = /** @class */ (function (_super) {
         _this.bulletList = [];
         _this.player = new Player(170, 540, player);
         _this.bg = new Bitmap(0, 0, bg);
+        _this.container = new DisplayObjectContainer(0, 0);
+        _this.bulletContainer = new DisplayObjectContainer(0, 0);
+        _this.enemyContainer = new DisplayObjectContainer(0, 0);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
-        var container = new DisplayObjectContainer(0, 0);
-        stage.addChild(container);
-        container.addChild(this.bg);
-        container.addChild(this.player);
+        var _this = this;
+        stage.addChild(this.container);
+        stage.addChild(this.bulletContainer);
+        stage.addChild(this.enemyContainer);
+        this.container.addChild(this.bg);
+        this.container.addChild(this.player);
+        setInterval(function () { return _this.fire(); }, 1000);
+        setInterval(function () { return _this.swapEnemy(); }, 500);
     };
     PlayingState.prototype.onUpdate = function () {
-        this.player.x = playerX;
-        this.player.y = playerY;
+        // 更新玩家位置
+        if (this.player.parent) {
+            var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+            this.player.x = playerPos.x;
+            this.player.y = playerPos.y;
+        }
+        // this.player.x = playerX;
+        // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
+        // 更新每个子弹和敌人的信息
         for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
             var bullet = _a[_i];
             bullet.update();
@@ -145,10 +157,47 @@ var PlayingState = /** @class */ (function (_super) {
             var enemy = _c[_b];
             enemy.update();
         }
+        // 更新渲染节点下挂的子弹节点
+        this.bulletContainer.deleteAll();
+        for (var _d = 0, _e = this.bulletList; _d < _e.length; _d++) {
+            var bullet = _e[_d];
+            this.bulletContainer.addChild(bullet);
+        }
+        // 更新渲染节点下挂的敌人节点
+        this.enemyContainer.deleteAll();
+        for (var _f = 0, _g = this.enemyList; _f < _g.length; _f++) {
+            var enemy = _g[_f];
+            this.bulletContainer.addChild(enemy);
+        }
     };
     PlayingState.prototype.onExit = function () {
     };
     PlayingState.prototype.fire = function () {
+        if (fireSwitch) {
+            if (fireMode) {
+                /**
+                 * 这里有问题！！
+                 *
+                 * 按照和飞机坐标一样的设置，位置会翻倍
+                 * 输出信息的时候，子弹的x是180，但是实际渲染的x是360
+                 */
+                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY + 28));
+                var bulletNormal = new BulletNormal(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
+                this.bulletList.push(bulletNormal);
+                console.log(bulletNormal);
+            }
+            else {
+            }
+        }
+    };
+    PlayingState.prototype.swapEnemy = function () {
+        var x = this.getRandomPos();
+        var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
+        this.enemyList.push(temp);
+    };
+    PlayingState.prototype.getRandomPos = function () {
+        var x = Math.floor(Math.random() * 341);
+        return x;
     };
     return PlayingState;
 }(State));

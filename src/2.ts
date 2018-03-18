@@ -99,30 +99,30 @@ class MenuState extends State {
     next: TextField;
     bg: Bitmap;
 
+    container: DisplayObjectContainer;
+
     constructor() {
         super();
         this.title = new TextField("飞机Dark战", 90, 120, 40);
         this.tip = new TextField("鼠标控制移动，空格开火，Z键切换模式", 20, 400, 20);
         this.next = new TextField("点击鼠标开始游戏", 120, 500, 20);
         this.bg = new Bitmap(0, 0, bg);
+
+        this.container = new DisplayObjectContainer(0, 0);
     }
 
     onEnter(): void {
-        const container = new DisplayObjectContainer(0, 0);
-        stage.addChild(container);
-
-        container.addChild(this.bg);
-        container.addChild(this.tip);
-        container.addChild(this.next);
-        container.addChild(this.title);
+        stage.addChild(this.container);
+        this.container.addChild(this.bg);
+        this.container.addChild(this.tip);
+        this.container.addChild(this.next);
+        this.container.addChild(this.title);
     }
     onUpdate(): void {
         // console.log(this.title);
     }
     onExit(): void {
-        stage.deleteChild(this.title);
-        stage.deleteChild(this.bg);
-        stage.deleteChild(this.bg);
+        stage.deleteChild(this.container);
     }
 }
 
@@ -133,35 +133,95 @@ class PlayingState extends State {
     player: Player;
     bg: Bitmap;
 
+    container: DisplayObjectContainer;
+    bulletContainer: DisplayObjectContainer;
+    enemyContainer: DisplayObjectContainer;
+
     constructor() {
         super();
         this.player = new Player(170, 540, player);
         this.bg = new Bitmap(0, 0, bg);
+
+        this.container = new DisplayObjectContainer(0, 0);
+        this.bulletContainer = new DisplayObjectContainer(0, 0);
+        this.enemyContainer = new DisplayObjectContainer(0, 0);
     }
 
     onEnter(): void {
-        const container = new DisplayObjectContainer(0, 0);
-        stage.addChild(container);
-        container.addChild(this.bg);
-        container.addChild(this.player);
+        stage.addChild(this.container);
+        stage.addChild(this.bulletContainer);
+        stage.addChild(this.enemyContainer);
+        this.container.addChild(this.bg);
+        this.container.addChild(this.player);
+
+
+        setInterval(() => this.fire(), 1000);
+        setInterval(() => this.swapEnemy(), 500);
     }
     onUpdate(): void {
-        this.player.x = playerX;
-        this.player.y = playerY;
+        // 更新玩家位置
+        if (this.player.parent) {
+            var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+            this.player.x = playerPos.x;
+            this.player.y = playerPos.y;
+        }
+        // this.player.x = playerX;
+        // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
 
+
+        // 更新每个子弹和敌人的信息
         for (let bullet of this.bulletList)
             bullet.update();
         for (let enemy of this.enemyList)
             enemy.update();
 
 
+        // 更新渲染节点下挂的子弹节点
+        this.bulletContainer.deleteAll();
+        for (let bullet of this.bulletList) {
+            this.bulletContainer.addChild(bullet);
+        }
+
+
+        // 更新渲染节点下挂的敌人节点
+        this.enemyContainer.deleteAll();
+        for (let enemy of this.enemyList) {
+            this.bulletContainer.addChild(enemy);
+        }
     }
     onExit(): void {
 
     }
 
     fire() {
+        if (fireSwitch) {
+            if (fireMode) {
+                /**
+                 * 这里有问题！！
+                 * 
+                 * 按照和飞机坐标一样的设置，位置会翻倍
+                 * 输出信息的时候，子弹的x是180，但是实际渲染的x是360
+                 */
+                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY + 28));
+                var bulletNormal = new BulletNormal(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
+                this.bulletList.push(bulletNormal);
+                console.log(bulletNormal);
+            }
+            else {
 
+            }
+        }
+    }
+
+    swapEnemy() {
+        let x = this.getRandomPos();
+        var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
+        this.enemyList.push(temp);
+    }
+
+    getRandomPos(): number {
+        var x = Math.floor(Math.random() * 341);
+        return x;
     }
 }
 
