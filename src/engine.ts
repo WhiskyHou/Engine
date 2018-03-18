@@ -31,6 +31,12 @@ class StateMachine {
         if (this.currentState)
             this.currentState.onUpdate();
     }
+
+    // getCurrentState() {
+    //     if (!this.currentState)
+    //         return null;
+    //     return this.currentState
+    // }
 }
 
 

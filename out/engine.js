@@ -28,6 +28,11 @@ var State = /** @class */ (function () {
 var StateMachine = /** @class */ (function () {
     function StateMachine() {
         this.currentState = null;
+        // getCurrentState() {
+        //     if (!this.currentState)
+        //         return null;
+        //     return this.currentState
+        // }
     }
     StateMachine.prototype.replaceState = function (state) {
         if (this.currentState)

@@ -24,6 +24,7 @@ supply.src = './assets/supply_100.png';
 /**
  * 常量
  * 
+ * 全局变量
  */
 const stageWidth = 400;
 const stageHeight = 600;
@@ -33,22 +34,34 @@ const enemyF22Speed = 4;
 const enemySupplySpeed = 1;
 const enemyWarshipSpeed = 0.5;
 
+const enemyNormalHp = 2;
+
 const bulletNormalWidth = 4;
 const bulletNormalHeight = 20;
+const bulletNormalAp = 1;
 const bulletSpecialWidth = 6;
 const bulletSpecialHeight = 16;
 
-const playerHp = 2;
-
+var playerHp = 2;
+var playerX = 170;
+var playerY = 540;
+var fireMode = true;
+var fireSwitch = false;
 
 
 class Enemy extends Bitmap {
     alive: boolean = true;
     hp: number;
+    speed: number;
 
-    constructor(x: number, y: number, img: HTMLImageElement, hp: number) {
+    constructor(x: number, y: number, img: HTMLImageElement, hp: number, speed: number) {
         super(x, y, img);
         this.hp = hp;
+        this.speed = speed;
+    }
+
+    update() {
+        this.y += this.speed;
     }
 }
 
@@ -60,6 +73,10 @@ class BulletNormal extends Rectangle {
     constructor(x: number, y: number, width: number, height: number, color: string, ap: number) {
         super(x, y, width, height, color)
         this.ap = ap;
+    }
+
+    update() {
+        this.y -= 10;
     }
 }
 
@@ -77,50 +94,73 @@ class Player extends Bitmap {
 
 
 class MenuState extends State {
-    title?: TextField;
-    bg?: Bitmap;
-    player?: Bitmap;
+    title: TextField;
+    tip: TextField;
+    next: TextField;
+    bg: Bitmap;
+
+    constructor() {
+        super();
+        this.title = new TextField("飞机Dark战", 90, 120, 40);
+        this.tip = new TextField("鼠标控制移动，空格开火，Z键切换模式", 20, 400, 20);
+        this.next = new TextField("点击鼠标开始游戏", 120, 500, 20);
+        this.bg = new Bitmap(0, 0, bg);
+    }
 
     onEnter(): void {
-        this.title = new TextField("飞机Dark战", 80, 120, 40);
-        this.bg = new Bitmap(0, 0, bg)
-        this.player = new Bitmap(0, 0, player);
-
         const container = new DisplayObjectContainer(0, 0);
         stage.addChild(container);
-        container.rotation = 0;
+
         container.addChild(this.bg);
-        container.addChild(this.player);
+        container.addChild(this.tip);
+        container.addChild(this.next);
         container.addChild(this.title);
-
-
-        this.player.addEventListener(() => {
-            console.log("click");
-        })
-        this.title.addEventListener(() => {
-            console.log("fu*k");
-        })
-        this.bg.addEventListener(() => {
-            console.log("???")
-        })
     }
     onUpdate(): void {
         // console.log(this.title);
     }
     onExit(): void {
-
+        stage.deleteChild(this.title);
+        stage.deleteChild(this.bg);
+        stage.deleteChild(this.bg);
     }
 }
 
 
 class PlayingState extends State {
-    onEnter(): void {
+    enemyList: Enemy[] = [];
+    bulletList: BulletNormal[] = [];
+    player: Player;
+    bg: Bitmap;
 
+    constructor() {
+        super();
+        this.player = new Player(170, 540, player);
+        this.bg = new Bitmap(0, 0, bg);
+    }
+
+    onEnter(): void {
+        const container = new DisplayObjectContainer(0, 0);
+        stage.addChild(container);
+        container.addChild(this.bg);
+        container.addChild(this.player);
     }
     onUpdate(): void {
+        this.player.x = playerX;
+        this.player.y = playerY;
+
+        for (let bullet of this.bulletList)
+            bullet.update();
+        for (let enemy of this.enemyList)
+            enemy.update();
+
 
     }
     onExit(): void {
+
+    }
+
+    fire() {
 
     }
 }
@@ -141,14 +181,35 @@ function onTicker(context: CanvasRenderingContext2D) {
     context.restore();
 }
 
+canvas.onmousemove = function (event) {
+    var x = event.offsetX - 30;
+    var y = event.offsetY - 30;
+
+    if (x >= 0 && x <= 340)
+        playerX = x;
+    if (y >= 0 && y <= 540)
+        playerY = y;
+}
 
 canvas.onclick = function (event) {
-    const offsetX = event.offsetX;
-    const offsetY = event.offsetY;
+    // const offsetX = event.offsetX;
+    // const offsetY = event.offsetY;
 
-    const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
-    if (hitResult)
-        hitResult.dispatchEvent();
+    // const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    // if (hitResult)
+    //     hitResult.dispatchEvent();
+
+    fsm.replaceState(new PlayingState());
+}
+
+window.onkeydown = function (event) {
+    var key = event.keyCode ? event.keyCode : event.which;
+    if (90 === key) {
+        fireMode = !fireMode;
+    }
+    else if (32 === key) {
+        fireSwitch = !fireSwitch;
+    }
 }
 
 

@@ -32,6 +32,7 @@ supply.src = './assets/supply_100.png';
 /**
  * 常量
  *
+ * 全局变量
  */
 var stageWidth = 400;
 var stageHeight = 600;
@@ -39,19 +40,29 @@ var enemyNormalSpeed = 2;
 var enemyF22Speed = 4;
 var enemySupplySpeed = 1;
 var enemyWarshipSpeed = 0.5;
+var enemyNormalHp = 2;
 var bulletNormalWidth = 4;
 var bulletNormalHeight = 20;
+var bulletNormalAp = 1;
 var bulletSpecialWidth = 6;
 var bulletSpecialHeight = 16;
 var playerHp = 2;
+var playerX = 170;
+var playerY = 540;
+var fireMode = true;
+var fireSwitch = false;
 var Enemy = /** @class */ (function (_super) {
     __extends(Enemy, _super);
-    function Enemy(x, y, img, hp) {
+    function Enemy(x, y, img, hp, speed) {
         var _this = _super.call(this, x, y, img) || this;
         _this.alive = true;
         _this.hp = hp;
+        _this.speed = speed;
         return _this;
     }
+    Enemy.prototype.update = function () {
+        this.y += this.speed;
+    };
     return Enemy;
 }(Bitmap));
 var BulletNormal = /** @class */ (function (_super) {
@@ -62,6 +73,9 @@ var BulletNormal = /** @class */ (function (_super) {
         _this.ap = ap;
         return _this;
     }
+    BulletNormal.prototype.update = function () {
+        this.y -= 10;
+    };
     return BulletNormal;
 }(Rectangle));
 var Player = /** @class */ (function (_super) {
@@ -79,45 +93,62 @@ var Player = /** @class */ (function (_super) {
 var MenuState = /** @class */ (function (_super) {
     __extends(MenuState, _super);
     function MenuState() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super.call(this) || this;
+        _this.title = new TextField("飞机Dark战", 90, 120, 40);
+        _this.tip = new TextField("鼠标控制移动，空格开火，Z键切换模式", 20, 400, 20);
+        _this.next = new TextField("点击鼠标开始游戏", 120, 500, 20);
+        _this.bg = new Bitmap(0, 0, bg);
+        return _this;
     }
     MenuState.prototype.onEnter = function () {
-        this.title = new TextField("飞机Dark战", 80, 120, 40);
-        this.bg = new Bitmap(0, 0, bg);
-        this.player = new Bitmap(0, 0, player);
         var container = new DisplayObjectContainer(0, 0);
         stage.addChild(container);
-        container.rotation = 0;
         container.addChild(this.bg);
-        container.addChild(this.player);
+        container.addChild(this.tip);
+        container.addChild(this.next);
         container.addChild(this.title);
-        this.player.addEventListener(function () {
-            console.log("click");
-        });
-        this.title.addEventListener(function () {
-            console.log("fu*k");
-        });
-        this.bg.addEventListener(function () {
-            console.log("???");
-        });
     };
     MenuState.prototype.onUpdate = function () {
         // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
+        stage.deleteChild(this.title);
+        stage.deleteChild(this.bg);
+        stage.deleteChild(this.bg);
     };
     return MenuState;
 }(State));
 var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super.call(this) || this;
+        _this.enemyList = [];
+        _this.bulletList = [];
+        _this.player = new Player(170, 540, player);
+        _this.bg = new Bitmap(0, 0, bg);
+        return _this;
     }
     PlayingState.prototype.onEnter = function () {
+        var container = new DisplayObjectContainer(0, 0);
+        stage.addChild(container);
+        container.addChild(this.bg);
+        container.addChild(this.player);
     };
     PlayingState.prototype.onUpdate = function () {
+        this.player.x = playerX;
+        this.player.y = playerY;
+        for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
+            var bullet = _a[_i];
+            bullet.update();
+        }
+        for (var _b = 0, _c = this.enemyList; _b < _c.length; _b++) {
+            var enemy = _c[_b];
+            enemy.update();
+        }
     };
     PlayingState.prototype.onExit = function () {
+    };
+    PlayingState.prototype.fire = function () {
     };
     return PlayingState;
 }(State));
@@ -131,12 +162,30 @@ function onTicker(context) {
     stage.draw(context);
     context.restore();
 }
+canvas.onmousemove = function (event) {
+    var x = event.offsetX - 30;
+    var y = event.offsetY - 30;
+    if (x >= 0 && x <= 340)
+        playerX = x;
+    if (y >= 0 && y <= 540)
+        playerY = y;
+};
 canvas.onclick = function (event) {
-    var offsetX = event.offsetX;
-    var offsetY = event.offsetY;
-    var hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
-    if (hitResult)
-        hitResult.dispatchEvent();
+    // const offsetX = event.offsetX;
+    // const offsetY = event.offsetY;
+    // const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    // if (hitResult)
+    //     hitResult.dispatchEvent();
+    fsm.replaceState(new PlayingState());
+};
+window.onkeydown = function (event) {
+    var key = event.keyCode ? event.keyCode : event.which;
+    if (90 === key) {
+        fireMode = !fireMode;
+    }
+    else if (32 === key) {
+        fireSwitch = !fireSwitch;
+    }
 };
 function enterFrame() {
     if (!context)
