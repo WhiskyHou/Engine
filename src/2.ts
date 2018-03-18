@@ -84,8 +84,9 @@ class BulletNormal extends Rectangle {
 class Player extends Bitmap {
     alive: boolean = true;
     fire: boolean = false;
-    fireMode: number = 1;
+    fireMode: boolean = true;
     hp: number = playerHp;
+    score: number = 0;
 
     constructor(x: number, y: number, img: HTMLImageElement) {
         super(x, y, img);
@@ -122,7 +123,8 @@ class MenuState extends State {
         // console.log(this.title);
     }
     onExit(): void {
-        stage.deleteChild(this.container);
+        // this.container.deleteAll();
+        stage.deleteAll();
     }
 }
 
@@ -132,34 +134,47 @@ class PlayingState extends State {
     bulletList: BulletNormal[] = [];
     player: Player;
     bg: Bitmap;
+    fireMode: TextField;
+    score: TextField;
+    playerHp: TextField;
 
     container: DisplayObjectContainer;
     bulletContainer: DisplayObjectContainer;
     enemyContainer: DisplayObjectContainer;
+    menuContainer: DisplayObjectContainer;
 
     constructor() {
         super();
+
         this.player = new Player(170, 540, player);
         this.bg = new Bitmap(0, 0, bg);
+        this.fireMode = new TextField("普通弹药", 20, 0, 24);
+        this.score = new TextField("得分:0", 160, 0, 24);
+        this.playerHp = new TextField("HP:2", 320, 0, 24);
 
         this.container = new DisplayObjectContainer(0, 0);
         this.bulletContainer = new DisplayObjectContainer(0, 0);
         this.enemyContainer = new DisplayObjectContainer(0, 0);
+        this.menuContainer = new DisplayObjectContainer(0, 560);
     }
 
     onEnter(): void {
         stage.addChild(this.container);
         stage.addChild(this.bulletContainer);
         stage.addChild(this.enemyContainer);
+        stage.addChild(this.menuContainer);
         this.container.addChild(this.bg);
         this.container.addChild(this.player);
-
+        this.menuContainer.addChild(this.fireMode);
+        this.menuContainer.addChild(this.score);
+        this.menuContainer.addChild(this.playerHp);
 
         setInterval(() => this.fire(), 1000);
-        setInterval(() => this.swapEnemy(), 500);
+        setInterval(() => this.swapEnemy(), 3000);
     }
     onUpdate(): void {
-        // 更新玩家位置
+        // 更新玩家信息
+        this.player.fireMode = fireMode;
         if (this.player.parent) {
             var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
             this.player.x = playerPos.x;
@@ -188,6 +203,15 @@ class PlayingState extends State {
         for (let enemy of this.enemyList) {
             this.bulletContainer.addChild(enemy);
         }
+
+
+        this.checkKnock();
+
+
+        // 更新菜单UI信息
+        this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
+        this.score.text = "得分:" + this.player.score.toString();
+        this.playerHp.text = "HP:" + this.player.hp.toString();
     }
     onExit(): void {
 
@@ -205,7 +229,7 @@ class PlayingState extends State {
                 var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY + 28));
                 var bulletNormal = new BulletNormal(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
                 this.bulletList.push(bulletNormal);
-                console.log(bulletNormal);
+                // console.log(bulletNormal);
             }
             else {
 
@@ -222,6 +246,40 @@ class PlayingState extends State {
     getRandomPos(): number {
         var x = Math.floor(Math.random() * 341);
         return x;
+    }
+
+    checkKnock() {
+        var result = this.enemyContainer.hitTest(new math.Point(playerX, playerY));
+        if (result != null)
+            console.log(result);
+
+        // for (let bullet of this.bulletList) {
+        //     const x = bullet.x;
+        //     const y = bullet.y;
+        //     for (let enemy of this.enemyList) {
+        //         var result: DisplayObject | null = null;
+        //         result = enemy.hitTest(new math.Point(x, y));
+        //         if (result != null) {
+        //             bullet.alive = false;
+        //             enemy.alive = false;
+        //             console.log(result);
+        //         }
+        //     }
+        // }
+
+
+        // for (var i = 0; i < this.bulletList.length; i++) {
+        //     if (this.bulletList[i].alive == false) {
+        //         this.bulletList.splice(i);
+        //         i--;
+        //     }
+        // }
+        // for (var i = 0; i < this.enemyList.length; i++) {
+        //     if (this.enemyList[i].alive == false) {
+        //         this.bulletList.splice(i);
+        //         i--;
+        //     }
+        // }
     }
 }
 

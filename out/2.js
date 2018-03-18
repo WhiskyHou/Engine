@@ -84,8 +84,9 @@ var Player = /** @class */ (function (_super) {
         var _this = _super.call(this, x, y, img) || this;
         _this.alive = true;
         _this.fire = false;
-        _this.fireMode = 1;
+        _this.fireMode = true;
         _this.hp = playerHp;
+        _this.score = 0;
         return _this;
     }
     return Player;
@@ -112,7 +113,8 @@ var MenuState = /** @class */ (function (_super) {
         // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
-        stage.deleteChild(this.container);
+        // this.container.deleteAll();
+        stage.deleteAll();
     };
     return MenuState;
 }(State));
@@ -124,9 +126,13 @@ var PlayingState = /** @class */ (function (_super) {
         _this.bulletList = [];
         _this.player = new Player(170, 540, player);
         _this.bg = new Bitmap(0, 0, bg);
+        _this.fireMode = new TextField("普通弹药", 20, 0, 24);
+        _this.score = new TextField("得分:0", 160, 0, 24);
+        _this.playerHp = new TextField("HP:2", 320, 0, 24);
         _this.container = new DisplayObjectContainer(0, 0);
         _this.bulletContainer = new DisplayObjectContainer(0, 0);
         _this.enemyContainer = new DisplayObjectContainer(0, 0);
+        _this.menuContainer = new DisplayObjectContainer(0, 560);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
@@ -134,13 +140,18 @@ var PlayingState = /** @class */ (function (_super) {
         stage.addChild(this.container);
         stage.addChild(this.bulletContainer);
         stage.addChild(this.enemyContainer);
+        stage.addChild(this.menuContainer);
         this.container.addChild(this.bg);
         this.container.addChild(this.player);
+        this.menuContainer.addChild(this.fireMode);
+        this.menuContainer.addChild(this.score);
+        this.menuContainer.addChild(this.playerHp);
         setInterval(function () { return _this.fire(); }, 1000);
-        setInterval(function () { return _this.swapEnemy(); }, 500);
+        setInterval(function () { return _this.swapEnemy(); }, 3000);
     };
     PlayingState.prototype.onUpdate = function () {
-        // 更新玩家位置
+        // 更新玩家信息
+        this.player.fireMode = fireMode;
         if (this.player.parent) {
             var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
             this.player.x = playerPos.x;
@@ -169,6 +180,11 @@ var PlayingState = /** @class */ (function (_super) {
             var enemy = _g[_f];
             this.bulletContainer.addChild(enemy);
         }
+        this.checkKnock();
+        // 更新菜单UI信息
+        this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
+        this.score.text = "得分:" + this.player.score.toString();
+        this.playerHp.text = "HP:" + this.player.hp.toString();
     };
     PlayingState.prototype.onExit = function () {
     };
@@ -184,7 +200,7 @@ var PlayingState = /** @class */ (function (_super) {
                 var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY + 28));
                 var bulletNormal = new BulletNormal(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
                 this.bulletList.push(bulletNormal);
-                console.log(bulletNormal);
+                // console.log(bulletNormal);
             }
             else {
             }
@@ -198,6 +214,36 @@ var PlayingState = /** @class */ (function (_super) {
     PlayingState.prototype.getRandomPos = function () {
         var x = Math.floor(Math.random() * 341);
         return x;
+    };
+    PlayingState.prototype.checkKnock = function () {
+        var result = this.enemyContainer.hitTest(new math.Point(playerX, playerY));
+        if (result != null)
+            console.log(result);
+        // for (let bullet of this.bulletList) {
+        //     const x = bullet.x;
+        //     const y = bullet.y;
+        //     for (let enemy of this.enemyList) {
+        //         var result: DisplayObject | null = null;
+        //         result = enemy.hitTest(new math.Point(x, y));
+        //         if (result != null) {
+        //             bullet.alive = false;
+        //             enemy.alive = false;
+        //             console.log(result);
+        //         }
+        //     }
+        // }
+        // for (var i = 0; i < this.bulletList.length; i++) {
+        //     if (this.bulletList[i].alive == false) {
+        //         this.bulletList.splice(i);
+        //         i--;
+        //     }
+        // }
+        // for (var i = 0; i < this.enemyList.length; i++) {
+        //     if (this.enemyList[i].alive == false) {
+        //         this.bulletList.splice(i);
+        //         i--;
+        //     }
+        // }
     };
     return PlayingState;
 }(State));
