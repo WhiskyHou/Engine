@@ -51,6 +51,9 @@ var playerX = 170;
 var playerY = 540;
 var fireMode = true;
 var fireSwitch = false;
+/**
+ * 敌人
+ */
 var Enemy = /** @class */ (function (_super) {
     __extends(Enemy, _super);
     function Enemy(x, y, img, hp, speed) {
@@ -62,22 +65,31 @@ var Enemy = /** @class */ (function (_super) {
     }
     Enemy.prototype.update = function () {
         this.y += this.speed;
+        if (this.hp <= 0) {
+            this.alive = false;
+        }
     };
     return Enemy;
 }(Bitmap));
-var BulletNormal = /** @class */ (function (_super) {
-    __extends(BulletNormal, _super);
-    function BulletNormal(x, y, width, height, color, ap) {
+/**
+ * 子弹
+ */
+var Bullet = /** @class */ (function (_super) {
+    __extends(Bullet, _super);
+    function Bullet(x, y, width, height, color, ap) {
         var _this = _super.call(this, x, y, width, height, color) || this;
         _this.alive = true;
         _this.ap = ap;
         return _this;
     }
-    BulletNormal.prototype.update = function () {
+    Bullet.prototype.update = function () {
         this.y -= 10;
     };
-    return BulletNormal;
+    return Bullet;
 }(Rectangle));
+/**
+ * 玩家
+ */
 var Player = /** @class */ (function (_super) {
     __extends(Player, _super);
     function Player(x, y, img) {
@@ -91,6 +103,9 @@ var Player = /** @class */ (function (_super) {
     }
     return Player;
 }(Bitmap));
+/**
+ * 状态 —— 菜单界面
+ */
 var MenuState = /** @class */ (function (_super) {
     __extends(MenuState, _super);
     function MenuState() {
@@ -119,6 +134,9 @@ var MenuState = /** @class */ (function (_super) {
     };
     return MenuState;
 }(State));
+/**
+ * 状态 —— 游戏界面
+ */
 var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
@@ -144,7 +162,7 @@ var PlayingState = /** @class */ (function (_super) {
         stage.addChild(this.enemyContainer);
         stage.addChild(this.menuContainer);
         this.container.addChild(this.bg);
-        // this.container.addChild(this.player);
+        this.container.addChild(this.player);
         this.menuContainer.addChild(this.fireMode);
         this.menuContainer.addChild(this.score);
         this.menuContainer.addChild(this.playerHp);
@@ -153,12 +171,12 @@ var PlayingState = /** @class */ (function (_super) {
     };
     PlayingState.prototype.onUpdate = function () {
         // 更新玩家信息
-        // this.player.fireMode = fireMode;
-        // if (this.player.parent) {
-        //     var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
-        //     this.player.x = playerPos.x;
-        //     this.player.y = playerPos.y;
-        // }
+        this.player.fireMode = fireMode;
+        if (this.player.parent) {
+            var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+            this.player.x = playerPos.x;
+            this.player.y = playerPos.y;
+        }
         // this.player.x = playerX;
         // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
         // 更新每个子弹和敌人的信息
@@ -186,10 +204,11 @@ var PlayingState = /** @class */ (function (_super) {
         // 有问题啊！！！！！！！！
         // 天啊！！理了一个小时逻辑了没错啊！！！！！！
         this.checkKnock();
+        this.clearList();
         // 更新菜单UI信息
-        // this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
-        // this.score.text = "得分:" + this.player.score.toString();
-        // this.playerHp.text = "HP:" + this.player.hp.toString();
+        this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
+        this.score.text = "得分:" + this.player.score.toString();
+        this.playerHp.text = "HP:" + this.player.hp.toString();
     };
     PlayingState.prototype.onExit = function () {
     };
@@ -202,8 +221,12 @@ var PlayingState = /** @class */ (function (_super) {
                  * 按照和飞机坐标一样的设置，位置会翻倍
                  * 输出信息的时候，子弹的x是180，但是实际渲染的x是360
                  */
-                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY + 28));
-                var bulletNormal = new BulletNormal(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
+                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY));
+                var bulletNormal = new Bullet(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
+                bulletNormal.addEventListener(function () {
+                    bulletNormal.alive = false;
+                    console.log("biu");
+                });
                 this.bulletList.push(bulletNormal);
                 // console.log(bulletNormal);
             }
@@ -215,7 +238,8 @@ var PlayingState = /** @class */ (function (_super) {
         var x = this.getRandomPos();
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
         temp.addEventListener(function () {
-            temp.alive = false;
+            temp.hp--;
+            // temp.alive = false;
             console.log("click--");
         });
         this.enemyList.push(temp);
@@ -225,46 +249,51 @@ var PlayingState = /** @class */ (function (_super) {
         return x;
     };
     PlayingState.prototype.checkKnock = function () {
-        var result = stage.hitTest(new math.Point(playerX + 30, playerY + 30));
-        if (result != null)
-            result.dispatchEvent();
+        for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
+            var bullet = _a[_i];
+            // 还是上面生成子弹时候的问题，子弹实际位置和渲染位置不同，为了让碰撞检测和看到的画面一致，这里得*2
+            var x = bullet.x * 2 + bulletNormalWidth / 2;
+            var y = bullet.y * 2;
+            var result = stage.hitTest(new math.Point(x, y));
+            if (result != null) {
+                result.dispatchEvent();
+                // 这里如果让子弹执行回调函数的话，刚发射就触发了，这就很烦
+                // bullet.dispatchEvent();
+            }
+        }
+        // // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
+        // var result = stage.hitTest(new math.Point(playerX + 30, playerY + 30));
+        // if (result != null)
+        //     result.dispatchEvent();
+        // for (var i = 0; i < this.enemyList.length; i++) {
+        //     if (!this.enemyList[i].alive) {
+        //         this.enemyList.splice(i);
+        //         i--;
+        //     }
+        // }
+    };
+    PlayingState.prototype.clearList = function () {
+        for (var i = 0; i < this.bulletList.length; i++) {
+            if (!this.bulletList[i].alive) {
+                this.bulletList.splice(i);
+                i--;
+            }
+        }
         for (var i = 0; i < this.enemyList.length; i++) {
             if (!this.enemyList[i].alive) {
                 this.enemyList.splice(i);
                 i--;
             }
         }
-        // for (let bullet of this.bulletList) {
-        //     const x = bullet.x;
-        //     const y = bullet.y;
-        //     for (let enemy of this.enemyList) {
-        //         var result: DisplayObject | null = null;
-        //         result = enemy.hitTest(new math.Point(x, y));
-        //         if (result != null) {
-        //             bullet.alive = false;
-        //             enemy.alive = false;
-        //             console.log(result);
-        //         }
-        //     }
-        // }
-        // for (var i = 0; i < this.bulletList.length; i++) {
-        //     if (this.bulletList[i].alive == false) {
-        //         this.bulletList.splice(i);
-        //         i--;
-        //     }
-        // }
-        // for (var i = 0; i < this.enemyList.length; i++) {
-        //     if (this.enemyList[i].alive == false) {
-        //         this.bulletList.splice(i);
-        //         i--;
-        //     }
-        // }
     };
     return PlayingState;
 }(State));
 var stage = new Stage();
 var fsm = new StateMachine();
-fsm.replaceState(new PlayingState());
+fsm.replaceState(new MenuState());
+/**
+ * 心跳控制器
+ */
 function onTicker(context) {
     fsm.update();
     context.clearRect(0, 0, stageWidth, stageHeight);
@@ -272,6 +301,9 @@ function onTicker(context) {
     stage.draw(context);
     context.restore();
 }
+/**
+ * 事件处理
+ */
 canvas.onmousemove = function (event) {
     var x = event.offsetX - 30;
     var y = event.offsetY - 30;
@@ -281,17 +313,17 @@ canvas.onmousemove = function (event) {
         playerY = y;
 };
 canvas.onclick = function (event) {
-    var offsetX = event.offsetX;
-    var offsetY = event.offsetY;
-    var hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
-    if (hitResult)
-        hitResult.dispatchEvent();
-    // let state = fsm.getCurrentState();
-    // if (state != null) {
-    //     if (state.id != 1) {
-    //         fsm.replaceState(new PlayingState());
-    //     }
-    // }
+    // const offsetX = event.offsetX;
+    // const offsetY = event.offsetY;
+    // const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    // if (hitResult)
+    //     hitResult.dispatchEvent();
+    var state = fsm.getCurrentState();
+    if (state != null) {
+        if (state.id != 1) {
+            fsm.replaceState(new PlayingState());
+        }
+    }
 };
 window.onkeydown = function (event) {
     var key = event.keyCode ? event.keyCode : event.which;
@@ -302,6 +334,9 @@ window.onkeydown = function (event) {
         fireSwitch = !fireSwitch;
     }
 };
+/**
+ * 主循环
+ */
 function enterFrame() {
     if (!context)
         return;
