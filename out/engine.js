@@ -16,6 +16,7 @@ var __extends = (this && this.__extends) || (function () {
  */
 var State = /** @class */ (function () {
     function State() {
+        this.id = -1;
     }
     return State;
 }());
@@ -28,11 +29,6 @@ var State = /** @class */ (function () {
 var StateMachine = /** @class */ (function () {
     function StateMachine() {
         this.currentState = null;
-        // getCurrentState() {
-        //     if (!this.currentState)
-        //         return null;
-        //     return this.currentState
-        // }
     }
     StateMachine.prototype.replaceState = function (state) {
         if (this.currentState)
@@ -43,6 +39,9 @@ var StateMachine = /** @class */ (function () {
     StateMachine.prototype.update = function () {
         if (this.currentState)
             this.currentState.onUpdate();
+    };
+    StateMachine.prototype.getCurrentState = function () {
+        return this.currentState;
     };
     return StateMachine;
 }());
@@ -180,7 +179,7 @@ var DisplayObjectContainer = /** @class */ (function (_super) {
             var currentChildRelativePoint = math.pointAppendMatrix(point, currentChildInvertLocalMatrix);
             // 子节点计算碰撞
             var result = currentChild.hitTest(currentChildRelativePoint);
-            if (result) {
+            if (result != null) {
                 hitTestResult = result;
                 break;
             }

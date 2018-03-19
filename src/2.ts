@@ -95,6 +95,7 @@ class Player extends Bitmap {
 
 
 class MenuState extends State {
+    id: number = 0;
     title: TextField;
     tip: TextField;
     next: TextField;
@@ -130,6 +131,7 @@ class MenuState extends State {
 
 
 class PlayingState extends State {
+    id: number = 1;
     enemyList: Enemy[] = [];
     bulletList: BulletNormal[] = [];
     player: Player;
@@ -164,22 +166,22 @@ class PlayingState extends State {
         stage.addChild(this.enemyContainer);
         stage.addChild(this.menuContainer);
         this.container.addChild(this.bg);
-        this.container.addChild(this.player);
+        // this.container.addChild(this.player);
         this.menuContainer.addChild(this.fireMode);
         this.menuContainer.addChild(this.score);
         this.menuContainer.addChild(this.playerHp);
 
         setInterval(() => this.fire(), 1000);
-        setInterval(() => this.swapEnemy(), 3000);
+        setInterval(() => this.swapEnemy(), 1000);
     }
     onUpdate(): void {
         // 更新玩家信息
-        this.player.fireMode = fireMode;
-        if (this.player.parent) {
-            var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
-            this.player.x = playerPos.x;
-            this.player.y = playerPos.y;
-        }
+        // this.player.fireMode = fireMode;
+        // if (this.player.parent) {
+        //     var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+        //     this.player.x = playerPos.x;
+        //     this.player.y = playerPos.y;
+        // }
         // this.player.x = playerX;
         // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
 
@@ -204,14 +206,16 @@ class PlayingState extends State {
             this.bulletContainer.addChild(enemy);
         }
 
-
+        // 检测碰撞！！！
+        // 有问题啊！！！！！！！！
+        // 天啊！！理了一个小时逻辑了没错啊！！！！！！
         this.checkKnock();
 
 
         // 更新菜单UI信息
-        this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
-        this.score.text = "得分:" + this.player.score.toString();
-        this.playerHp.text = "HP:" + this.player.hp.toString();
+        // this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
+        // this.score.text = "得分:" + this.player.score.toString();
+        // this.playerHp.text = "HP:" + this.player.hp.toString();
     }
     onExit(): void {
 
@@ -240,6 +244,10 @@ class PlayingState extends State {
     swapEnemy() {
         let x = this.getRandomPos();
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
+        temp.addEventListener(() => {
+            temp.alive = false;
+            console.log("click--");
+        })
         this.enemyList.push(temp);
     }
 
@@ -249,9 +257,16 @@ class PlayingState extends State {
     }
 
     checkKnock() {
-        var result = this.enemyContainer.hitTest(new math.Point(playerX, playerY));
+        var result = stage.hitTest(new math.Point(playerX + 30, playerY + 30));
         if (result != null)
-            console.log(result);
+            result.dispatchEvent();
+
+        for (var i = 0; i < this.enemyList.length; i++) {
+            if (!this.enemyList[i].alive) {
+                this.enemyList.splice(i);
+                i--;
+            }
+        }
 
         // for (let bullet of this.bulletList) {
         //     const x = bullet.x;
@@ -287,7 +302,7 @@ class PlayingState extends State {
 
 const stage = new Stage();
 var fsm = new StateMachine();
-fsm.replaceState(new MenuState());
+fsm.replaceState(new PlayingState());
 
 
 
@@ -310,14 +325,19 @@ canvas.onmousemove = function (event) {
 }
 
 canvas.onclick = function (event) {
-    // const offsetX = event.offsetX;
-    // const offsetY = event.offsetY;
+    const offsetX = event.offsetX;
+    const offsetY = event.offsetY;
 
-    // const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
-    // if (hitResult)
-    //     hitResult.dispatchEvent();
+    const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
+    if (hitResult)
+        hitResult.dispatchEvent();
 
-    fsm.replaceState(new PlayingState());
+    // let state = fsm.getCurrentState();
+    // if (state != null) {
+    //     if (state.id != 1) {
+    //         fsm.replaceState(new PlayingState());
+    //     }
+    // }
 }
 
 window.onkeydown = function (event) {

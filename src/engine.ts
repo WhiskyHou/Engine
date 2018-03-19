@@ -5,6 +5,7 @@
  * 具体状态派生类需要实现 onEnter() onUpdate() onExit()
  */
 abstract class State {
+    id: number = -1;
     abstract onEnter(): void;
     abstract onUpdate(): void;
     abstract onExit(): void;
@@ -32,11 +33,9 @@ class StateMachine {
             this.currentState.onUpdate();
     }
 
-    // getCurrentState() {
-    //     if (!this.currentState)
-    //         return null;
-    //     return this.currentState
-    // }
+    getCurrentState() {
+        return this.currentState;
+    }
 }
 
 
@@ -196,7 +195,7 @@ class DisplayObjectContainer extends DisplayObject {
 
             // 子节点计算碰撞
             const result = currentChild.hitTest(currentChildRelativePoint);
-            if (result) {
+            if (result != null) {
                 hitTestResult = result;
                 break;
             }
