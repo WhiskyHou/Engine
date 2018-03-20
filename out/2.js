@@ -29,6 +29,8 @@ var enemy_supply = new Image();
 enemy_supply.src = './assets/enemy_100.png';
 var supply = new Image();
 supply.src = './assets/supply_100.png';
+var bulletNormal = new Image();
+bulletNormal.src = './assets/bullet_4_20.png';
 /**
  * 常量
  *
@@ -76,8 +78,8 @@ var Enemy = /** @class */ (function (_super) {
  */
 var Bullet = /** @class */ (function (_super) {
     __extends(Bullet, _super);
-    function Bullet(x, y, width, height, color, ap) {
-        var _this = _super.call(this, x, y, width, height, color) || this;
+    function Bullet(x, y, img, ap) {
+        var _this = _super.call(this, x, y, img) || this;
         _this.alive = true;
         _this.ap = ap;
         return _this;
@@ -86,7 +88,7 @@ var Bullet = /** @class */ (function (_super) {
         this.y -= 10;
     };
     return Bullet;
-}(Rectangle));
+}(Bitmap));
 /**
  * 玩家
  */
@@ -167,7 +169,7 @@ var PlayingState = /** @class */ (function (_super) {
         this.menuContainer.addChild(this.score);
         this.menuContainer.addChild(this.playerHp);
         setInterval(function () { return _this.fire(); }, 1000);
-        setInterval(function () { return _this.swapEnemy(); }, 1000);
+        setInterval(function () { return _this.swapEnemy(); }, 3000);
     };
     PlayingState.prototype.onUpdate = function () {
         // 更新玩家信息
@@ -188,23 +190,24 @@ var PlayingState = /** @class */ (function (_super) {
             var enemy = _c[_b];
             enemy.update();
         }
-        // 更新渲染节点下挂的子弹节点
+        // 检测碰撞！！！
+        // 有问题啊！！！！！！！！
+        // 天啊！！理了一个小时逻辑了没错啊！！！！！！
+        this.checkKnock();
+        // 清除已经销毁的节点
+        this.cleanList();
+        // 更新子弹渲染队列
         this.bulletContainer.deleteAll();
         for (var _d = 0, _e = this.bulletList; _d < _e.length; _d++) {
             var bullet = _e[_d];
             this.bulletContainer.addChild(bullet);
         }
-        // 更新渲染节点下挂的敌人节点
+        // 更新敌人渲染队列
         this.enemyContainer.deleteAll();
         for (var _f = 0, _g = this.enemyList; _f < _g.length; _f++) {
             var enemy = _g[_f];
-            this.bulletContainer.addChild(enemy);
+            this.enemyContainer.addChild(enemy);
         }
-        // 检测碰撞！！！
-        // 有问题啊！！！！！！！！
-        // 天啊！！理了一个小时逻辑了没错啊！！！！！！
-        this.checkKnock();
-        this.clearList();
         // 更新菜单UI信息
         this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
         this.score.text = "得分:" + this.player.score.toString();
@@ -222,13 +225,12 @@ var PlayingState = /** @class */ (function (_super) {
                  * 输出信息的时候，子弹的x是180，但是实际渲染的x是360
                  */
                 var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY));
-                var bulletNormal = new Bullet(pos.x / 2, pos.y / 2, bulletNormalWidth, bulletNormalHeight, 'red', 1);
-                bulletNormal.addEventListener(function () {
-                    bulletNormal.alive = false;
-                    console.log("biu");
+                var temp = new Bullet(pos.x, pos.y, bulletNormal, 1);
+                temp.addEventListener(function () {
+                    temp.alive = false;
+                    console.log("中了");
                 });
-                this.bulletList.push(bulletNormal);
-                // console.log(bulletNormal);
+                this.bulletList.push(temp);
             }
             else {
             }
@@ -239,6 +241,7 @@ var PlayingState = /** @class */ (function (_super) {
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
         temp.addEventListener(function () {
             temp.hp--;
+            // bullet.alive = false;
             // temp.alive = false;
             console.log("click--");
         });
@@ -252,13 +255,17 @@ var PlayingState = /** @class */ (function (_super) {
         for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
             var bullet = _a[_i];
             // 还是上面生成子弹时候的问题，子弹实际位置和渲染位置不同，为了让碰撞检测和看到的画面一致，这里得*2
-            var x = bullet.x * 2 + bulletNormalWidth / 2;
-            var y = bullet.y * 2;
-            var result = stage.hitTest(new math.Point(x, y));
+            // 矩形类没找到问题，改成用图片来做子弹了，这里就不用*2了
+            var x = bullet.x + bulletNormalWidth / 2;
+            var y = bullet.y;
+            // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
+            // 问题解决了 之前把敌人加到子弹的容器里面了
+            var result = this.enemyContainer.hitTest(new math.Point(x, y));
             if (result != null) {
                 result.dispatchEvent();
                 // 这里如果让子弹执行回调函数的话，刚发射就触发了，这就很烦
-                // bullet.dispatchEvent();
+                // 很神奇诶！用图片来做子弹，这里的问题也解决了，玄学啊
+                bullet.dispatchEvent();
             }
         }
         // // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
@@ -272,7 +279,7 @@ var PlayingState = /** @class */ (function (_super) {
         //     }
         // }
     };
-    PlayingState.prototype.clearList = function () {
+    PlayingState.prototype.cleanList = function () {
         for (var i = 0; i < this.bulletList.length; i++) {
             if (!this.bulletList[i].alive) {
                 this.bulletList.splice(i);
@@ -288,9 +295,40 @@ var PlayingState = /** @class */ (function (_super) {
     };
     return PlayingState;
 }(State));
+/**
+ * 测试绘制矩形的
+ *
+ * 还是不行
+ */
+var TestState = /** @class */ (function (_super) {
+    __extends(TestState, _super);
+    function TestState() {
+        var _this = _super.call(this) || this;
+        _this.rec = new Rectangle(playerX, playerY, 50, 50, 'red');
+        _this.container = new DisplayObjectContainer(0, 0);
+        return _this;
+    }
+    TestState.prototype.onEnter = function () {
+        var _this = this;
+        stage.addChild(this.rec);
+        // this.container.addChild(this.rec);
+        setInterval(function () { return _this.test(); }, 1000);
+    };
+    TestState.prototype.onUpdate = function () {
+        this.rec.x = playerX + 30;
+        this.rec.y = playerY + 30;
+    };
+    TestState.prototype.onExit = function () {
+    };
+    TestState.prototype.test = function () {
+        console.log(playerX + 30);
+        console.log(this.rec.x);
+    };
+    return TestState;
+}(State));
 var stage = new Stage();
 var fsm = new StateMachine();
-fsm.replaceState(new MenuState());
+fsm.replaceState(new PlayingState());
 /**
  * 心跳控制器
  */
@@ -307,10 +345,10 @@ function onTicker(context) {
 canvas.onmousemove = function (event) {
     var x = event.offsetX - 30;
     var y = event.offsetY - 30;
-    if (x >= 0 && x <= 340)
-        playerX = x;
-    if (y >= 0 && y <= 540)
-        playerY = y;
+    // if (x >= 0 && x <= 340)
+    playerX = x;
+    // if (y >= 0 && y <= 540)
+    playerY = y;
 };
 canvas.onclick = function (event) {
     // const offsetX = event.offsetX;
