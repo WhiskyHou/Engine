@@ -256,7 +256,8 @@ var Rectangle = /** @class */ (function (_super) {
     Rectangle.prototype.render = function (context) {
         context.beginPath();
         context.fillStyle = this.color;
-        context.fillRect(this.x, this.y, this.width, this.height);
+        // 这里绘制图形的位置一定是 0,0 因为画笔已经移动到了要绘制的地方
+        context.fillRect(0, 0, this.width, this.height);
         context.fill();
         context.closePath();
     };

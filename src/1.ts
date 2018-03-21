@@ -331,18 +331,39 @@ class PlayingState extends State {
     }
 
     cleanList() {
-        for (var i = 0; i < this.bulletList.length; i++) {
+        // 检查问题方式 前后框住 缩小debug范围
+        // 检查完了之后 问题确实出现在这里
+        // 循环删除之后 list 为空
+        // console.log('start')
+        // console.log(this.bulletList.length)
+        // for (var i = 0; i < this.bulletList.length; i++) {
+        //     if (!this.bulletList[i].alive) {
+        //         this.bulletList.splice(i);
+        //         i--;
+        //     }
+        // }
+        // console.log(this.bulletList.length)
+        // console.log('end')
+        for (var i = 0; i < this.enemyList.length; i++) {
+            if (!this.enemyList[i].alive) {
+                // this.enemyList.splice(i);
+                // i--;
+            }
+            // console.log(this.enemyList[i].alive)
+        }
+
+        var bulletNum = this.bulletList.length;
+        console.log("-" + bulletNum.toString());
+        var i = 0;
+        while (i < bulletNum) {
             if (!this.bulletList[i].alive) {
                 this.bulletList.splice(i);
                 i--;
+                bulletNum--;
             }
+            i++;
         }
-        for (var i = 0; i < this.enemyList.length; i++) {
-            if (!this.enemyList[i].alive) {
-                this.enemyList.splice(i);
-                i--;
-            }
-        }
+        console.log("+" + bulletNum.toString());
     }
 
 }
