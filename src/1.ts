@@ -302,6 +302,7 @@ class PlayingState extends State {
         for (let bullet of this.bulletList) {
             // 还是上面生成子弹时候的问题，子弹实际位置和渲染位置不同，为了让碰撞检测和看到的画面一致，这里得*2
             // 矩形类没找到问题，改成用图片来做子弹了，这里就不用*2了
+            // 玄学bug解决，矩形类里面绘制的位置得是 0,0
             var x = bullet.x + bulletNormalWidth / 2;
             var y = bullet.y;
 
@@ -312,6 +313,7 @@ class PlayingState extends State {
                 result.dispatchEvent();
                 // // 这里如果让子弹执行回调函数的话，刚发射就触发了，这就很烦
                 // // 很神奇诶！用图片来做子弹，这里的问题也解决了，玄学啊
+                // 玄学bug解决，矩形类里面绘制的位置得是 0,0
                 // bullet.dispatchEvent();
                 bullet.alive = false;
             }
@@ -331,6 +333,9 @@ class PlayingState extends State {
     }
 
     cleanList() {
+
+        // 问题就在这里，清理完之后 数组长度就变成 0 了
+        // 等待解决
         for (var i = 0; i < this.bulletList.length; i++) {
             if (!this.bulletList[i].alive) {
                 this.bulletList.splice(i);
