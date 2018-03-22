@@ -50,14 +50,27 @@ class StateMachine {
 class EventDispatcher {
     private listeners: Function[] = [];
 
-    dispatchEvent() {
+    dispatchEvent(eventData: any) {
         for (let listener of this.listeners) {
-            listener();
+            listener(eventData);
         }
     }
 
     addEventListener(callback: Function) {
         this.listeners.push(callback);
+    }
+
+    deleteEventListener(callback: Function) {
+        const index = this.listeners.indexOf(callback);
+        if (index != -1) {
+            this.listeners.splice(index);
+        }
+    }
+
+    deleteAllEventListener() {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
     }
 }
 

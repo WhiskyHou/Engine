@@ -57,14 +57,25 @@ var EventDispatcher = /** @class */ (function () {
     function EventDispatcher() {
         this.listeners = [];
     }
-    EventDispatcher.prototype.dispatchEvent = function () {
+    EventDispatcher.prototype.dispatchEvent = function (eventData) {
         for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
             var listener = _a[_i];
-            listener();
+            listener(eventData);
         }
     };
     EventDispatcher.prototype.addEventListener = function (callback) {
         this.listeners.push(callback);
+    };
+    EventDispatcher.prototype.deleteEventListener = function (callback) {
+        var index = this.listeners.indexOf(callback);
+        if (index != -1) {
+            this.listeners.splice(index);
+        }
+    };
+    EventDispatcher.prototype.deleteAllEventListener = function () {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
     };
     return EventDispatcher;
 }());

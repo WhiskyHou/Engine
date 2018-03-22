@@ -172,7 +172,7 @@ var PlayingState = /** @class */ (function (_super) {
         this.menuContainer.addChild(this.fireMode);
         this.menuContainer.addChild(this.score);
         this.menuContainer.addChild(this.playerHp);
-        setInterval(function () { return _this.fire(); }, 100);
+        setInterval(function () { return _this.fire(); }, 250);
         setInterval(function () { return _this.freshEnemy(); }, 1000);
     };
     PlayingState.prototype.onUpdate = function () {
@@ -251,11 +251,10 @@ var PlayingState = /** @class */ (function (_super) {
     PlayingState.prototype.freshEnemy = function () {
         var x = this.getRandomPos();
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
-        temp.addEventListener(function () {
-            temp.hp--;
-            // bullet.alive = false;
-            // temp.alive = false;
-            console.log("click--");
+        temp.addEventListener(function (eventData) {
+            // temp.hp--;
+            temp.hp -= eventData.ap;
+            // console.log("click--");
         });
         this.enemyList.push(temp);
         // console.log(this.enemyList.length);
@@ -275,11 +274,11 @@ var PlayingState = /** @class */ (function (_super) {
             // 问题解决了 之前把敌人加到子弹的容器里面了
             var result = this.enemyContainer.hitTest(new math.Point(x, y));
             if (result != null) {
-                result.dispatchEvent();
+                result.dispatchEvent({ ap: bullet.ap });
                 // // 这里如果让子弹执行回调函数的话，刚发射就触发了，这就很烦
                 // // 很神奇诶！用图片来做子弹，这里的问题也解决了，玄学啊
-                // bullet.dispatchEvent();
-                bullet.alive = false;
+                // 没有问题了 可以用回调函数来做了
+                bullet.dispatchEvent(null);
             }
         }
         // // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
@@ -299,33 +298,20 @@ var PlayingState = /** @class */ (function (_super) {
         // 循环删除之后 list 为空
         // console.log('start')
         // console.log(this.bulletList.length)
-        // for (var i = 0; i < this.bulletList.length; i++) {
-        //     if (!this.bulletList[i].alive) {
-        //         this.bulletList.splice(i);
-        //         i--;
-        //     }
-        // }
+        for (var i = 0; i < this.bulletList.length; i++) {
+            if (!this.bulletList[i].alive) {
+                this.bulletList.splice(i, 1);
+                i--;
+            }
+        }
         // console.log(this.bulletList.length)
         // console.log('end')
         for (var i = 0; i < this.enemyList.length; i++) {
             if (!this.enemyList[i].alive) {
-                // this.enemyList.splice(i);
-                // i--;
-            }
-            // console.log(this.enemyList[i].alive)
-        }
-        var bulletNum = this.bulletList.length;
-        console.log("-" + bulletNum.toString());
-        var i = 0;
-        while (i < bulletNum) {
-            if (!this.bulletList[i].alive) {
-                this.bulletList.splice(i);
+                this.enemyList.splice(i, 1);
                 i--;
-                bulletNum--;
             }
-            i++;
         }
-        console.log("+" + bulletNum.toString());
     };
     return PlayingState;
 }(State));
