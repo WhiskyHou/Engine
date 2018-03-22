@@ -132,10 +132,8 @@ var MenuState = /** @class */ (function (_super) {
         this.container.addChild(this.title);
     };
     MenuState.prototype.onUpdate = function () {
-        // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
-        // this.container.deleteAll();
         stage.deleteAll();
     };
     return MenuState;
@@ -180,6 +178,7 @@ var PlayingState = /** @class */ (function (_super) {
         this.player.fireMode = fireMode;
         if (this.player.parent) {
             var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+            // var playerPos = this.player.parent.getLocalPos(new math.Point(globalX, globalY));
             this.player.x = playerPos.x;
             this.player.y = playerPos.y;
         }
@@ -233,7 +232,6 @@ var PlayingState = /** @class */ (function (_super) {
                 var temp = new Bullet(pos.x, pos.y, bulletNormal, 1);
                 temp.addEventListener(function () {
                     temp.alive = false;
-                    console.log("中了");
                 });
                 this.bulletList.push(temp);
             }
@@ -253,12 +251,8 @@ var PlayingState = /** @class */ (function (_super) {
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
         temp.addEventListener(function () {
             temp.hp--;
-            // bullet.alive = false;
-            // temp.alive = false;
-            console.log("click--");
         });
         this.enemyList.push(temp);
-        // console.log(this.enemyList.length);
     };
     PlayingState.prototype.getRandomPos = function () {
         var x = Math.floor(Math.random() * 341);
@@ -298,51 +292,21 @@ var PlayingState = /** @class */ (function (_super) {
     PlayingState.prototype.cleanList = function () {
         // 问题就在这里，清理完之后 数组长度就变成 0 了
         // 等待解决
+        // 问题解决了 array的aplice方法，第一个参数指定位置，第二个参数指定删除的个数
         for (var i = 0; i < this.bulletList.length; i++) {
             if (!this.bulletList[i].alive) {
-                this.bulletList.splice(i);
+                this.bulletList.splice(i, 1);
                 i--;
             }
         }
         for (var i = 0; i < this.enemyList.length; i++) {
             if (!this.enemyList[i].alive) {
-                this.enemyList.splice(i);
+                this.enemyList.splice(i, 1);
                 i--;
             }
         }
     };
     return PlayingState;
-}(State));
-/**
- * 测试绘制矩形的
- *
- * 还是不行
- */
-var TestState = /** @class */ (function (_super) {
-    __extends(TestState, _super);
-    function TestState() {
-        var _this = _super.call(this) || this;
-        _this.rec = new Rectangle(playerX, playerY, 50, 50, 'red');
-        _this.container = new DisplayObjectContainer(0, 0);
-        return _this;
-    }
-    TestState.prototype.onEnter = function () {
-        var _this = this;
-        stage.addChild(this.rec);
-        // this.container.addChild(this.rec);
-        setInterval(function () { return _this.test(); }, 1000);
-    };
-    TestState.prototype.onUpdate = function () {
-        this.rec.x = playerX + 30;
-        this.rec.y = playerY + 30;
-    };
-    TestState.prototype.onExit = function () {
-    };
-    TestState.prototype.test = function () {
-        console.log(playerX + 30);
-        console.log(this.rec.x);
-    };
-    return TestState;
 }(State));
 var stage = new Stage();
 var fsm = new StateMachine();
@@ -398,3 +362,19 @@ function enterFrame() {
     requestAnimationFrame(enterFrame);
 }
 requestAnimationFrame(enterFrame);
+var CollideSystem = /** @class */ (function () {
+    function CollideSystem() {
+        this.activeList = [];
+        this.passiveList = [];
+    }
+    CollideSystem.prototype.setListener = function (callback) {
+    };
+    CollideSystem.prototype.check = function () {
+        for (var _i = 0, _a = this.activeList; _i < _a.length; _i++) {
+            var item = _a[_i];
+            item.update();
+        }
+        this.callback(this.activeList[0], this.passiveList[0]);
+    };
+    return CollideSystem;
+}());

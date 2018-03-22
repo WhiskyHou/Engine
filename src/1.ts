@@ -33,6 +33,8 @@ bulletSpecial.src = './assets/bullet_6_16.png';
 const stageWidth = 400;
 const stageHeight = 600;
 
+
+
 const enemyNormalSpeed = 2;
 const enemyF22Speed = 4;
 const enemySupplySpeed = 1;
@@ -46,6 +48,7 @@ const bulletNormalAp = 1;
 const bulletSpecialWidth = 6;
 const bulletSpecialHeight = 16;
 
+
 var playerHp = 2;
 var playerX = 170;
 var playerY = 540;
@@ -56,7 +59,7 @@ var fireSwitch = false;
 /**
  * 敌人
  */
-class Enemy extends Bitmap {
+class Enemy extends Bitmap implements ColliedItem {
     alive: boolean = true;
     hp: number;
     speed: number;
@@ -79,7 +82,7 @@ class Enemy extends Bitmap {
 /**
  * 子弹
  */
-class Bullet extends Bitmap {
+class Bullet extends Bitmap implements ColliedItem {
     alive: boolean = true;
     ap: number;
 
@@ -142,10 +145,8 @@ class MenuState extends State {
         this.container.addChild(this.title);
     }
     onUpdate(): void {
-        // console.log(this.title);
     }
     onExit(): void {
-        // this.container.deleteAll();
         stage.deleteAll();
     }
 }
@@ -195,14 +196,17 @@ class PlayingState extends State {
         this.menuContainer.addChild(this.score);
         this.menuContainer.addChild(this.playerHp);
 
+
         setInterval(() => this.fire(), 100);
         setInterval(() => this.freshEnemy(), 1000);
     }
     onUpdate(): void {
         // 更新玩家信息
         this.player.fireMode = fireMode;
+
         if (this.player.parent) {
             var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
+            // var playerPos = this.player.parent.getLocalPos(new math.Point(globalX, globalY));
             this.player.x = playerPos.x;
             this.player.y = playerPos.y;
         }
@@ -210,11 +214,17 @@ class PlayingState extends State {
         // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
 
 
+
+
         // 更新每个子弹和敌人的信息
-        for (let bullet of this.bulletList)
+        for (let bullet of this.bulletList) {
             bullet.update();
-        for (let enemy of this.enemyList)
+        }
+
+        for (let enemy of this.enemyList) {
             enemy.update();
+        }
+
 
 
         // 检测碰撞！！！
@@ -264,7 +274,6 @@ class PlayingState extends State {
                 var temp = new Bullet(pos.x, pos.y, bulletNormal, 1);
                 temp.addEventListener(() => {
                     temp.alive = false;
-                    console.log("中了");
                 })
                 this.bulletList.push(temp);
             }
@@ -285,12 +294,8 @@ class PlayingState extends State {
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
         temp.addEventListener(() => {
             temp.hp--;
-            // bullet.alive = false;
-            // temp.alive = false;
-            console.log("click--");
         });
         this.enemyList.push(temp);
-        // console.log(this.enemyList.length);
     }
 
     getRandomPos(): number {
@@ -336,55 +341,21 @@ class PlayingState extends State {
 
         // 问题就在这里，清理完之后 数组长度就变成 0 了
         // 等待解决
+        // 问题解决了 array的aplice方法，第一个参数指定位置，第二个参数指定删除的个数
         for (var i = 0; i < this.bulletList.length; i++) {
             if (!this.bulletList[i].alive) {
-                this.bulletList.splice(i);
+                this.bulletList.splice(i, 1);
                 i--;
             }
         }
         for (var i = 0; i < this.enemyList.length; i++) {
             if (!this.enemyList[i].alive) {
-                this.enemyList.splice(i);
+                this.enemyList.splice(i, 1);
                 i--;
             }
         }
     }
 
-}
-
-/**
- * 测试绘制矩形的
- * 
- * 还是不行
- */
-class TestState extends State {
-    rec: Rectangle;
-    container: DisplayObjectContainer;
-
-    constructor() {
-        super();
-        this.rec = new Rectangle(playerX, playerY, 50, 50, 'red');
-        this.container = new DisplayObjectContainer(0, 0);
-    }
-
-    onEnter() {
-        stage.addChild(this.rec);
-        // this.container.addChild(this.rec);
-
-        setInterval(() => this.test(), 1000);
-    }
-    onUpdate() {
-        this.rec.x = playerX + 30;
-        this.rec.y = playerY + 30;
-    }
-    onExit() {
-
-    }
-
-    test() {
-        console.log(playerX + 30);
-        console.log(this.rec.x);
-    }
 }
 
 
@@ -452,3 +423,32 @@ function enterFrame() {
     requestAnimationFrame(enterFrame);
 }
 requestAnimationFrame(enterFrame);
+
+
+
+
+interface ColliedItem {
+
+    update(): void;
+}
+
+class CollideSystem {
+
+    activeList: ColliedItem[] = [];
+
+    passiveList: ColliedItem[] = [];
+
+    private callback!: Function;
+
+    setListener(callback: Function) {
+
+    }
+
+    check() {
+        for (let item of this.activeList) {
+            item.update();
+        }
+        this.callback(this.activeList[0], this.passiveList[0]);
+    }
+
+}

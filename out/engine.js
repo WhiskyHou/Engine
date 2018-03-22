@@ -136,7 +136,7 @@ var DisplayObjectContainer = /** @class */ (function (_super) {
     DisplayObjectContainer.prototype.deleteChild = function (child) {
         var index = this.children.indexOf(child);
         if (index != -1)
-            this.children.splice(index);
+            this.children.splice(index, 1);
     };
     DisplayObjectContainer.prototype.deleteAll = function () {
         while (true) {
