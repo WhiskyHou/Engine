@@ -252,9 +252,9 @@ var PlayingState = /** @class */ (function (_super) {
         var x = this.getRandomPos();
         var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
         temp.addEventListener(function (eventData) {
+            // 碰撞检测的回调函数可以带参数了，这里获取被击中子弹的伤害值
             // temp.hp--;
             temp.hp -= eventData.ap;
-            // console.log("click--");
         });
         this.enemyList.push(temp);
         // console.log(this.enemyList.length);
