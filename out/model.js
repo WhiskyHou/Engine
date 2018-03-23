@@ -25,11 +25,11 @@ var User = /** @class */ (function (_super) {
     }
     Object.defineProperty(User.prototype, "level", {
         get: function () {
-            return this.level;
+            return this._level;
         },
         set: function (level) {
-            this.level = level;
-            this.dispatchEvent('setLevel');
+            this._level = level;
+            this.dispatchEvent({ message: 'setLevel' });
         },
         enumerable: true,
         configurable: true

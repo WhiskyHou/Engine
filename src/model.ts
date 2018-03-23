@@ -11,12 +11,13 @@ class User extends EventDispatcher {
     packageEquipment: Equipment[] = [];
 
 
+    _level: number;
     get level() {
-        return this.level;
+        return this._level;
     }
     set level(level: number) {
-        this.level = level;
-        this.dispatchEvent('setLevel');
+        this._level = level;
+        this.dispatchEvent({ message: 'setLevel' });
     }
 
     pick(equipment: Equipment) {
