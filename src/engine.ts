@@ -5,7 +5,6 @@
  * 具体状态派生类需要实现 onEnter() onUpdate() onExit()
  */
 abstract class State {
-    id: number = -1;
     abstract onEnter(): void;
     abstract onUpdate(): void;
     abstract onExit(): void;
@@ -63,7 +62,7 @@ class EventDispatcher {
     deleteEventListener(callback: Function) {
         const index = this.listeners.indexOf(callback);
         if (index != -1) {
-            this.listeners.splice(index);
+            this.listeners.splice(index, 1);
         }
     }
 
@@ -260,6 +259,7 @@ class Bitmap extends DisplayObject {
 class TextField extends DisplayObject {
     text: string;
     size: number;
+    width: number;
 
     constructor(text: string, x: number, y: number, size: number) {
         super(x, y);
@@ -267,10 +267,26 @@ class TextField extends DisplayObject {
         this.text = text;
     }
 
+    hitTest(point: math.Point) {
+        const x = point.x;
+        const y = point.y;
+
+        const width = this.width;
+        const height = this.size;
+
+        if (x > 0 && x < width && y > 0 && y < height) {
+            return this;
+        } else {
+            return null;
+        }
+    }
+
     render(context: CanvasRenderingContext2D) {
         context.fillStyle = 'black';
         context.font = this.size.toString() + 'px Arial';
         context.fillText(this.text, 0, this.size);
+        // 获取文本渲染的宽度
+        this.width = context.measureText(this.text).width;
     }
 }
 
@@ -303,7 +319,6 @@ class Rectangle extends DisplayObject {
 }
 
 
-
 /**
  * 舞台
  * 
@@ -315,3 +330,36 @@ class Stage extends DisplayObjectContainer {
     }
 }
 
+
+/**
+ * 心跳控制器
+ */
+function onTicker(context: CanvasRenderingContext2D) {
+    fsm.update();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    stage.draw(context);
+    context.restore();
+}
+
+
+/**
+ * 主循环
+ */
+function enterFrame() {
+    if (!context) {
+        return;
+    }
+    onTicker(context);
+    requestAnimationFrame(enterFrame);
+}
+
+
+
+var canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+var context = canvas.getContext("2d");
+
+const stage = new Stage();
+var fsm = new StateMachine();
+
+requestAnimationFrame(enterFrame);

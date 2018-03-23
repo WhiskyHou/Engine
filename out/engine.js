@@ -16,7 +16,6 @@ var __extends = (this && this.__extends) || (function () {
  */
 var State = /** @class */ (function () {
     function State() {
-        this.id = -1;
     }
     return State;
 }());
@@ -69,7 +68,7 @@ var EventDispatcher = /** @class */ (function () {
     EventDispatcher.prototype.deleteEventListener = function (callback) {
         var index = this.listeners.indexOf(callback);
         if (index != -1) {
-            this.listeners.splice(index);
+            this.listeners.splice(index, 1);
         }
     };
     EventDispatcher.prototype.deleteAllEventListener = function () {
@@ -243,10 +242,24 @@ var TextField = /** @class */ (function (_super) {
         _this.text = text;
         return _this;
     }
+    TextField.prototype.hitTest = function (point) {
+        var x = point.x;
+        var y = point.y;
+        var width = this.width;
+        var height = this.size;
+        if (x > 0 && x < width && y > 0 && y < height) {
+            return this;
+        }
+        else {
+            return null;
+        }
+    };
     TextField.prototype.render = function (context) {
         context.fillStyle = 'black';
         context.font = this.size.toString() + 'px Arial';
         context.fillText(this.text, 0, this.size);
+        // 获取文本渲染的宽度
+        this.width = context.measureText(this.text).width;
     };
     return TextField;
 }(DisplayObject));
@@ -286,3 +299,28 @@ var Stage = /** @class */ (function (_super) {
     }
     return Stage;
 }(DisplayObjectContainer));
+/**
+ * 心跳控制器
+ */
+function onTicker(context) {
+    fsm.update();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    stage.draw(context);
+    context.restore();
+}
+/**
+ * 主循环
+ */
+function enterFrame() {
+    if (!context) {
+        return;
+    }
+    onTicker(context);
+    requestAnimationFrame(enterFrame);
+}
+var canvas = document.getElementById("gameCanvas");
+var context = canvas.getContext("2d");
+var stage = new Stage();
+var fsm = new StateMachine();
+requestAnimationFrame(enterFrame);

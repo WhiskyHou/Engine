@@ -9,394 +9,56 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/**
- * 初始化Canvas
- * 加载资源文件
- */
-var canvas = document.getElementById("gameCanvas");
-var context = canvas.getContext("2d");
-var player = new Image();
-player.src = './assets/player_60.png';
-var bg = new Image();
-bg.src = './assets/bg_400_600.jpg';
-var enemy_normal = new Image();
-enemy_normal.src = './assets/enemy_60.png';
-var enemy_f22 = new Image();
-enemy_f22.src = './assets/enemy_80.png';
-var enemy_warship = new Image();
-enemy_warship.src = './assets/enemy_160_300.png';
-var enemy_supply = new Image();
-enemy_supply.src = './assets/enemy_100.png';
-var supply = new Image();
-supply.src = './assets/supply_100.png';
-var bulletNormal = new Image();
-bulletNormal.src = './assets/bullet_4_20.png';
-var bulletSpecial = new Image();
-bulletSpecial.src = './assets/bullet_6_16.png';
-/**
- * 常量
- *
- * 全局变量
- */
-var stageWidth = 400;
-var stageHeight = 600;
-var enemyNormalSpeed = 2;
-var enemyF22Speed = 4;
-var enemySupplySpeed = 1;
-var enemyWarshipSpeed = 0.5;
-var enemyNormalHp = 2;
-var bulletNormalWidth = 4;
-var bulletNormalHeight = 20;
-var bulletNormalAp = 1;
-var bulletSpecialWidth = 6;
-var bulletSpecialHeight = 16;
-var playerHp = 2;
-var playerX = 170;
-var playerY = 540;
-var fireMode = true;
-var fireSwitch = false;
-/**
- * 敌人
- */
-var Enemy = /** @class */ (function (_super) {
-    __extends(Enemy, _super);
-    function Enemy(x, y, img, hp, speed) {
-        var _this = _super.call(this, x, y, img) || this;
-        _this.alive = true;
-        _this.hp = hp;
-        _this.speed = speed;
-        return _this;
-    }
-    Enemy.prototype.update = function () {
-        this.y += this.speed;
-        if (this.hp <= 0 || this.y >= 660) {
-            this.alive = false;
-        }
-    };
-    return Enemy;
-}(Bitmap));
-/**
- * 子弹
- */
-var Bullet = /** @class */ (function (_super) {
-    __extends(Bullet, _super);
-    function Bullet(x, y, img, ap) {
-        var _this = _super.call(this, x, y, img) || this;
-        _this.alive = true;
-        _this.ap = ap;
-        return _this;
-    }
-    Bullet.prototype.update = function () {
-        this.y -= 10;
-        if (this.y <= -20)
-            this.alive = false;
-    };
-    return Bullet;
-}(Bitmap));
-/**
- * 玩家
- */
-var Player = /** @class */ (function (_super) {
-    __extends(Player, _super);
-    function Player(x, y, img) {
-        var _this = _super.call(this, x, y, img) || this;
-        _this.alive = true;
-        _this.fire = false;
-        _this.fireMode = true;
-        _this.hp = playerHp;
-        _this.score = 0;
-        return _this;
-    }
-    return Player;
-}(Bitmap));
-/**
- * 状态 —— 菜单界面
- */
+var ITEM_WIDTH = 128;
+var ITEM_HEIGHT = 128;
 var MenuState = /** @class */ (function (_super) {
     __extends(MenuState, _super);
     function MenuState() {
         var _this = _super.call(this) || this;
-        _this.id = 0;
-        _this.title = new TextField("飞机Dark战", 90, 120, 40);
-        _this.tip = new TextField("鼠标控制移动，空格开火，Z键切换模式", 20, 400, 20);
-        _this.next = new TextField("点击鼠标开始游戏", 120, 500, 20);
-        _this.bg = new Bitmap(0, 0, bg);
-        _this.container = new DisplayObjectContainer(0, 0);
+        _this.onClick = function (eventData) {
+            fsm.replaceState(new PlayingState());
+        };
+        _this.title = new TextField('点击开始游戏', 300, 300, 60);
         return _this;
     }
     MenuState.prototype.onEnter = function () {
-        stage.addChild(this.container);
-        this.container.addChild(this.bg);
-        this.container.addChild(this.tip);
-        this.container.addChild(this.next);
-        this.container.addChild(this.title);
+        stage.addChild(this.title);
+        stage.addEventListener(this.onClick);
     };
     MenuState.prototype.onUpdate = function () {
-        // console.log(this.title);
     };
     MenuState.prototype.onExit = function () {
-        // this.container.deleteAll();
         stage.deleteAll();
+        stage.deleteAllEventListener();
     };
     return MenuState;
 }(State));
-/**
- * 状态 —— 游戏界面
- */
 var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
         var _this = _super.call(this) || this;
-        _this.id = 1;
-        _this.enemyList = [];
-        _this.bulletList = [];
-        _this.player = new Player(170, 540, player);
-        _this.bg = new Bitmap(0, 0, bg);
-        _this.fireMode = new TextField("普通弹药", 20, 0, 24);
-        _this.score = new TextField("得分:0", 160, 0, 24);
-        _this.playerHp = new TextField("HP:2", 320, 0, 24);
-        _this.container = new DisplayObjectContainer(0, 0);
-        _this.bulletContainer = new DisplayObjectContainer(0, 0);
-        _this.enemyContainer = new DisplayObjectContainer(0, 0);
-        _this.menuContainer = new DisplayObjectContainer(0, 560);
+        _this.text = new TextField('游戏中', 300, 300, 60);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
-        var _this = this;
-        stage.addChild(this.container);
-        stage.addChild(this.bulletContainer);
-        stage.addChild(this.enemyContainer);
-        stage.addChild(this.menuContainer);
-        this.container.addChild(this.bg);
-        this.container.addChild(this.player);
-        this.menuContainer.addChild(this.fireMode);
-        this.menuContainer.addChild(this.score);
-        this.menuContainer.addChild(this.playerHp);
-        setInterval(function () { return _this.fire(); }, 250);
-        setInterval(function () { return _this.freshEnemy(); }, 1000);
+        stage.addChild(this.text);
     };
     PlayingState.prototype.onUpdate = function () {
-        // 更新玩家信息
-        this.player.fireMode = fireMode;
-        if (this.player.parent) {
-            var playerPos = this.player.parent.getLocalPos(new math.Point(playerX, playerY));
-            this.player.x = playerPos.x;
-            this.player.y = playerPos.y;
-        }
-        // this.player.x = playerX;
-        // this.player.y = playerY;    不能直接给赋值全局坐标！！！！
-        // 更新每个子弹和敌人的信息
-        for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
-            var bullet = _a[_i];
-            bullet.update();
-        }
-        for (var _b = 0, _c = this.enemyList; _b < _c.length; _b++) {
-            var enemy = _c[_b];
-            enemy.update();
-        }
-        // 检测碰撞！！！
-        // 有问题啊！！！！！！！！
-        // 天啊！！理了一个小时逻辑了没错啊！！！！！！
-        // 换了图片来做子弹之后，碰撞问题基本解决，最后一个bug，打掉某一架飞机后，它之后刷新的所有飞机一起消失
-        this.checkKnock();
-        // 清除已经销毁的节点
-        this.cleanList();
-        // 更新子弹渲染队列
-        this.bulletContainer.deleteAll();
-        for (var _d = 0, _e = this.bulletList; _d < _e.length; _d++) {
-            var bullet = _e[_d];
-            this.bulletContainer.addChild(bullet);
-        }
-        // 更新敌人渲染队列
-        this.enemyContainer.deleteAll();
-        for (var _f = 0, _g = this.enemyList; _f < _g.length; _f++) {
-            var enemy = _g[_f];
-            this.enemyContainer.addChild(enemy);
-        }
-        // 更新菜单UI信息
-        this.fireMode.text = this.player.fireMode ? "普通弹药" : "特殊弹药";
-        this.score.text = "得分:" + this.player.score.toString();
-        this.playerHp.text = "HP:" + this.player.hp.toString();
     };
     PlayingState.prototype.onExit = function () {
     };
-    PlayingState.prototype.fire = function () {
-        if (fireSwitch) {
-            if (fireMode) {
-                /**
-                 * 这里有问题！！
-                 *
-                 * 按照和飞机坐标一样的设置，位置会翻倍
-                 * 输出信息的时候，子弹的x是180，但是实际渲染的x是360
-                 */
-                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 28, playerY));
-                var temp = new Bullet(pos.x, pos.y, bulletNormal, 1);
-                temp.addEventListener(function () {
-                    temp.alive = false;
-                    console.log("中了");
-                });
-                this.bulletList.push(temp);
-            }
-            else {
-                // 特殊子弹的刷新
-                var pos = this.bulletContainer.getLocalPos(new math.Point(playerX + 27, playerY));
-                var temp = new Bullet(pos.x, pos.y, bulletSpecial, 2);
-                temp.addEventListener(function () {
-                    temp.alive = false;
-                });
-                this.bulletList.push(temp);
-            }
-        }
-    };
-    PlayingState.prototype.freshEnemy = function () {
-        var x = this.getRandomPos();
-        var temp = new Enemy(x, -60, enemy_normal, enemyNormalHp, enemyNormalSpeed);
-        temp.addEventListener(function (eventData) {
-            // 碰撞检测的回调函数可以带参数了，这里获取被击中子弹的伤害值
-            // temp.hp--;
-            temp.hp -= eventData.ap;
-        });
-        this.enemyList.push(temp);
-        // console.log(this.enemyList.length);
-    };
-    PlayingState.prototype.getRandomPos = function () {
-        var x = Math.floor(Math.random() * 341);
-        return x;
-    };
-    PlayingState.prototype.checkKnock = function () {
-        for (var _i = 0, _a = this.bulletList; _i < _a.length; _i++) {
-            var bullet = _a[_i];
-            // 还是上面生成子弹时候的问题，子弹实际位置和渲染位置不同，为了让碰撞检测和看到的画面一致，这里得*2
-            // 矩形类没找到问题，改成用图片来做子弹了，这里就不用*2了
-            var x = bullet.x + bulletNormalWidth / 2;
-            var y = bullet.y;
-            // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
-            // 问题解决了 之前把敌人加到子弹的容器里面了
-            var result = this.enemyContainer.hitTest(new math.Point(x, y));
-            if (result != null) {
-                result.dispatchEvent({ ap: bullet.ap });
-                // // 这里如果让子弹执行回调函数的话，刚发射就触发了，这就很烦
-                // // 很神奇诶！用图片来做子弹，这里的问题也解决了，玄学啊
-                // 没有问题了 可以用回调函数来做了
-                bullet.dispatchEvent(null);
-            }
-        }
-        // // 必须要用 stage.hitTest() , this.enemyContainer.hitTest() 就不行！！！
-        // var result = stage.hitTest(new math.Point(playerX + 30, playerY + 30));
-        // if (result != null)
-        //     result.dispatchEvent();
-        // for (var i = 0; i < this.enemyList.length; i++) {
-        //     if (!this.enemyList[i].alive) {
-        //         this.enemyList.splice(i);
-        //         i--;
-        //     }
-        // }
-    };
-    PlayingState.prototype.cleanList = function () {
-        // 检查问题方式 前后框住 缩小debug范围
-        // 检查完了之后 问题确实出现在这里
-        // 循环删除之后 list 为空
-        // console.log('start')
-        // console.log(this.bulletList.length)
-        for (var i = 0; i < this.bulletList.length; i++) {
-            if (!this.bulletList[i].alive) {
-                this.bulletList.splice(i, 1);
-                i--;
-            }
-        }
-        // console.log(this.bulletList.length)
-        // console.log('end')
-        for (var i = 0; i < this.enemyList.length; i++) {
-            if (!this.enemyList[i].alive) {
-                this.enemyList.splice(i, 1);
-                i--;
-            }
-        }
-    };
     return PlayingState;
 }(State));
-/**
- * 测试绘制矩形的
- *
- * 还是不行
- */
-var TestState = /** @class */ (function (_super) {
-    __extends(TestState, _super);
-    function TestState() {
-        var _this = _super.call(this) || this;
-        _this.rec = new Rectangle(playerX, playerY, 50, 50, 'red');
-        _this.container = new DisplayObjectContainer(0, 0);
-        return _this;
-    }
-    TestState.prototype.onEnter = function () {
-        var _this = this;
-        stage.addChild(this.rec);
-        // this.container.addChild(this.rec);
-        setInterval(function () { return _this.test(); }, 1000);
-    };
-    TestState.prototype.onUpdate = function () {
-        this.rec.x = playerX + 30;
-        this.rec.y = playerY + 30;
-    };
-    TestState.prototype.onExit = function () {
-    };
-    TestState.prototype.test = function () {
-        console.log(playerX + 30);
-        console.log(this.rec.x);
-    };
-    return TestState;
-}(State));
-var stage = new Stage();
-var fsm = new StateMachine();
-fsm.replaceState(new MenuState());
-/**
- * 心跳控制器
- */
-function onTicker(context) {
-    fsm.update();
-    context.clearRect(0, 0, stageWidth, stageHeight);
-    context.save();
-    stage.draw(context);
-    context.restore();
-}
-/**
- * 事件处理
- */
-canvas.onmousemove = function (event) {
-    var x = event.offsetX - 30;
-    var y = event.offsetY - 30;
-    playerX = x;
-    playerY = y;
-};
 canvas.onclick = function (event) {
-    // const offsetX = event.offsetX;
-    // const offsetY = event.offsetY;
-    // const hitResult = stage.hitTest(new math.Point(offsetX, offsetY));
-    // if (hitResult)
-    //     hitResult.dispatchEvent();
-    var state = fsm.getCurrentState();
-    if (state != null) {
-        if (state.id != 1) {
-            fsm.replaceState(new PlayingState());
+    var globalX = event.offsetX;
+    var globalY = event.offsetY;
+    var hitResult = stage.hitTest(new math.Point(globalX, globalY));
+    if (hitResult) {
+        hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
+        while (hitResult.parent) {
+            hitResult = hitResult.parent;
+            hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 };
-window.onkeydown = function (event) {
-    var key = event.keyCode ? event.keyCode : event.which;
-    if (90 === key) {
-        fireMode = !fireMode;
-    }
-    else if (32 === key) {
-        fireSwitch = !fireSwitch;
-    }
-};
-/**
- * 主循环
- */
-function enterFrame() {
-    if (!context)
-        return;
-    onTicker(context);
-    requestAnimationFrame(enterFrame);
-}
-requestAnimationFrame(enterFrame);
+fsm.replaceState(new MenuState());
