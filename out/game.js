@@ -12,6 +12,7 @@ var __extends = (this && this.__extends) || (function () {
 /**
  * 资源载入
  */
+var van_pick_knife = document.getElementById('van_pick_knife');
 var bg = new Image();
 bg.src = './assets/bg.png';
 var van1 = new Image();

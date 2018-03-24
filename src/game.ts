@@ -1,6 +1,7 @@
 /**
  * 资源载入
  */
+var van_pick_knife = document.getElementById('van_pick_knife') as HTMLAudioElement;
 var bg = new Image();
 bg.src = './assets/bg.png';
 var van1 = new Image();

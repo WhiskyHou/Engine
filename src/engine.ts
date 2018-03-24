@@ -123,7 +123,6 @@ class WalkCommand extends Command {
             callback();
         }
 
-
         // setTimeout(() => {
         //     console.log(`到达目标(${this.toX}, ${this.toY})`);
         //     callback();
