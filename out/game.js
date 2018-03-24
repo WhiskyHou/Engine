@@ -12,6 +12,8 @@ var __extends = (this && this.__extends) || (function () {
 /**
  * 资源载入
  */
+var bg = new Image();
+bg.src = './assets/bg.png';
 var van = new Image();
 van.src = './assets/van_stand.png';
 var knife = new Image();
@@ -43,6 +45,8 @@ var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
+var PLAYER_INDEX_X = 0;
+var PLAYER_INDEX_Y = 0;
 var player;
 var map;
 /**
@@ -61,12 +65,16 @@ var MenuState = /** @class */ (function (_super) {
     MenuState.prototype.onEnter = function () {
         stage.addChild(this.title);
         stage.addEventListener(this.onClick);
+        this.onCreatePlayer();
     };
     MenuState.prototype.onUpdate = function () {
     };
     MenuState.prototype.onExit = function () {
         stage.deleteAllEventListener();
         stage.deleteAll();
+        // this.onCreatePlayer();
+    };
+    MenuState.prototype.onCreatePlayer = function () {
         player = new User();
         player.level = 1;
         player.name = 'Van';
@@ -81,20 +89,31 @@ var PlayingState = /** @class */ (function (_super) {
     function PlayingState() {
         var _this = _super.call(this) || this;
         map = new GameMap();
-        _this.role = new Bitmap(0, 0, van);
+        _this.bg = new Bitmap(0, 0, bg);
+        _this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van);
+        _this.ui = new UserInfoUI(0, ITEM_SIZE * 6);
+        _this.gameContainer = new DisplayObjectContainer(16, 6);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
-        stage.addChild(map);
-        stage.addChild(this.role);
+        stage.addChild(this.bg);
+        stage.addChild(this.gameContainer);
+        this.gameContainer.addChild(map);
+        this.gameContainer.addChild(this.role);
+        this.gameContainer.addChild(this.ui);
+        // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
         map.addEventListener(function (eventData) {
+            // 获取鼠标点击的global位置相对于地图的local位置
             var globalX = eventData.globalX;
             var globalY = eventData.globalY;
             var localPos = map.getLocalPos(new math.Point(globalX, globalY));
+            // 确定被点击的格子位置
             var row = Math.floor(localPos.x / ITEM_SIZE);
             var col = Math.floor(localPos.y / ITEM_SIZE);
-            var walk = new WalkCommand(row, col);
+            // 添加行走命令
+            var walk = new WalkCommand(0, 0, row, col);
             commandPool.addCommand(walk);
+            // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
             var nodeInfo = map.getNodeInfo(row, col);
             if (nodeInfo && nodeInfo.equipment) {
                 var weapon = new Equipment();
@@ -103,8 +122,8 @@ var PlayingState = /** @class */ (function (_super) {
                 var pick = new PickCommand(weapon);
                 commandPool.addCommand(pick);
             }
+            // 执行命令池的命令
             commandPool.execute();
-            console.log(map.grid.toString());
         });
     };
     PlayingState.prototype.onUpdate = function () {
@@ -113,6 +132,9 @@ var PlayingState = /** @class */ (function (_super) {
     };
     return PlayingState;
 }(State));
+/**
+ * 游戏地图容器
+ */
 var GameMap = /** @class */ (function (_super) {
     __extends(GameMap, _super);
     function GameMap() {
@@ -162,6 +184,7 @@ var GameMap = /** @class */ (function (_super) {
     };
     return GameMap;
 }(DisplayObjectContainer));
+// 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知它们的监听器，监听器执行
 canvas.onclick = function (event) {
     var globalX = event.offsetX;
     var globalY = event.offsetY;
@@ -175,4 +198,5 @@ canvas.onclick = function (event) {
         }
     }
 };
+// 初始状态设置
 fsm.replaceState(new MenuState());

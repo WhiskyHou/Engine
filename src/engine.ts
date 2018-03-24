@@ -86,31 +86,32 @@ abstract class Command {
  * 走路命令
  */
 class WalkCommand extends Command {
-    from: number;
-    to: number;
+    fromX: number;
+    fromY: number;
+    toX: number;
+    toY: number;
 
-    constructor(from: number, to: number) {
+    constructor(fromX: number, fromY: number, toX: number, toY: number) {
         super();
-        this.from = from;
-        this.to = to;
+        this.fromX = fromX;
+        this.fromY = fromY;
+        this.toX = toX;
+        this.toY = toY;
     }
 
     execute(callback: Function): void {
-        console.log(`开始走路！！！从${this.from}出发`);
+        console.log(`开始走路！！！从(${this.fromX}, ${this.fromY})出发`);
 
         map.grid.setStartNode(0, 0);
-        map.grid.setEndNode(this.from, this.to);
+        map.grid.setEndNode(this.toX, this.toY);
         const findpath = new astar.AStar();
-        findpath.setHeurisitic(findpath.diagonal)
+        findpath.setHeurisitic(findpath.diagonal);
         const result = findpath.findPath(map.grid);
-        // console.log(map.grid.toString())
-        // console.log(result)
-        console.log(findpath._path)
-
-
+        console.log(map.grid.toString());
+        console.log(findpath._path);
 
         setTimeout(() => {
-            console.log(`到达目标${this.to} !!`)
+            console.log(`到达目标(${this.toX}, ${this.toY})`);
             callback();
         }, 3000)
     }

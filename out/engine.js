@@ -91,25 +91,26 @@ var Command = /** @class */ (function () {
  */
 var WalkCommand = /** @class */ (function (_super) {
     __extends(WalkCommand, _super);
-    function WalkCommand(from, to) {
+    function WalkCommand(fromX, fromY, toX, toY) {
         var _this = _super.call(this) || this;
-        _this.from = from;
-        _this.to = to;
+        _this.fromX = fromX;
+        _this.fromY = fromY;
+        _this.toX = toX;
+        _this.toY = toY;
         return _this;
     }
     WalkCommand.prototype.execute = function (callback) {
         var _this = this;
-        console.log("\u5F00\u59CB\u8D70\u8DEF\uFF01\uFF01\uFF01\u4ECE" + this.from + "\u51FA\u53D1");
+        console.log("\u5F00\u59CB\u8D70\u8DEF\uFF01\uFF01\uFF01\u4ECE(" + this.fromX + ", " + this.fromY + ")\u51FA\u53D1");
         map.grid.setStartNode(0, 0);
-        map.grid.setEndNode(this.from, this.to);
+        map.grid.setEndNode(this.toX, this.toY);
         var findpath = new astar.AStar();
         findpath.setHeurisitic(findpath.diagonal);
         var result = findpath.findPath(map.grid);
-        // console.log(map.grid.toString())
-        // console.log(result)
+        console.log(map.grid.toString());
         console.log(findpath._path);
         setTimeout(function () {
-            console.log("\u5230\u8FBE\u76EE\u6807" + _this.to + " !!");
+            console.log("\u5230\u8FBE\u76EE\u6807(" + _this.toX + ", " + _this.toY + ")");
             callback();
         }, 3000);
     };

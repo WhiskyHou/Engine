@@ -1,7 +1,7 @@
 const MAX_LEVEL = 99;
 const MAX_HP = 140;
 const MAX_ATTACK = 200;
-const USER_ATTACK_PRE = 10;
+const USER_ATTACK_PRE = 100;
 
 
 class User extends EventDispatcher {
@@ -22,6 +22,7 @@ class User extends EventDispatcher {
 
     pick(equipment: Equipment) {
         this.mounthedEquipment.push(equipment);
+        this.dispatchEvent({ message: 'pickEquipment' });
     }
     drop() {
 
@@ -32,7 +33,7 @@ class User extends EventDispatcher {
         for (let equipment of this.mounthedEquipment) {
             equipmentAttack += equipment.attack;
         }
-        return this.attack * USER_ATTACK_PRE + equipmentAttack;
+        return this.level * USER_ATTACK_PRE + equipmentAttack;
     }
 
     toString() {

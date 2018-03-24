@@ -12,7 +12,7 @@ var __extends = (this && this.__extends) || (function () {
 var MAX_LEVEL = 99;
 var MAX_HP = 140;
 var MAX_ATTACK = 200;
-var USER_ATTACK_PRE = 10;
+var USER_ATTACK_PRE = 100;
 var User = /** @class */ (function (_super) {
     __extends(User, _super);
     function User() {
@@ -36,6 +36,7 @@ var User = /** @class */ (function (_super) {
     });
     User.prototype.pick = function (equipment) {
         this.mounthedEquipment.push(equipment);
+        this.dispatchEvent({ message: 'pickEquipment' });
     };
     User.prototype.drop = function () {
     };
@@ -46,7 +47,7 @@ var User = /** @class */ (function (_super) {
                 var equipment = _a[_i];
                 equipmentAttack += equipment.attack;
             }
-            return this.attack * USER_ATTACK_PRE + equipmentAttack;
+            return this.level * USER_ATTACK_PRE + equipmentAttack;
         },
         enumerable: true,
         configurable: true
