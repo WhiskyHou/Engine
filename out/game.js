@@ -14,8 +14,10 @@ var __extends = (this && this.__extends) || (function () {
  */
 var bg = new Image();
 bg.src = './assets/bg.png';
-var van = new Image();
-van.src = './assets/van_stand.png';
+var van1 = new Image();
+van1.src = './assets/van_stand.png';
+var van2 = new Image();
+van2.src = './assets/van_stand_2.png';
 var knife = new Image();
 knife.src = './assets/kill_dargon_knife.png';
 var grassLight = new Image();
@@ -90,7 +92,7 @@ var PlayingState = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         map = new GameMap();
         _this.bg = new Bitmap(0, 0, bg);
-        _this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van);
+        _this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
         _this.ui = new UserInfoUI(0, ITEM_SIZE * 6);
         _this.gameContainer = new DisplayObjectContainer(16, 6);
         return _this;
@@ -125,10 +127,23 @@ var PlayingState = /** @class */ (function (_super) {
             // 执行命令池的命令
             commandPool.execute();
         });
+        this.changeRolePosture();
     };
     PlayingState.prototype.onUpdate = function () {
     };
     PlayingState.prototype.onExit = function () {
+    };
+    PlayingState.prototype.changeRolePosture = function () {
+        var _this = this;
+        setTimeout(function () {
+            if (_this.role.img == van1) {
+                _this.role.img = van2;
+            }
+            else {
+                _this.role.img = van1;
+            }
+            _this.changeRolePosture();
+        }, 600);
     };
     return PlayingState;
 }(State));
