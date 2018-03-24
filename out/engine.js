@@ -30,14 +30,16 @@ var StateMachine = /** @class */ (function () {
         this.currentState = null;
     }
     StateMachine.prototype.replaceState = function (state) {
-        if (this.currentState)
+        if (this.currentState) {
             this.currentState.onExit();
+        }
         this.currentState = state;
         this.currentState.onEnter();
     };
     StateMachine.prototype.update = function () {
-        if (this.currentState)
+        if (this.currentState) {
             this.currentState.onUpdate();
+        }
     };
     StateMachine.prototype.getCurrentState = function () {
         return this.currentState;
@@ -100,19 +102,31 @@ var WalkCommand = /** @class */ (function (_super) {
         return _this;
     }
     WalkCommand.prototype.execute = function (callback) {
-        var _this = this;
         console.log("\u5F00\u59CB\u8D70\u8DEF\uFF01\uFF01\uFF01\u4ECE(" + this.fromX + ", " + this.fromY + ")\u51FA\u53D1");
-        map.grid.setStartNode(0, 0);
+        map.grid.setStartNode(this.fromX, this.fromY);
         map.grid.setEndNode(this.toX, this.toY);
         var findpath = new astar.AStar();
         findpath.setHeurisitic(findpath.diagonal);
         var result = findpath.findPath(map.grid);
         console.log(map.grid.toString());
         console.log(findpath._path);
-        setTimeout(function () {
-            console.log("\u5230\u8FBE\u76EE\u6807(" + _this.toX + ", " + _this.toY + ")");
-            callback();
-        }, 3000);
+        var path = findpath._path;
+        // for (let node of path) {
+        //     if (node.x == PLAYER_INDEX_X && node.y == PLAYER_INDEX_Y) {
+        //         continue;
+        //     }
+        //     setTimeout(() => {
+        //         player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+        //     }, 500);
+        // }
+        if (result) {
+            player.dispatchEvent({ nodeX: this.toX, nodeY: this.toY });
+        }
+        callback();
+        // setTimeout(() => {
+        //     console.log(`到达目标(${this.toX}, ${this.toY})`);
+        //     callback();
+        // }, 3000)
     };
     return WalkCommand;
 }(Command));

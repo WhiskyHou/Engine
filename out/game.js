@@ -37,7 +37,7 @@ wall_right.src = './assets/wall_right.png';
  *
  * 全局变量
  */
-var ITEM_SIZE = 128;
+var TILE_SIZE = 128;
 var ROW_NUM = 6;
 var COL_NUM = 6;
 var GRASS_L = 0;
@@ -59,19 +59,23 @@ var MenuState = /** @class */ (function (_super) {
     function MenuState() {
         var _this = _super.call(this) || this;
         _this.onClick = function (eventData) {
+            // 这里不调用onExit的话，状态机里面调用onExit还没反应，就提示游戏状态的角色名字未定义
+            // 如果这里就调用onExit的话，那么状态机里的onExit也会调用成功
+            // this.onExit();
+            _this.onCreatePlayer();
             fsm.replaceState(new PlayingState());
         };
-        _this.title = new TextField('点击开始游戏', 300, 300, 60);
+        _this.title = new TextField('点击开始游戏', 200, 300, 60);
         return _this;
     }
     MenuState.prototype.onEnter = function () {
         stage.addChild(this.title);
         stage.addEventListener(this.onClick);
-        this.onCreatePlayer();
     };
     MenuState.prototype.onUpdate = function () {
     };
     MenuState.prototype.onExit = function () {
+        console.log('onExit');
         stage.deleteAllEventListener();
         stage.deleteAll();
         // this.onCreatePlayer();
@@ -80,6 +84,8 @@ var MenuState = /** @class */ (function (_super) {
         player = new User();
         player.level = 1;
         player.name = 'Van';
+        player.x = PLAYER_INDEX_X;
+        player.y = PLAYER_INDEX_Y;
     };
     return MenuState;
 }(State));
@@ -93,11 +99,12 @@ var PlayingState = /** @class */ (function (_super) {
         map = new GameMap();
         _this.bg = new Bitmap(0, 0, bg);
         _this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
-        _this.ui = new UserInfoUI(0, ITEM_SIZE * 6);
+        _this.ui = new UserInfoUI(0, TILE_SIZE * 6);
         _this.gameContainer = new DisplayObjectContainer(16, 6);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
+        var _this = this;
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
         this.gameContainer.addChild(map);
@@ -110,10 +117,10 @@ var PlayingState = /** @class */ (function (_super) {
             var globalY = eventData.globalY;
             var localPos = map.getLocalPos(new math.Point(globalX, globalY));
             // 确定被点击的格子位置
-            var row = Math.floor(localPos.x / ITEM_SIZE);
-            var col = Math.floor(localPos.y / ITEM_SIZE);
+            var row = Math.floor(localPos.x / TILE_SIZE);
+            var col = Math.floor(localPos.y / TILE_SIZE);
             // 添加行走命令
-            var walk = new WalkCommand(0, 0, row, col);
+            var walk = new WalkCommand(player.x, player.y, row, col);
             commandPool.addCommand(walk);
             // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
             var nodeInfo = map.getNodeInfo(row, col);
@@ -127,21 +134,29 @@ var PlayingState = /** @class */ (function (_super) {
             // 执行命令池的命令
             commandPool.execute();
         });
+        this.role.addEventListener(function () {
+        });
+        player.addEventListener(function (eventData) {
+            if (eventData.nodeX >= 0 && eventData.nodeY >= 0) {
+                var targetX = eventData.nodeX * TILE_SIZE;
+                var targetY = eventData.nodeY * TILE_SIZE;
+                player.x = eventData.nodeX;
+                player.y = eventData.nodeY;
+                _this.role.x = targetX;
+                _this.role.y = targetY;
+            }
+        });
         this.changeRolePosture();
     };
     PlayingState.prototype.onUpdate = function () {
     };
     PlayingState.prototype.onExit = function () {
     };
+    // Van每600ms左右摇摆
     PlayingState.prototype.changeRolePosture = function () {
         var _this = this;
         setTimeout(function () {
-            if (_this.role.img == van1) {
-                _this.role.img = van2;
-            }
-            else {
-                _this.role.img = van1;
-            }
+            _this.role.img = (_this.role.img == van1) ? van2 : van1;
             _this.changeRolePosture();
         }, 600);
     };
@@ -166,22 +181,22 @@ var GameMap = /** @class */ (function (_super) {
         for (var _i = 0, _a = _this.config; _i < _a.length; _i++) {
             var item = _a[_i];
             var img = item.id == GRASS_L ? grassLight : grassDark;
-            var tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
+            var tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
             _this.grid.setWalkable(item.x, item.y, true);
             _this.addChild(tile);
             if (item.tree) {
-                var tile_1 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, tree);
+                var tile_1 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
                 _this.grid.setWalkable(item.x, item.y, false);
                 _this.addChild(tile_1);
             }
             if (item.wall) {
                 var img_1 = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
-                var tile_2 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img_1);
+                var tile_2 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img_1);
                 _this.grid.setWalkable(item.x, item.y, false);
                 _this.addChild(tile_2);
             }
             if (item.equipment) {
-                var tile_3 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, knife);
+                var tile_3 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
                 // this.grid.setWalkable(item.x, item.y, false);
                 _this.addChild(tile_3);
             }

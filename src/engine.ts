@@ -21,15 +21,19 @@ class StateMachine {
     private currentState: State | null = null;
 
     replaceState(state: State) {
-        if (this.currentState)
+        if (this.currentState) {
             this.currentState.onExit();
+        }
+
         this.currentState = state;
         this.currentState.onEnter();
+
     }
 
     update() {
-        if (this.currentState)
+        if (this.currentState) {
             this.currentState.onUpdate();
+        }
     }
 
     getCurrentState() {
@@ -102,7 +106,7 @@ class WalkCommand extends Command {
     execute(callback: Function): void {
         console.log(`开始走路！！！从(${this.fromX}, ${this.fromY})出发`);
 
-        map.grid.setStartNode(0, 0);
+        map.grid.setStartNode(this.fromX, this.fromY);
         map.grid.setEndNode(this.toX, this.toY);
         const findpath = new astar.AStar();
         findpath.setHeurisitic(findpath.diagonal);
@@ -110,10 +114,28 @@ class WalkCommand extends Command {
         console.log(map.grid.toString());
         console.log(findpath._path);
 
-        setTimeout(() => {
-            console.log(`到达目标(${this.toX}, ${this.toY})`);
-            callback();
-        }, 3000)
+        const path = findpath._path;
+
+        // for (let node of path) {
+        //     if (node.x == PLAYER_INDEX_X && node.y == PLAYER_INDEX_Y) {
+        //         continue;
+        //     }
+        //     setTimeout(() => {
+        //         player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+        //     }, 500);
+
+        // }
+
+        if (result) {
+            player.dispatchEvent({ nodeX: this.toX, nodeY: this.toY });
+        }
+
+        callback();
+
+        // setTimeout(() => {
+        //     console.log(`到达目标(${this.toX}, ${this.toY})`);
+        //     callback();
+        // }, 3000)
     }
 }
 

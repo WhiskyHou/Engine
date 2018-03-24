@@ -29,7 +29,7 @@ wall_right.src = './assets/wall_right.png';
  * 
  * 全局变量
  */
-const ITEM_SIZE = 128;
+const TILE_SIZE = 128;
 
 const ROW_NUM = 6;
 const COL_NUM = 6;
@@ -60,18 +60,18 @@ class MenuState extends State {
 
     constructor() {
         super();
-        this.title = new TextField('点击开始游戏', 300, 300, 60);
+        this.title = new TextField('点击开始游戏', 200, 300, 60);
     }
 
     onEnter(): void {
         stage.addChild(this.title);
         stage.addEventListener(this.onClick);
-        this.onCreatePlayer();
     }
     onUpdate(): void {
 
     }
     onExit(): void {
+        console.log('onExit');
         stage.deleteAllEventListener();
         stage.deleteAll();
         // this.onCreatePlayer();
@@ -81,9 +81,16 @@ class MenuState extends State {
         player = new User();
         player.level = 1;
         player.name = 'Van';
+        player.x = PLAYER_INDEX_X;
+        player.y = PLAYER_INDEX_Y;
     }
 
     onClick = (eventData: any) => {
+        // 这里不调用onExit的话，状态机里面调用onExit还没反应，就提示游戏状态的角色名字未定义
+        // 如果这里就调用onExit的话，那么状态机里的onExit也会调用成功
+        // this.onExit();
+
+        this.onCreatePlayer();
         fsm.replaceState(new PlayingState());
     }
 }
@@ -105,7 +112,7 @@ class PlayingState extends State {
         map = new GameMap();
         this.bg = new Bitmap(0, 0, bg);
         this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
-        this.ui = new UserInfoUI(0, ITEM_SIZE * 6);
+        this.ui = new UserInfoUI(0, TILE_SIZE * 6);
 
         this.gameContainer = new DisplayObjectContainer(16, 6);
     }
@@ -125,11 +132,11 @@ class PlayingState extends State {
             const localPos = map.getLocalPos(new math.Point(globalX, globalY));
 
             // 确定被点击的格子位置
-            const row = Math.floor(localPos.x / ITEM_SIZE);
-            const col = Math.floor(localPos.y / ITEM_SIZE);
+            const row = Math.floor(localPos.x / TILE_SIZE);
+            const col = Math.floor(localPos.y / TILE_SIZE);
 
             // 添加行走命令
-            const walk = new WalkCommand(0, 0, row, col);
+            const walk = new WalkCommand(player.x, player.y, row, col);
             commandPool.addCommand(walk);
 
             // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
@@ -147,6 +154,21 @@ class PlayingState extends State {
             commandPool.execute();
         });
 
+        this.role.addEventListener(() => {
+
+        });
+
+        player.addEventListener((eventData: any) => {
+            if (eventData.nodeX >= 0 && eventData.nodeY >= 0) {
+                const targetX = eventData.nodeX * TILE_SIZE;
+                const targetY = eventData.nodeY * TILE_SIZE;
+                player.x = eventData.nodeX;
+                player.y = eventData.nodeY;
+                this.role.x = targetX;
+                this.role.y = targetY;
+            }
+        });
+
         this.changeRolePosture();
     }
     onUpdate(): void {
@@ -155,13 +177,10 @@ class PlayingState extends State {
     onExit(): void {
     }
 
+    // Van每600ms左右摇摆
     changeRolePosture() {
         setTimeout(() => {
-            if (this.role.img == van1) {
-                this.role.img = van2;
-            } else {
-                this.role.img = van1;
-            }
+            this.role.img = (this.role.img == van1) ? van2 : van1;
             this.changeRolePosture();
         }, 600);
     }
@@ -189,23 +208,23 @@ class GameMap extends DisplayObjectContainer {
 
         for (let item of this.config) {
             const img = item.id == GRASS_L ? grassLight : grassDark;
-            const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
+            const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
             this.grid.setWalkable(item.x, item.y, true);
             this.addChild(tile);
 
             if (item.tree) {
-                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, tree);
+                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
                 this.grid.setWalkable(item.x, item.y, false);
                 this.addChild(tile);
             }
             if (item.wall) {
                 const img = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
-                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
+                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
                 this.grid.setWalkable(item.x, item.y, false);
                 this.addChild(tile);
             }
             if (item.equipment) {
-                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, knife);
+                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
                 // this.grid.setWalkable(item.x, item.y, false);
                 this.addChild(tile);
             }

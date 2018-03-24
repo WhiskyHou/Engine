@@ -5,6 +5,8 @@ const USER_ATTACK_PRE = 100;
 
 
 class User extends EventDispatcher {
+    x: number;
+    y: number;
     name: string = '';
     hp: number = 10;
     mounthedEquipment: Equipment[] = [];
