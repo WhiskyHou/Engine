@@ -36,6 +36,7 @@ const TREE = 2;
 const WALL_LEFT = 3;
 const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
+const KILL_DARGON_KNIFE = 6;
 
 
 var player: User;
@@ -81,21 +82,44 @@ class MenuState extends State {
  * 游戏状态
  */
 class PlayingState extends State {
-    text: TextField;
+    role: Bitmap;
 
     constructor() {
         super();
-        this.text = new TextField('Deep Dark Fantasy', 100, 300, 60);
         map = new GameMap();
+        this.role = new Bitmap(0, 0, van);
     }
     onEnter(): void {
-        const role = new Bitmap(0, 0, van);
-
         stage.addChild(map);
-        stage.addChild(this.text);
-        stage.addChild(role);
+        stage.addChild(this.role);
+
+        map.addEventListener((eventData: any) => {
+            const globalX = eventData.globalX;
+            const globalY = eventData.globalY;
+            const localPos = map.getLocalPos(new math.Point(globalX, globalY));
+
+            const row = Math.floor(localPos.x / ITEM_SIZE);
+            const col = Math.floor(localPos.y / ITEM_SIZE);
+
+            const walk = new WalkCommand(row, col);
+            commandPool.addCommand(walk);
+
+            const nodeInfo = map.getNodeInfo(row, col);
+            if (nodeInfo && nodeInfo.equipment) {
+                const weapon = new Equipment();
+                weapon.name = "屠龙宝刀";
+                weapon.attack = 20;
+
+                const pick = new PickCommand(weapon);
+                commandPool.addCommand(pick);
+            }
+
+            commandPool.execute();
+            console.log(map.grid.toString());
+        })
     }
     onUpdate(): void {
+
     }
     onExit(): void {
     }
@@ -108,10 +132,10 @@ class GameMap extends DisplayObjectContainer {
 
     private config = [
         { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D },
-        { x: 0, y: 1, id: GRASS_D }, { x: 1, y: 1, id: GRASS_L }, { x: 2, y: 1, id: GRASS_D }, { x: 3, y: 1, id: GRASS_L }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
-        { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
-        { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L }, { x: 4, y: 3, id: GRASS_D }, { x: 5, y: 3, id: GRASS_L },
-        { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L }, { x: 3, y: 4, id: GRASS_D }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D },
+        { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
+        { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
+        { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
+        { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
         { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
     ]
 
@@ -124,7 +148,33 @@ class GameMap extends DisplayObjectContainer {
             const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
             this.grid.setWalkable(item.x, item.y, true);
             this.addChild(tile);
+
+            if (item.tree) {
+                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, tree);
+                this.grid.setWalkable(item.x, item.y, false);
+                this.addChild(tile);
+            }
+            if (item.wall) {
+                const img = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
+                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
+                this.grid.setWalkable(item.x, item.y, false);
+                this.addChild(tile);
+            }
+            if (item.equipment) {
+                const tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, knife);
+                // this.grid.setWalkable(item.x, item.y, false);
+                this.addChild(tile);
+            }
         }
+    }
+
+    getNodeInfo(row: number, col: number) {
+        for (let item of this.config) {
+            if (item.x == row && item.y == col) {
+                return item;
+            }
+        }
+        return null;
     }
 }
 
@@ -139,6 +189,7 @@ canvas.onclick = function (event) {
     if (hitResult) {
         hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
+            // console.log(hitResult);
             hitResult = hitResult.parent;
             hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
         }

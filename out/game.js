@@ -42,6 +42,7 @@ var TREE = 2;
 var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
+var KILL_DARGON_KNIFE = 6;
 var player;
 var map;
 /**
@@ -79,15 +80,32 @@ var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
         var _this = _super.call(this) || this;
-        _this.text = new TextField('Deep Dark Fantasy', 100, 300, 60);
         map = new GameMap();
+        _this.role = new Bitmap(0, 0, van);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
-        var role = new Bitmap(0, 0, van);
         stage.addChild(map);
-        stage.addChild(this.text);
-        stage.addChild(role);
+        stage.addChild(this.role);
+        map.addEventListener(function (eventData) {
+            var globalX = eventData.globalX;
+            var globalY = eventData.globalY;
+            var localPos = map.getLocalPos(new math.Point(globalX, globalY));
+            var row = Math.floor(localPos.x / ITEM_SIZE);
+            var col = Math.floor(localPos.y / ITEM_SIZE);
+            var walk = new WalkCommand(row, col);
+            commandPool.addCommand(walk);
+            var nodeInfo = map.getNodeInfo(row, col);
+            if (nodeInfo && nodeInfo.equipment) {
+                var weapon = new Equipment();
+                weapon.name = "屠龙宝刀";
+                weapon.attack = 20;
+                var pick = new PickCommand(weapon);
+                commandPool.addCommand(pick);
+            }
+            commandPool.execute();
+            console.log(map.grid.toString());
+        });
     };
     PlayingState.prototype.onUpdate = function () {
     };
@@ -101,10 +119,10 @@ var GameMap = /** @class */ (function (_super) {
         var _this = _super.call(this, 0, 0) || this;
         _this.config = [
             { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D },
-            { x: 0, y: 1, id: GRASS_D }, { x: 1, y: 1, id: GRASS_L }, { x: 2, y: 1, id: GRASS_D }, { x: 3, y: 1, id: GRASS_L }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
-            { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
-            { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L }, { x: 4, y: 3, id: GRASS_D }, { x: 5, y: 3, id: GRASS_L },
-            { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L }, { x: 3, y: 4, id: GRASS_D }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D },
+            { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
+            { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
+            { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
+            { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
             { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
         ];
         _this.grid = new astar.Grid(COL_NUM, ROW_NUM);
@@ -114,9 +132,34 @@ var GameMap = /** @class */ (function (_super) {
             var tile = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img);
             _this.grid.setWalkable(item.x, item.y, true);
             _this.addChild(tile);
+            if (item.tree) {
+                var tile_1 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, tree);
+                _this.grid.setWalkable(item.x, item.y, false);
+                _this.addChild(tile_1);
+            }
+            if (item.wall) {
+                var img_1 = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
+                var tile_2 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, img_1);
+                _this.grid.setWalkable(item.x, item.y, false);
+                _this.addChild(tile_2);
+            }
+            if (item.equipment) {
+                var tile_3 = new Bitmap(ITEM_SIZE * item.x, ITEM_SIZE * item.y, knife);
+                // this.grid.setWalkable(item.x, item.y, false);
+                _this.addChild(tile_3);
+            }
         }
         return _this;
     }
+    GameMap.prototype.getNodeInfo = function (row, col) {
+        for (var _i = 0, _a = this.config; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.x == row && item.y == col) {
+                return item;
+            }
+        }
+        return null;
+    };
     return GameMap;
 }(DisplayObjectContainer));
 canvas.onclick = function (event) {
@@ -126,6 +169,7 @@ canvas.onclick = function (event) {
     if (hitResult) {
         hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
+            // console.log(hitResult);
             hitResult = hitResult.parent;
             hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
         }

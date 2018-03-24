@@ -25,7 +25,7 @@ namespace astar {
 
         toString() {
             if (this.inPath) {
-                return "国"
+                return "十"
             }
             else if (!this.walkable) {
                 return "田"

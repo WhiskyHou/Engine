@@ -75,6 +75,104 @@ class EventDispatcher {
 
 
 /**
+ * 命令
+ */
+abstract class Command {
+    abstract execute(callback: Function): void;
+}
+
+
+/**
+ * 走路命令
+ */
+class WalkCommand extends Command {
+    from: number;
+    to: number;
+
+    constructor(from: number, to: number) {
+        super();
+        this.from = from;
+        this.to = to;
+    }
+
+    execute(callback: Function): void {
+        console.log(`开始走路！！！从${this.from}出发`);
+
+        map.grid.setStartNode(0, 0);
+        map.grid.setEndNode(this.from, this.to);
+        const findpath = new astar.AStar();
+        findpath.setHeurisitic(findpath.diagonal)
+        const result = findpath.findPath(map.grid);
+        // console.log(map.grid.toString())
+        // console.log(result)
+        console.log(findpath._path)
+
+
+
+        setTimeout(() => {
+            console.log(`到达目标${this.to} !!`)
+            callback();
+        }, 3000)
+    }
+}
+
+
+/**
+ * 拾取命令
+ */
+class PickCommand extends Command {
+    equipment: Equipment;
+
+    constructor(equipment: Equipment) {
+        super();
+        this.equipment = equipment;
+    }
+
+    execute(callback: Function): void {
+        player.pick(this.equipment);
+        console.log(`捡起了${this.equipment.toString()}`);
+        callback();
+    }
+}
+
+
+/**
+ * 命令池
+ */
+class CommandPool {
+    list: Command[] = [];
+
+    addCommand(command: Command) {
+        this.list.push(command);
+    }
+
+    execute() {
+        // let command = this.list.shift();
+        // if (command) {
+        //     command.execute(() => {
+        //         this.execute()
+        //     });
+        // }
+
+
+        // 取出第一个命令，执行，并且给一个回调函数onFinish，这个函数的内容是让命令池等1ms后去执行下一个命令
+        const self = this;
+
+        let command = this.list.shift();
+        if (command) {
+            command.execute(onFinish);
+        }
+
+        function onFinish() {
+            setTimeout(function () {
+                self.execute();
+            }, 1);
+        }
+    }
+}
+
+
+/**
  * 显示对象
  * —— 所有可以渲染的对象的基类
  * 
@@ -361,5 +459,6 @@ var context = canvas.getContext("2d");
 
 const stage = new Stage();
 var fsm = new StateMachine();
+var commandPool = new CommandPool();
 
 requestAnimationFrame(enterFrame);

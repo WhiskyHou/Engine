@@ -1,42 +1,42 @@
-class Command {
+// class Command {
 
-    execute(callback: Function) {
+//     execute(callback: Function) {
 
-    }
-}
+//     }
+// }
 
-class CommandPool {
-    private list: Command[] = [];
+// class CommandPool {
+//     private list: Command[] = [];
 
-    add(command: Command) {
-        this.list.push(command);
-    }
+//     add(command: Command) {
+//         this.list.push(command);
+//     }
 
-    execute() {
-        let command = this.list.shift();
-        if (command) {
-            command.execute(() => {
-                this.execute()
-            });
-        }
+//     execute() {
+//         let command = this.list.shift();
+//         if (command) {
+//             command.execute(() => {
+//                 this.execute()
+//             });
+//         }
 
-        for (let command of this.list) {
-            // command.execute();
-        }
-    }
-}
+//         for (let command of this.list) {
+//             // command.execute();
+//         }
+//     }
+// }
 
-class WalkCommand extends Command {
+// class WalkCommand extends Command {
 
-    execute(callback: Function) {
+//     execute(callback: Function) {
 
-    }
-}
+//     }
+// }
 
-class PickCommand extends Command {
+// class PickCommand extends Command {
 
-    execute() {
+//     execute() {
 
-    }
-}
+//     }
+// }
 

@@ -79,6 +79,91 @@ var EventDispatcher = /** @class */ (function () {
     return EventDispatcher;
 }());
 /**
+ * 命令
+ */
+var Command = /** @class */ (function () {
+    function Command() {
+    }
+    return Command;
+}());
+/**
+ * 走路命令
+ */
+var WalkCommand = /** @class */ (function (_super) {
+    __extends(WalkCommand, _super);
+    function WalkCommand(from, to) {
+        var _this = _super.call(this) || this;
+        _this.from = from;
+        _this.to = to;
+        return _this;
+    }
+    WalkCommand.prototype.execute = function (callback) {
+        var _this = this;
+        console.log("\u5F00\u59CB\u8D70\u8DEF\uFF01\uFF01\uFF01\u4ECE" + this.from + "\u51FA\u53D1");
+        map.grid.setStartNode(0, 0);
+        map.grid.setEndNode(this.from, this.to);
+        var findpath = new astar.AStar();
+        findpath.setHeurisitic(findpath.diagonal);
+        var result = findpath.findPath(map.grid);
+        // console.log(map.grid.toString())
+        // console.log(result)
+        console.log(findpath._path);
+        setTimeout(function () {
+            console.log("\u5230\u8FBE\u76EE\u6807" + _this.to + " !!");
+            callback();
+        }, 3000);
+    };
+    return WalkCommand;
+}(Command));
+/**
+ * 拾取命令
+ */
+var PickCommand = /** @class */ (function (_super) {
+    __extends(PickCommand, _super);
+    function PickCommand(equipment) {
+        var _this = _super.call(this) || this;
+        _this.equipment = equipment;
+        return _this;
+    }
+    PickCommand.prototype.execute = function (callback) {
+        player.pick(this.equipment);
+        console.log("\u6361\u8D77\u4E86" + this.equipment.toString());
+        callback();
+    };
+    return PickCommand;
+}(Command));
+/**
+ * 命令池
+ */
+var CommandPool = /** @class */ (function () {
+    function CommandPool() {
+        this.list = [];
+    }
+    CommandPool.prototype.addCommand = function (command) {
+        this.list.push(command);
+    };
+    CommandPool.prototype.execute = function () {
+        // let command = this.list.shift();
+        // if (command) {
+        //     command.execute(() => {
+        //         this.execute()
+        //     });
+        // }
+        // 取出第一个命令，执行，并且给一个回调函数onFinish，这个函数的内容是让命令池等1ms后去执行下一个命令
+        var self = this;
+        var command = this.list.shift();
+        if (command) {
+            command.execute(onFinish);
+        }
+        function onFinish() {
+            setTimeout(function () {
+                self.execute();
+            }, 1);
+        }
+    };
+    return CommandPool;
+}());
+/**
  * 显示对象
  * —— 所有可以渲染的对象的基类
  *
@@ -323,4 +408,5 @@ var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
 var stage = new Stage();
 var fsm = new StateMachine();
+var commandPool = new CommandPool();
 requestAnimationFrame(enterFrame);
