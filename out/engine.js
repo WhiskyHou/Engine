@@ -110,23 +110,32 @@ var WalkCommand = /** @class */ (function (_super) {
         var result = findpath.findPath(map.grid);
         console.log(map.grid.toString());
         console.log(findpath._path);
-        var path = findpath._path;
-        // for (let node of path) {
-        //     if (node.x == PLAYER_INDEX_X && node.y == PLAYER_INDEX_Y) {
-        //         continue;
-        //     }
-        //     setTimeout(() => {
-        //         player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
-        //     }, 500);
-        // }
+        var path;
         if (result) {
-            player.dispatchEvent({ nodeX: this.toX, nodeY: this.toY });
+            path = findpath._path;
+            path.shift();
+            this.walk(path, callback);
         }
-        callback();
+        else {
+            callback();
+        }
         // setTimeout(() => {
         //     console.log(`到达目标(${this.toX}, ${this.toY})`);
         //     callback();
         // }, 3000)
+    };
+    WalkCommand.prototype.walk = function (path, callback) {
+        var _this = this;
+        setTimeout(function () {
+            var node = path.shift();
+            if (node) {
+                player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+            }
+            else {
+                callback();
+            }
+            _this.walk(path, callback);
+        }, PLAYER_WALK_SPEED);
     };
     return WalkCommand;
 }(Command));

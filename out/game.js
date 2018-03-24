@@ -49,6 +49,7 @@ var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
+var PLAYER_WALK_SPEED = 500;
 var player;
 var map;
 /**

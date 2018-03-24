@@ -114,28 +114,33 @@ class WalkCommand extends Command {
         console.log(map.grid.toString());
         console.log(findpath._path);
 
-        const path = findpath._path;
-
-        // for (let node of path) {
-        //     if (node.x == PLAYER_INDEX_X && node.y == PLAYER_INDEX_Y) {
-        //         continue;
-        //     }
-        //     setTimeout(() => {
-        //         player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
-        //     }, 500);
-
-        // }
-
+        let path;
         if (result) {
-            player.dispatchEvent({ nodeX: this.toX, nodeY: this.toY });
+            path = findpath._path;
+            path.shift();
+            this.walk(path, callback);
+        } else {
+            callback();
         }
 
-        callback();
 
         // setTimeout(() => {
         //     console.log(`到达目标(${this.toX}, ${this.toY})`);
         //     callback();
         // }, 3000)
+    }
+
+    walk(path: astar.Node[], callback: Function) {
+        setTimeout(() => {
+            let node = path.shift();
+            if (node) {
+                player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+            }
+            else {
+                callback();
+            }
+            this.walk(path, callback);
+        }, PLAYER_WALK_SPEED);
     }
 }
 

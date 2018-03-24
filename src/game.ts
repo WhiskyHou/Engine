@@ -44,6 +44,7 @@ const KILL_DARGON_KNIFE = 6;
 
 const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
+const PLAYER_WALK_SPEED = 500;
 
 
 var player: User;
