@@ -134,7 +134,7 @@ class WalkCommand extends Command {
         setTimeout(() => {
             let node = path.shift();
             if (node) {
-                player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+                player.dispatchEvent({ message: 'walkOneStep', nodeX: node.x, nodeY: node.y });
             }
             else {
                 console.log(`到达地点！！！(${this.toX},${this.toY})`);

@@ -130,7 +130,7 @@ var WalkCommand = /** @class */ (function (_super) {
         setTimeout(function () {
             var node = path.shift();
             if (node) {
-                player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
+                player.dispatchEvent({ message: 'walkOneStep', nodeX: node.x, nodeY: node.y });
             }
             else {
                 console.log("\u5230\u8FBE\u5730\u70B9\uFF01\uFF01\uFF01(" + _this.toX + "," + _this.toY + ")");

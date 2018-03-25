@@ -51,7 +51,6 @@ var KILL_DARGON_KNIFE = 6;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
 var PLAYER_WALK_SPEED = 500;
-var MOVE_STATUS = true;
 var player;
 var map;
 /**
@@ -140,10 +139,9 @@ var PlayingState = /** @class */ (function (_super) {
                 commandPool.execute();
             }
         });
-        this.role.addEventListener(function () {
-        });
+        // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
         player.addEventListener(function (eventData) {
-            if (eventData.nodeX >= 0 && eventData.nodeY >= 0) {
+            if (eventData.message == 'walkOneStep') {
                 var targetX = eventData.nodeX * TILE_SIZE;
                 var targetY = eventData.nodeY * TILE_SIZE;
                 player.x = eventData.nodeX;
@@ -203,7 +201,6 @@ var GameMap = /** @class */ (function (_super) {
             }
             if (item.equipment) {
                 var tile_3 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                // this.grid.setWalkable(item.x, item.y, false);
                 _this.addChild(tile_3);
             }
         }

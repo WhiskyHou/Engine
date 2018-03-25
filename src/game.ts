@@ -47,8 +47,6 @@ const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
 const PLAYER_WALK_SPEED = 500;
 
-var MOVE_STATUS = true;
-
 
 var player: User;
 var map: GameMap;
@@ -163,12 +161,10 @@ class PlayingState extends State {
 
         });
 
-        this.role.addEventListener(() => {
 
-        });
-
+        // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
         player.addEventListener((eventData: any) => {
-            if (eventData.nodeX >= 0 && eventData.nodeY >= 0) {
+            if (eventData.message == 'walkOneStep') {
                 const targetX = eventData.nodeX * TILE_SIZE;
                 const targetY = eventData.nodeY * TILE_SIZE;
                 player.x = eventData.nodeX;
@@ -177,6 +173,8 @@ class PlayingState extends State {
                 this.role.y = targetY;
             }
         });
+
+
 
         this.changeRolePosture();
     }
@@ -193,6 +191,8 @@ class PlayingState extends State {
             this.changeRolePosture();
         }, 600);
     }
+
+
 }
 
 
@@ -234,7 +234,6 @@ class GameMap extends DisplayObjectContainer {
             }
             if (item.equipment) {
                 const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                // this.grid.setWalkable(item.x, item.y, false);
                 this.addChild(tile);
             }
         }
