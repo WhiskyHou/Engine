@@ -108,7 +108,7 @@ var WalkCommand = /** @class */ (function (_super) {
         var findpath = new astar.AStar();
         findpath.setHeurisitic(findpath.diagonal);
         var result = findpath.findPath(map.grid);
-        console.log(map.grid.toString());
+        // console.log(map.grid.toString());
         console.log(findpath._path);
         var path;
         if (result) {
@@ -117,6 +117,7 @@ var WalkCommand = /** @class */ (function (_super) {
             this.walk(path, callback);
         }
         else {
+            player.moveStatus = true;
             callback();
         }
         // setTimeout(() => {
@@ -132,7 +133,10 @@ var WalkCommand = /** @class */ (function (_super) {
                 player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
             }
             else {
+                console.log("\u5230\u8FBE\u5730\u70B9\uFF01\uFF01\uFF01(" + _this.toX + "," + _this.toY + ")");
+                player.moveStatus = true;
                 callback();
+                return;
             }
             _this.walk(path, callback);
         }, PLAYER_WALK_SPEED);

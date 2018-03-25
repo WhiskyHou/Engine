@@ -17,6 +17,7 @@ var User = /** @class */ (function (_super) {
     __extends(User, _super);
     function User() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.moveStatus = true;
         _this.name = '';
         _this.hp = 10;
         _this.mounthedEquipment = [];

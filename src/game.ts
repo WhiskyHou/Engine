@@ -47,6 +47,8 @@ const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
 const PLAYER_WALK_SPEED = 500;
 
+var MOVE_STATUS = true;
+
 
 var player: User;
 var map: GameMap;
@@ -128,32 +130,37 @@ class PlayingState extends State {
 
         // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
         map.addEventListener((eventData: any) => {
-            // 获取鼠标点击的global位置相对于地图的local位置
-            const globalX = eventData.globalX;
-            const globalY = eventData.globalY;
-            const localPos = map.getLocalPos(new math.Point(globalX, globalY));
+            // 判断移动的状态
+            if (player.moveStatus) {
+                const globalX = eventData.globalX;
+                const globalY = eventData.globalY;
+                const localPos = map.getLocalPos(new math.Point(globalX, globalY));
 
-            // 确定被点击的格子位置
-            const row = Math.floor(localPos.x / TILE_SIZE);
-            const col = Math.floor(localPos.y / TILE_SIZE);
+                // 确定被点击的格子位置
+                const row = Math.floor(localPos.x / TILE_SIZE);
+                const col = Math.floor(localPos.y / TILE_SIZE);
 
-            // 添加行走命令
-            const walk = new WalkCommand(player.x, player.y, row, col);
-            commandPool.addCommand(walk);
+                // 添加行走命令
+                const walk = new WalkCommand(player.x, player.y, row, col);
+                commandPool.addCommand(walk);
 
-            // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-            const nodeInfo = map.getNodeInfo(row, col);
-            if (nodeInfo && nodeInfo.equipment) {
-                const weapon = new Equipment();
-                weapon.name = "屠龙宝刀";
-                weapon.attack = 20;
+                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
+                const nodeInfo = map.getNodeInfo(row, col);
+                if (nodeInfo && nodeInfo.equipment) {
+                    const weapon = new Equipment();
+                    weapon.name = "屠龙宝刀";
+                    weapon.attack = 20;
 
-                const pick = new PickCommand(weapon);
-                commandPool.addCommand(pick);
+                    const pick = new PickCommand(weapon);
+                    commandPool.addCommand(pick);
+                }
+
+                player.moveStatus = false;
+
+                // 执行命令池的命令
+                commandPool.execute();
             }
 
-            // 执行命令池的命令
-            commandPool.execute();
         });
 
         this.role.addEventListener(() => {

@@ -111,7 +111,7 @@ class WalkCommand extends Command {
         const findpath = new astar.AStar();
         findpath.setHeurisitic(findpath.diagonal);
         const result = findpath.findPath(map.grid);
-        console.log(map.grid.toString());
+        // console.log(map.grid.toString());
         console.log(findpath._path);
 
         let path;
@@ -120,6 +120,7 @@ class WalkCommand extends Command {
             path.shift();
             this.walk(path, callback);
         } else {
+            player.moveStatus = true;
             callback();
         }
 
@@ -136,7 +137,10 @@ class WalkCommand extends Command {
                 player.dispatchEvent({ nodeX: node.x, nodeY: node.y });
             }
             else {
+                console.log(`到达地点！！！(${this.toX},${this.toY})`);
+                player.moveStatus = true;
                 callback();
+                return;
             }
             this.walk(path, callback);
         }, PLAYER_WALK_SPEED);

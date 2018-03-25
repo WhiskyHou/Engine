@@ -51,6 +51,7 @@ var KILL_DARGON_KNIFE = 6;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
 var PLAYER_WALK_SPEED = 500;
+var MOVE_STATUS = true;
 var player;
 var map;
 /**
@@ -114,27 +115,30 @@ var PlayingState = /** @class */ (function (_super) {
         this.gameContainer.addChild(this.ui);
         // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
         map.addEventListener(function (eventData) {
-            // 获取鼠标点击的global位置相对于地图的local位置
-            var globalX = eventData.globalX;
-            var globalY = eventData.globalY;
-            var localPos = map.getLocalPos(new math.Point(globalX, globalY));
-            // 确定被点击的格子位置
-            var row = Math.floor(localPos.x / TILE_SIZE);
-            var col = Math.floor(localPos.y / TILE_SIZE);
-            // 添加行走命令
-            var walk = new WalkCommand(player.x, player.y, row, col);
-            commandPool.addCommand(walk);
-            // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-            var nodeInfo = map.getNodeInfo(row, col);
-            if (nodeInfo && nodeInfo.equipment) {
-                var weapon = new Equipment();
-                weapon.name = "屠龙宝刀";
-                weapon.attack = 20;
-                var pick = new PickCommand(weapon);
-                commandPool.addCommand(pick);
+            // 判断移动的状态
+            if (player.moveStatus) {
+                var globalX = eventData.globalX;
+                var globalY = eventData.globalY;
+                var localPos = map.getLocalPos(new math.Point(globalX, globalY));
+                // 确定被点击的格子位置
+                var row = Math.floor(localPos.x / TILE_SIZE);
+                var col = Math.floor(localPos.y / TILE_SIZE);
+                // 添加行走命令
+                var walk = new WalkCommand(player.x, player.y, row, col);
+                commandPool.addCommand(walk);
+                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
+                var nodeInfo = map.getNodeInfo(row, col);
+                if (nodeInfo && nodeInfo.equipment) {
+                    var weapon = new Equipment();
+                    weapon.name = "屠龙宝刀";
+                    weapon.attack = 20;
+                    var pick = new PickCommand(weapon);
+                    commandPool.addCommand(pick);
+                }
+                player.moveStatus = false;
+                // 执行命令池的命令
+                commandPool.execute();
             }
-            // 执行命令池的命令
-            commandPool.execute();
         });
         this.role.addEventListener(function () {
         });
