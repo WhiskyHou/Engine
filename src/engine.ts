@@ -162,6 +162,7 @@ class PickCommand extends Command {
     execute(callback: Function): void {
         player.pick(this.equipment);
         console.log(`捡起了${this.equipment.toString()}`);
+        map.dispatchEvent({ message: 'pickEquipment' });
         callback();
     }
 }

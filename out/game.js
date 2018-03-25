@@ -114,29 +114,39 @@ var PlayingState = /** @class */ (function (_super) {
         this.gameContainer.addChild(this.ui);
         // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
         map.addEventListener(function (eventData) {
-            // 判断移动的状态
-            if (player.moveStatus) {
-                var globalX = eventData.globalX;
-                var globalY = eventData.globalY;
-                var localPos = map.getLocalPos(new math.Point(globalX, globalY));
-                // 确定被点击的格子位置
-                var row = Math.floor(localPos.x / TILE_SIZE);
-                var col = Math.floor(localPos.y / TILE_SIZE);
-                // 添加行走命令
-                var walk = new WalkCommand(player.x, player.y, row, col);
-                commandPool.addCommand(walk);
-                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-                var nodeInfo = map.getNodeInfo(row, col);
-                if (nodeInfo && nodeInfo.equipment) {
-                    var weapon = new Equipment();
-                    weapon.name = "屠龙宝刀";
-                    weapon.attack = 20;
-                    var pick = new PickCommand(weapon);
-                    commandPool.addCommand(pick);
+            if (eventData.message == 'onClick') {
+                if (player.moveStatus) {
+                    var globalX = eventData.globalX;
+                    var globalY = eventData.globalY;
+                    var localPos = map.getLocalPos(new math.Point(globalX, globalY));
+                    // 确定被点击的格子位置
+                    var row = Math.floor(localPos.x / TILE_SIZE);
+                    var col = Math.floor(localPos.y / TILE_SIZE);
+                    // 添加行走命令
+                    var walk = new WalkCommand(player.x, player.y, row, col);
+                    commandPool.addCommand(walk);
+                    // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
+                    var nodeInfo = map.getNodeInfo(row, col);
+                    if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
+                        var weapon = new Equipment();
+                        weapon.name = "屠龙宝刀";
+                        weapon.attack = 20;
+                        var pick = new PickCommand(weapon);
+                        commandPool.addCommand(pick);
+                    }
+                    player.moveStatus = false;
+                    // 执行命令池的命令
+                    commandPool.execute();
                 }
-                player.moveStatus = false;
-                // 执行命令池的命令
-                commandPool.execute();
+            }
+            else if (eventData.message == 'pickEquipment') {
+                var weapen = void 0;
+                for (var _i = 0, _a = map.config; _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    if (item.equipment) {
+                        item.equipment = 0;
+                    }
+                }
             }
         });
         // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
@@ -223,11 +233,11 @@ canvas.onclick = function (event) {
     var globalY = event.offsetY;
     var hitResult = stage.hitTest(new math.Point(globalX, globalY));
     if (hitResult) {
-        hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
+        hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
             // console.log(hitResult);
             hitResult = hitResult.parent;
-            hitResult.dispatchEvent({ target: hitResult, globalX: globalX, globalY: globalY });
+            hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 };

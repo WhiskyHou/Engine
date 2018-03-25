@@ -156,6 +156,7 @@ var PickCommand = /** @class */ (function (_super) {
     PickCommand.prototype.execute = function (callback) {
         player.pick(this.equipment);
         console.log("\u6361\u8D77\u4E86" + this.equipment.toString());
+        map.dispatchEvent({ message: 'pickEquipment' });
         callback();
     };
     return PickCommand;
