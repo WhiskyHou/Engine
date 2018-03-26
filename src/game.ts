@@ -203,23 +203,41 @@ class PlayingState extends State {
         }, 600);
     }
 
+    // 角色每帧移动动画
     roleMove() {
         const targetX = player.x * TILE_SIZE;
         const targetY = player.y * TILE_SIZE;
         if (this.role.x == targetX && this.role.y == targetY) {
             return;
         }
+
         var stepX = 0;
         var stepY = 0;
+
         if (Math.abs(targetX - this.role.x) > 2) {
             stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
             stepX = (targetX < this.role.x) ? -stepX : stepX;
             this.role.x += stepX;
-        } else if (Math.abs(targetY - this.role.y) > 2) {
+        } else {
+            this.role.x = targetX;
+        }
+        if (Math.abs(targetY - this.role.y) > 2) {
             stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
             stepY = (targetY < this.role.y) ? -stepY : stepY;
             this.role.y += stepY;
+        } else {
+            this.role.y = targetY;
         }
+
+        // if (Math.abs(targetX - this.role.x) > 2) {
+        //     stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+        //     stepX = (targetX < this.role.x) ? -stepX : stepX;
+        //     this.role.x += stepX;
+        // } else if (Math.abs(targetY - this.role.y) > 2) {
+        //     stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+        //     stepY = (targetY < this.role.y) ? -stepY : stepY;
+        //     this.role.y += stepY;
+        // }
     }
 
 }

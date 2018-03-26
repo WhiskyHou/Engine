@@ -178,6 +178,7 @@ var PlayingState = /** @class */ (function (_super) {
             _this.changeRolePosture();
         }, 600);
     };
+    // 角色每帧移动动画
     PlayingState.prototype.roleMove = function () {
         var targetX = player.x * TILE_SIZE;
         var targetY = player.y * TILE_SIZE;
@@ -191,11 +192,26 @@ var PlayingState = /** @class */ (function (_super) {
             stepX = (targetX < this.role.x) ? -stepX : stepX;
             this.role.x += stepX;
         }
-        else if (Math.abs(targetY - this.role.y) > 2) {
+        else {
+            this.role.x = targetX;
+        }
+        if (Math.abs(targetY - this.role.y) > 2) {
             stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
             stepY = (targetY < this.role.y) ? -stepY : stepY;
             this.role.y += stepY;
         }
+        else {
+            this.role.y = targetY;
+        }
+        // if (Math.abs(targetX - this.role.x) > 2) {
+        //     stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+        //     stepX = (targetX < this.role.x) ? -stepX : stepX;
+        //     this.role.x += stepX;
+        // } else if (Math.abs(targetY - this.role.y) > 2) {
+        //     stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+        //     stepY = (targetY < this.role.y) ? -stepY : stepY;
+        //     this.role.y += stepY;
+        // }
     };
     return PlayingState;
 }(State));
