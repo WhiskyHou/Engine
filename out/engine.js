@@ -426,10 +426,20 @@ function onTicker(context) {
 /**
  * 主循环
  */
-function enterFrame() {
+var start = null;
+var lastTimestamp = 0;
+var INTERVAL = 0;
+function enterFrame(timestamp) {
     if (!context) {
         return;
     }
+    // 获取每帧间隔时间
+    if (start === null) {
+        start = timestamp;
+        lastTimestamp = timestamp;
+    }
+    INTERVAL = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
     onTicker(context);
     requestAnimationFrame(enterFrame);
 }

@@ -106,7 +106,6 @@ var PlayingState = /** @class */ (function (_super) {
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
-        var _this = this;
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
         this.gameContainer.addChild(map);
@@ -158,13 +157,14 @@ var PlayingState = /** @class */ (function (_super) {
                 var targetY = eventData.nodeY * TILE_SIZE;
                 player.x = eventData.nodeX;
                 player.y = eventData.nodeY;
-                _this.role.x = targetX;
-                _this.role.y = targetY;
+                // this.role.x = targetX;
+                // this.role.y = targetY;
             }
         });
         this.changeRolePosture();
     };
     PlayingState.prototype.onUpdate = function () {
+        this.roleMove();
     };
     PlayingState.prototype.onExit = function () {
         stage.deleteAll();
@@ -177,6 +177,25 @@ var PlayingState = /** @class */ (function (_super) {
             _this.role.img = (_this.role.img == van1) ? van2 : van1;
             _this.changeRolePosture();
         }, 600);
+    };
+    PlayingState.prototype.roleMove = function () {
+        var targetX = player.x * TILE_SIZE;
+        var targetY = player.y * TILE_SIZE;
+        if (this.role.x == targetX && this.role.y == targetY) {
+            return;
+        }
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(targetX - this.role.x) > 2) {
+            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepX = (targetX < this.role.x) ? -stepX : stepX;
+            this.role.x += stepX;
+        }
+        else if (Math.abs(targetY - this.role.y) > 2) {
+            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepY = (targetY < this.role.y) ? -stepY : stepY;
+            this.role.y += stepY;
+        }
     };
     return PlayingState;
 }(State));

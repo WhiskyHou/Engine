@@ -118,6 +118,7 @@ class PlayingState extends State {
 
         this.gameContainer = new DisplayObjectContainer(16, 6);
     }
+
     onEnter(): void {
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
@@ -160,7 +161,8 @@ class PlayingState extends State {
                     // 执行命令池的命令
                     commandPool.execute();
                 }
-            } else if (eventData.message == 'pickEquipment') {
+            }
+            else if (eventData.message == 'pickEquipment') {
                 for (let item of map.config) {
                     if (item.equipment) {
                         item.equipment = 0;
@@ -177,8 +179,8 @@ class PlayingState extends State {
                 const targetY = eventData.nodeY * TILE_SIZE;
                 player.x = eventData.nodeX;
                 player.y = eventData.nodeY;
-                this.role.x = targetX;
-                this.role.y = targetY;
+                // this.role.x = targetX;
+                // this.role.y = targetY;
             }
         });
 
@@ -186,7 +188,7 @@ class PlayingState extends State {
         this.changeRolePosture();
     }
     onUpdate(): void {
-
+        this.roleMove();
     }
     onExit(): void {
         stage.deleteAll();
@@ -201,6 +203,24 @@ class PlayingState extends State {
         }, 600);
     }
 
+    roleMove() {
+        const targetX = player.x * TILE_SIZE;
+        const targetY = player.y * TILE_SIZE;
+        if (this.role.x == targetX && this.role.y == targetY) {
+            return;
+        }
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(targetX - this.role.x) > 2) {
+            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepX = (targetX < this.role.x) ? -stepX : stepX;
+            this.role.x += stepX;
+        } else if (Math.abs(targetY - this.role.y) > 2) {
+            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepY = (targetY < this.role.y) ? -stepY : stepY;
+            this.role.y += stepY;
+        }
+    }
 
 }
 
