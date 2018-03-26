@@ -112,7 +112,9 @@ var PlayingState = /** @class */ (function (_super) {
         this.gameContainer.addChild(map);
         this.gameContainer.addChild(this.role);
         this.gameContainer.addChild(this.ui);
-        // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
+        // 给map添加监听器
+        // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
+        // 2 角色捡起了装备，监听器就执行更新地图物品信息
         map.addEventListener(function (eventData) {
             if (eventData.message == 'onClick') {
                 if (player.moveStatus) {
@@ -140,11 +142,11 @@ var PlayingState = /** @class */ (function (_super) {
                 }
             }
             else if (eventData.message == 'pickEquipment') {
-                var weapen = void 0;
                 for (var _i = 0, _a = map.config; _i < _a.length; _i++) {
                     var item = _a[_i];
                     if (item.equipment) {
                         item.equipment = 0;
+                        map.rebuild();
                     }
                 }
             }
@@ -165,8 +167,10 @@ var PlayingState = /** @class */ (function (_super) {
     PlayingState.prototype.onUpdate = function () {
     };
     PlayingState.prototype.onExit = function () {
+        stage.deleteAll();
+        this.gameContainer.deleteAll();
     };
-    // Van每600ms左右摇摆
+    // 角色原地动画
     PlayingState.prototype.changeRolePosture = function () {
         var _this = this;
         setTimeout(function () {
@@ -191,31 +195,34 @@ var GameMap = /** @class */ (function (_super) {
             { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
             { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
         ];
-        _this.grid = new astar.Grid(COL_NUM, ROW_NUM);
-        for (var _i = 0, _a = _this.config; _i < _a.length; _i++) {
+        _this.rebuild();
+        return _this;
+    }
+    GameMap.prototype.rebuild = function () {
+        this.grid = new astar.Grid(COL_NUM, ROW_NUM);
+        for (var _i = 0, _a = this.config; _i < _a.length; _i++) {
             var item = _a[_i];
             var img = item.id == GRASS_L ? grassLight : grassDark;
             var tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
-            _this.grid.setWalkable(item.x, item.y, true);
-            _this.addChild(tile);
+            this.grid.setWalkable(item.x, item.y, true);
+            this.addChild(tile);
             if (item.tree) {
                 var tile_1 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
-                _this.grid.setWalkable(item.x, item.y, false);
-                _this.addChild(tile_1);
+                this.grid.setWalkable(item.x, item.y, false);
+                this.addChild(tile_1);
             }
             if (item.wall) {
                 var img_1 = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
                 var tile_2 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img_1);
-                _this.grid.setWalkable(item.x, item.y, false);
-                _this.addChild(tile_2);
+                this.grid.setWalkable(item.x, item.y, false);
+                this.addChild(tile_2);
             }
             if (item.equipment) {
                 var tile_3 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                _this.addChild(tile_3);
+                this.addChild(tile_3);
             }
         }
-        return _this;
-    }
+    };
     GameMap.prototype.getNodeInfo = function (row, col) {
         for (var _i = 0, _a = this.config; _i < _a.length; _i++) {
             var item = _a[_i];

@@ -126,7 +126,9 @@ class PlayingState extends State {
         this.gameContainer.addChild(this.role);
         this.gameContainer.addChild(this.ui);
 
-        // 给map添加监听器，如果鼠标点击到map容器上了，监听器就执行
+        // 给map添加监听器
+        // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
+        // 2 角色捡起了装备，监听器就执行更新地图物品信息
         map.addEventListener((eventData: any) => {
             if (eventData.message == 'onClick') {
                 if (player.moveStatus) {
@@ -158,12 +160,11 @@ class PlayingState extends State {
                     // 执行命令池的命令
                     commandPool.execute();
                 }
-            }
-            else if (eventData.message == 'pickEquipment') {
-                let weapen;
+            } else if (eventData.message == 'pickEquipment') {
                 for (let item of map.config) {
                     if (item.equipment) {
                         item.equipment = 0;
+                        map.rebuild();
                     }
                 }
             }
@@ -188,9 +189,11 @@ class PlayingState extends State {
 
     }
     onExit(): void {
+        stage.deleteAll();
+        this.gameContainer.deleteAll();
     }
 
-    // Van每600ms左右摇摆
+    // 角色原地动画
     changeRolePosture() {
         setTimeout(() => {
             this.role.img = (this.role.img == van1) ? van2 : van1;
@@ -219,6 +222,11 @@ class GameMap extends DisplayObjectContainer {
 
     constructor() {
         super(0, 0);
+
+        this.rebuild();
+    }
+
+    rebuild() {
         this.grid = new astar.Grid(COL_NUM, ROW_NUM);
 
         for (let item of this.config) {
