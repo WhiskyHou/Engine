@@ -127,6 +127,7 @@ class PlayingState extends State {
         this.gameContainer.addChild(this.role);
         this.gameContainer.addChild(this.ui);
 
+
         // 给map添加监听器
         // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         // 2 角色捡起了装备，监听器就执行更新地图物品信息
@@ -167,10 +168,12 @@ class PlayingState extends State {
                     if (item.equipment) {
                         item.equipment = 0;
                         map.rebuild();
+                        van_pick_knife.play();
                     }
                 }
             }
         });
+
 
         // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
         player.addEventListener((eventData: any) => {
@@ -228,16 +231,6 @@ class PlayingState extends State {
         } else {
             this.role.y = targetY;
         }
-
-        // if (Math.abs(targetX - this.role.x) > 2) {
-        //     stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-        //     stepX = (targetX < this.role.x) ? -stepX : stepX;
-        //     this.role.x += stepX;
-        // } else if (Math.abs(targetY - this.role.y) > 2) {
-        //     stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-        //     stepY = (targetY < this.role.y) ? -stepY : stepY;
-        //     this.role.y += stepY;
-        // }
     }
 
 }
