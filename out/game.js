@@ -53,6 +53,7 @@ var PLAYER_INDEX_Y = 0;
 var PLAYER_WALK_SPEED = 500;
 var player;
 var map;
+var missionManager;
 /**
  * 开始状态
  */
@@ -100,21 +101,21 @@ var PlayingState = /** @class */ (function (_super) {
     function PlayingState() {
         var _this = _super.call(this) || this;
         map = new GameMap();
+        missionManager = new MissionManager();
         _this.bg = new Bitmap(0, 0, bg);
         _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
+        _this.missionInfoUI = new MissionInfoUI(784, 200);
         _this.gameContainer = new DisplayObjectContainer(16, 6);
-        _this.missionContainer = new DisplayObjectContainer(800, 200);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
-        stage.addChild(this.missionContainer);
         this.gameContainer.addChild(map);
         this.gameContainer.addChild(player.view);
         this.gameContainer.addChild(this.userInfoUI);
-        // 给map添加监听器
-        // 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
+        this.gameContainer.addChild(this.missionInfoUI);
+        // 给map添加监听器 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         map.addEventListener('onClick', function (eventData) {
             if (player.moveStatus) {
                 var globalX = eventData.globalX;
@@ -250,11 +251,39 @@ var GameMap = /** @class */ (function (_super) {
 var MissionManager = /** @class */ (function (_super) {
     __extends(MissionManager, _super);
     function MissionManager() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super.call(this) || this;
+        _this.missions = [];
+        var mission = new Mission();
+        mission.id = 1;
+        mission.name = "捡起屠龙宝刀!";
+        mission.needLevel = 1;
+        mission.fromNpcId = 1;
+        mission.toNpcId = 1;
+        _this.missions.push(mission);
+        return _this;
     }
+    MissionManager.prototype.init = function () {
+        var _this = this;
+        player.addEventListener('userChange', function (eventData) {
+            _this.update();
+        });
+        this.update();
+    };
+    MissionManager.prototype.update = function () {
+        this.dispatchEvent('missionUpdate', null);
+    };
+    MissionManager.prototype.accept = function (mission) {
+        mission.isAccepted = true;
+        mission.current = 1;
+        this.update();
+    };
+    MissionManager.prototype.submit = function (mission) {
+        mission.isSubmit = true;
+        this.update();
+    };
     return MissionManager;
 }(EventDispatcher));
-// 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知它们的监听器，监听器执行
+// 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知监听器，监听器执行
 canvas.onclick = function (event) {
     var globalX = event.offsetX;
     var globalY = event.offsetY;

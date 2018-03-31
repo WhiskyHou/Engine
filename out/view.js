@@ -44,8 +44,29 @@ var UserInfoUI = /** @class */ (function (_super) {
  */
 var MissionInfoUI = /** @class */ (function (_super) {
     __extends(MissionInfoUI, _super);
-    function MissionInfoUI() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function MissionInfoUI(x, y) {
+        var _this = _super.call(this, x, y) || this;
+        _this.update();
+        missionManager.addEventListener('missionUpdate', function (eventDate) {
+            _this.update();
+        });
+        return _this;
     }
+    MissionInfoUI.prototype.update = function () {
+        this.deleteAll();
+        var index = 0;
+        for (var _i = 0, _a = missionManager.missions; _i < _a.length; _i++) {
+            var mission = _a[_i];
+            if (mission.status == MissionStatus.UNACCEPT ||
+                mission.status == MissionStatus.CAN_ACCEPT ||
+                mission.status == MissionStatus.CAN_SUBMIT) {
+                var missionLabel = new TextField("", 0, 0, 24);
+                this.addChild(missionLabel);
+                missionLabel.text = mission.name;
+                missionLabel.y = index * 24;
+                index++;
+            }
+        }
+    };
     return MissionInfoUI;
 }(DisplayObjectContainer));

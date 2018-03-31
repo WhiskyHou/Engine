@@ -50,6 +50,7 @@ const PLAYER_WALK_SPEED = 500;
 
 var player: User;
 var map: GameMap;
+var missionManager: MissionManager;
 
 
 
@@ -105,34 +106,35 @@ class MenuState extends State {
 class PlayingState extends State {
     bg: Bitmap;
     userInfoUI: UserInfoUI;
+    missionInfoUI: MissionInfoUI;
 
     gameContainer: DisplayObjectContainer;
-    missionContainer: DisplayObjectContainer;
 
     constructor() {
         super();
 
         map = new GameMap();
+        missionManager = new MissionManager();
         this.bg = new Bitmap(0, 0, bg);
         this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
+        this.missionInfoUI = new MissionInfoUI(784, 200);
+
 
         this.gameContainer = new DisplayObjectContainer(16, 6);
-        this.missionContainer = new DisplayObjectContainer(800, 200);
     }
 
     onEnter(): void {
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
-        stage.addChild(this.missionContainer);
 
         this.gameContainer.addChild(map);
         this.gameContainer.addChild(player.view);
         this.gameContainer.addChild(this.userInfoUI);
+        this.gameContainer.addChild(this.missionInfoUI);
 
 
 
-        // 给map添加监听器
-        // 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
+        // 给map添加监听器 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         map.addEventListener('onClick', (eventData: any) => {
             if (player.moveStatus) {
                 const globalX = eventData.globalX;
@@ -285,13 +287,47 @@ class GameMap extends DisplayObjectContainer {
  * 任务管理器
  */
 class MissionManager extends EventDispatcher {
+    missions: Mission[] = []
+
+    constructor() {
+        super();
+        const mission = new Mission();
+        mission.id = 1;
+        mission.name = "捡起屠龙宝刀!";
+        mission.needLevel = 1;
+        mission.fromNpcId = 1;
+        mission.toNpcId = 1;
+        this.missions.push(mission);
+    }
+
+    init() {
+        player.addEventListener('userChange', (eventData: any) => {
+            this.update();
+        })
+        this.update();
+    }
+
+    update() {
+        this.dispatchEvent('missionUpdate', null);
+    }
+
+    accept(mission: Mission) {
+        mission.isAccepted = true;
+        mission.current = 1;
+        this.update()
+    }
+
+    submit(mission: Mission) {
+        mission.isSubmit = true;
+        this.update();
+    }
 
 }
 
 
 
 
-// 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知它们的监听器，监听器执行
+// 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知监听器，监听器执行
 canvas.onclick = function (event) {
     const globalX = event.offsetX;
     const globalY = event.offsetY;

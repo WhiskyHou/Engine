@@ -115,7 +115,25 @@ class Mission {
     status: MissionStatus = MissionStatus.UNACCEPT
 
     update() {
+        let nextStatus: MissionStatus = MissionStatus.UNACCEPT;
+        if (this.isSubmit) {
+            nextStatus = MissionStatus.FINISH;
+        }
+        if (this.isAccepted) {
+            if (this.current >= this.total) {
+                nextStatus = MissionStatus.CAN_SUBMIT;
+            } else {
+                nextStatus = MissionStatus.DURRING;
+            }
+        }
+        if (nextStatus != this.status) {
+            this.status = nextStatus;
+            return true;
+        }
 
+        else {
+            return false;
+        }
     }
 
 }
