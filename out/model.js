@@ -56,6 +56,10 @@ var User = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    User.prototype.changeGridPos = function (row, col) {
+        this.x = row;
+        this.y = col;
+    };
     User.prototype.update = function () {
         // 角色每帧移动
         var targetX = player.x * TILE_SIZE;
@@ -139,6 +143,11 @@ var Mission = /** @class */ (function () {
                 nextStatus = MissionStatus.DURRING;
             }
         }
+        else {
+            if (player.level >= this.needLevel) {
+                nextStatus = MissionStatus.CAN_ACCEPT;
+            }
+        }
         if (nextStatus != this.status) {
             this.status = nextStatus;
             return true;
@@ -147,13 +156,44 @@ var Mission = /** @class */ (function () {
             return false;
         }
     };
+    Mission.prototype.toString = function () {
+        return "[Mission ~ id:" + this.id + ", name:" + this.name + "]";
+    };
     return Mission;
 }());
 /**
  * NPC
  */
 var Npc = /** @class */ (function () {
-    function Npc() {
+    function Npc(id, name) {
+        var _this = this;
+        this.x = 0;
+        this.y = 0;
+        this.name = '';
+        this.id = 0;
+        this.canAcceptMissions = [];
+        this.canSubmitMissions = [];
+        this.id = id;
+        this.name = name;
+        missionManager.addEventListener('missionUpdate', function (eventData) {
+            _this.update();
+        });
     }
+    Npc.prototype.update = function () {
+        this.canAcceptMissions = [];
+        this.canSubmitMissions = [];
+        for (var _i = 0, _a = missionManager.missions; _i < _a.length; _i++) {
+            var mission = _a[_i];
+            if (mission.status == MissionStatus.CAN_ACCEPT && mission.fromNpcId == this.id) {
+                this.canAcceptMissions.push(mission);
+            }
+            if (mission.status == MissionStatus.CAN_SUBMIT && mission.toNpcId == this.id) {
+                this.canSubmitMissions.push(mission);
+            }
+        }
+    };
+    Npc.prototype.toString = function () {
+        return "[NPC ~ id:" + this.id + "]";
+    };
     return Npc;
 }());

@@ -43,6 +43,11 @@ class User extends EventDispatcher {
         return this.level * USER_ATTACK_PRE + equipmentAttack;
     }
 
+    changeGridPos(row: number, col: number) {
+        this.x = row;
+        this.y = col;
+    }
+
     update() {
         // 角色每帧移动
         const targetX = player.x * TILE_SIZE;
@@ -74,7 +79,6 @@ class User extends EventDispatcher {
 }
 
 
-
 /**
  * 装备
  */
@@ -83,7 +87,7 @@ class Equipment {
     y: number = 0;
     name: string = '';
     attack: number = 10;
-    view: DisplayObject;
+    view: Bitmap
 
     toString() {
         return `[Equipment ~ name:${this.name}, attack:${this.attack}]`;
@@ -125,6 +129,10 @@ class Mission {
             } else {
                 nextStatus = MissionStatus.DURRING;
             }
+        } else {
+            if (player.level >= this.needLevel) {
+                nextStatus = MissionStatus.CAN_ACCEPT;
+            }
         }
         if (nextStatus != this.status) {
             this.status = nextStatus;
@@ -136,6 +144,9 @@ class Mission {
         }
     }
 
+    toString() {
+        return `[Mission ~ id:${this.id}, name:${this.name}]`
+    }
 }
 
 
@@ -145,7 +156,39 @@ class Mission {
  * NPC
  */
 class Npc {
+    x: number = 0
+    y: number = 0
+    name: string = ''
+    view: Bitmap
+    id = 0;
 
+    canAcceptMissions: Mission[] = []
+    canSubmitMissions: Mission[] = []
+
+    constructor(id: number, name: string) {
+        this.id = id;
+        this.name = name;
+        missionManager.addEventListener('missionUpdate', (eventData: any) => {
+            this.update();
+        })
+    }
+
+    update() {
+        this.canAcceptMissions = [];
+        this.canSubmitMissions = [];
+        for (let mission of missionManager.missions) {
+            if (mission.status == MissionStatus.CAN_ACCEPT && mission.fromNpcId == this.id) {
+                this.canAcceptMissions.push(mission);
+            }
+            if (mission.status == MissionStatus.CAN_SUBMIT && mission.toNpcId == this.id) {
+                this.canSubmitMissions.push(mission);
+            }
+        }
+    }
+
+    toString() {
+        return `[NPC ~ id:${this.id}]`
+    }
 }
 
 

@@ -58,7 +58,6 @@ var MissionInfoUI = /** @class */ (function (_super) {
         for (var _i = 0, _a = missionManager.missions; _i < _a.length; _i++) {
             var mission = _a[_i];
             if (mission.status == MissionStatus.UNACCEPT ||
-                mission.status == MissionStatus.CAN_ACCEPT ||
                 mission.status == MissionStatus.CAN_SUBMIT) {
                 var missionLabel = new TextField("", 0, 0, 24);
                 this.addChild(missionLabel);

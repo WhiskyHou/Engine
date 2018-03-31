@@ -42,6 +42,7 @@ const WALL_LEFT = 3;
 const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
 const KILL_DARGON_KNIFE = 6;
+const NPC = 7;
 
 const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
@@ -113,8 +114,9 @@ class PlayingState extends State {
     constructor() {
         super();
 
-        map = new GameMap();
         missionManager = new MissionManager();
+        map = new GameMap();
+
         this.bg = new Bitmap(0, 0, bg);
         this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
         this.missionInfoUI = new MissionInfoUI(784, 200);
@@ -156,6 +158,12 @@ class PlayingState extends State {
                     commandPool.addCommand(pick);
                 }
 
+                const npcInfo = map.getNpcInfo(row, col);
+                if (npcInfo) {
+                    const talk = new TalkCommand(npcInfo);
+                    commandPool.addCommand(talk)
+                }
+
                 player.moveStatus = false;
 
                 // 执行命令池的命令
@@ -164,20 +172,13 @@ class PlayingState extends State {
         });
 
 
-        // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
-        player.addEventListener('walkOneStep', (eventData: any) => {
-            const targetX = eventData.nodeX * TILE_SIZE;
-            const targetY = eventData.nodeY * TILE_SIZE;
-            player.x = eventData.nodeX;
-            player.y = eventData.nodeY;
-        });
-
 
         this.changePlayerViewPosture();
     }
     onUpdate(): void {
         // this.playerViewMove();
         player.update();
+        missionManager.update();
     }
     onExit(): void {
         stage.deleteAll();
@@ -202,7 +203,7 @@ class GameMap extends DisplayObjectContainer {
     grid: astar.Grid;
 
     config = [
-        { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D },
+        { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D, npc: NPC },
         { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
         { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
         { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
@@ -255,6 +256,17 @@ class GameMap extends DisplayObjectContainer {
                 this.equipmentConfig[key] = equipmentTiem;
                 this.addChild(equipmentView);
             }
+
+            if (item.npc) {
+                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
+                const npcItem = new Npc(1, 'DDF');
+                npcItem.view = npcView;
+                npcItem.x = item.x;
+                npcItem.y = item.y;
+                const key = item.x + '_' + item.y;
+                this.npcConfig[key] = npcItem;
+                this.addChild(npcView);
+            }
         }
     }
 
@@ -297,6 +309,8 @@ class MissionManager extends EventDispatcher {
         mission.needLevel = 1;
         mission.fromNpcId = 1;
         mission.toNpcId = 1;
+        mission.status = MissionStatus.CAN_ACCEPT;
+        // mission.isAccepted = true;
         this.missions.push(mission);
     }
 
@@ -308,7 +322,10 @@ class MissionManager extends EventDispatcher {
     }
 
     update() {
-        this.dispatchEvent('missionUpdate', null);
+        for (let mission of this.missions) {
+            mission.update();
+        }
+        this.dispatchEvent('missionUpdate', {});
     }
 
     accept(mission: Mission) {

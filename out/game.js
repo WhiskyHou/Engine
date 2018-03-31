@@ -48,6 +48,7 @@ var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
+var NPC = 7;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
 var PLAYER_WALK_SPEED = 500;
@@ -100,8 +101,8 @@ var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
         var _this = _super.call(this) || this;
-        map = new GameMap();
         missionManager = new MissionManager();
+        map = new GameMap();
         _this.bg = new Bitmap(0, 0, bg);
         _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
         _this.missionInfoUI = new MissionInfoUI(784, 200);
@@ -133,23 +134,22 @@ var PlayingState = /** @class */ (function (_super) {
                     var pick = new PickCommand(equipmentInfo);
                     commandPool.addCommand(pick);
                 }
+                var npcInfo = map.getNpcInfo(row, col);
+                if (npcInfo) {
+                    var talk = new TalkCommand(npcInfo);
+                    commandPool.addCommand(talk);
+                }
                 player.moveStatus = false;
                 // 执行命令池的命令
                 commandPool.execute();
             }
-        });
-        // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
-        player.addEventListener('walkOneStep', function (eventData) {
-            var targetX = eventData.nodeX * TILE_SIZE;
-            var targetY = eventData.nodeY * TILE_SIZE;
-            player.x = eventData.nodeX;
-            player.y = eventData.nodeY;
         });
         this.changePlayerViewPosture();
     };
     PlayingState.prototype.onUpdate = function () {
         // this.playerViewMove();
         player.update();
+        missionManager.update();
     };
     PlayingState.prototype.onExit = function () {
         stage.deleteAll();
@@ -173,7 +173,7 @@ var GameMap = /** @class */ (function (_super) {
     function GameMap() {
         var _this = _super.call(this, 0, 0) || this;
         _this.config = [
-            { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D },
+            { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D, npc: NPC },
             { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
             { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
             { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
@@ -219,6 +219,16 @@ var GameMap = /** @class */ (function (_super) {
                 this.equipmentConfig[key] = equipmentTiem;
                 this.addChild(equipmentView);
             }
+            if (item.npc) {
+                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
+                var npcItem = new Npc(1, 'DDF');
+                npcItem.view = npcView;
+                npcItem.x = item.x;
+                npcItem.y = item.y;
+                var key = item.x + '_' + item.y;
+                this.npcConfig[key] = npcItem;
+                this.addChild(npcView);
+            }
         }
     };
     GameMap.prototype.getNodeInfo = function (row, col) {
@@ -259,6 +269,8 @@ var MissionManager = /** @class */ (function (_super) {
         mission.needLevel = 1;
         mission.fromNpcId = 1;
         mission.toNpcId = 1;
+        mission.status = MissionStatus.CAN_ACCEPT;
+        // mission.isAccepted = true;
         _this.missions.push(mission);
         return _this;
     }
@@ -270,7 +282,11 @@ var MissionManager = /** @class */ (function (_super) {
         this.update();
     };
     MissionManager.prototype.update = function () {
-        this.dispatchEvent('missionUpdate', null);
+        for (var _i = 0, _a = this.missions; _i < _a.length; _i++) {
+            var mission = _a[_i];
+            mission.update();
+        }
+        this.dispatchEvent('missionUpdate', {});
     };
     MissionManager.prototype.accept = function (mission) {
         mission.isAccepted = true;

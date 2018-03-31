@@ -42,7 +42,8 @@ class WalkCommand extends Command {
         setTimeout(() => {
             let node = path.shift();
             if (node) {
-                player.dispatchEvent('walkOneStep', { nodeX: node.x, nodeY: node.y });
+                // player.dispatchEvent('walkOneStep', { nodeX: node.x, nodeY: node.y });
+                player.changeGridPos(node.x, node.y);
             }
             else {
                 console.log(`到达地点！！！(${this.toX},${this.toY})`);
@@ -73,5 +74,28 @@ class PickCommand extends Command {
         // map.dispatchEvent({ message: 'pickEquipment' });
         map.deleteEquipment(this.equipment);
         callback();
+    }
+}
+
+
+/**
+ * 
+ */
+class TalkCommand extends Command {
+    npc: Npc;
+
+    constructor(npc: Npc) {
+        super();
+        this.npc = npc;
+    }
+
+    execute(callback: Function): void {
+        console.log(`开始和NPC：${this.npc.toString()}对话`)
+        if (this.npc.canAcceptMissions.length > 0) {
+            const mission = this.npc.canAcceptMissions[0];
+            console.log(`接受任务：${mission.toString()}`);
+            missionManager.accept(mission);
+            callback();
+        }
     }
 }

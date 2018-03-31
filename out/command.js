@@ -47,7 +47,8 @@ var WalkCommand = /** @class */ (function (_super) {
         setTimeout(function () {
             var node = path.shift();
             if (node) {
-                player.dispatchEvent('walkOneStep', { nodeX: node.x, nodeY: node.y });
+                // player.dispatchEvent('walkOneStep', { nodeX: node.x, nodeY: node.y });
+                player.changeGridPos(node.x, node.y);
             }
             else {
                 console.log("\u5230\u8FBE\u5730\u70B9\uFF01\uFF01\uFF01(" + _this.toX + "," + _this.toY + ")");
@@ -78,4 +79,25 @@ var PickCommand = /** @class */ (function (_super) {
         callback();
     };
     return PickCommand;
+}(Command));
+/**
+ *
+ */
+var TalkCommand = /** @class */ (function (_super) {
+    __extends(TalkCommand, _super);
+    function TalkCommand(npc) {
+        var _this = _super.call(this) || this;
+        _this.npc = npc;
+        return _this;
+    }
+    TalkCommand.prototype.execute = function (callback) {
+        console.log("\u5F00\u59CB\u548CNPC\uFF1A" + this.npc.toString() + "\u5BF9\u8BDD");
+        if (this.npc.canAcceptMissions.length > 0) {
+            var mission = this.npc.canAcceptMissions[0];
+            console.log("\u63A5\u53D7\u4EFB\u52A1\uFF1A" + mission.toString());
+            missionManager.accept(mission);
+            callback();
+        }
+    };
+    return TalkCommand;
 }(Command));

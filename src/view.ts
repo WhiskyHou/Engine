@@ -53,7 +53,6 @@ class MissionInfoUI extends DisplayObjectContainer {
         let index = 0;
         for (let mission of missionManager.missions) {
             if (mission.status == MissionStatus.UNACCEPT ||
-                mission.status == MissionStatus.CAN_ACCEPT ||
                 mission.status == MissionStatus.CAN_SUBMIT) {
 
                 const missionLabel = new TextField("", 0, 0, 24);
