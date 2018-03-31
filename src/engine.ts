@@ -51,22 +51,27 @@ class StateMachine {
  * addEventListener(callback: Function)   接受一个回调函数，并添加到函数数组
  */
 class EventDispatcher {
-    private listeners: Function[] = [];
+    private listeners: { type: string, callback: Function }[] = [];
 
-    dispatchEvent(eventData: any) {
+    dispatchEvent(type: string, eventData: any) {
         for (let listener of this.listeners) {
-            listener(eventData);
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
         }
     }
 
-    addEventListener(callback: Function) {
-        this.listeners.push(callback);
+    addEventListener(type: string, callback: Function) {
+        this.listeners.push({ type, callback });
     }
 
-    deleteEventListener(callback: Function) {
-        const index = this.listeners.indexOf(callback);
-        if (index != -1) {
-            this.listeners.splice(index, 1);
+    deleteEventListener(type: string, callback: Function) {
+        for (let listener of this.listeners) {
+            if (listener.type == type && listener.callback == callback) {
+                const index = this.listeners.indexOf(listener)
+                this.listeners.splice(index, 1)
+                break;
+            }
         }
     }
 
@@ -98,14 +103,6 @@ class CommandPool {
     }
 
     execute() {
-        // let command = this.list.shift();
-        // if (command) {
-        //     command.execute(() => {
-        //         this.execute()
-        //     });
-        // }
-
-
         // 取出第一个命令，执行，并且给一个回调函数onFinish，这个函数的内容是让命令池等1ms后去执行下一个命令
         const self = this;
 

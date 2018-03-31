@@ -20,18 +20,23 @@ class UserInfoUI extends DisplayObjectContainer {
         this.addChild(this.userAttack);
         this.addChild(this.userEquipment);
 
-        player.addEventListener((eventData: any) => {
-            if (eventData.message == 'setLevel' || eventData.message == 'pickEquipment') {
-                this.userLevel.text = 'Lv:' + player.level;
-                this.userAttack.text = 'Attck:' + player.attack;
-                let equipments: string = '';
-                for (let item of player.mounthedEquipment) {
-                    equipments += item.name.toString();
-                }
-                this.userEquipment.text = '装备: ' + equipments;
+        player.addEventListener('updateUserInfo', (eventData: any) => {
+            this.userLevel.text = 'Lv:' + player.level;
+            this.userAttack.text = 'Attck:' + player.attack;
+            let equipments: string = '';
+            for (let item of player.mounthedEquipment) {
+                equipments += item.name.toString();
             }
-
+            this.userEquipment.text = '装备: ' + equipments;
         });
         // console.log(player);
     }
+}
+
+
+/**
+ * 任务栏UI
+ */
+class MissionInfoUI extends DisplayObjectContainer {
+
 }

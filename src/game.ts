@@ -67,7 +67,7 @@ class MenuState extends State {
 
     onEnter(): void {
         stage.addChild(this.title);
-        stage.addEventListener(this.onClick);
+        stage.addEventListener("onClick", this.onClick);
     }
     onUpdate(): void {
 
@@ -131,60 +131,47 @@ class PlayingState extends State {
         // 给map添加监听器
         // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         // 2 角色捡起了装备，监听器就执行更新地图物品信息
-        map.addEventListener((eventData: any) => {
-            if (eventData.message == 'onClick') {
-                if (player.moveStatus) {
-                    const globalX = eventData.globalX;
-                    const globalY = eventData.globalY;
-                    const localPos = map.getLocalPos(new math.Point(globalX, globalY));
+        map.addEventListener('onClick', (eventData: any) => {
+            if (player.moveStatus) {
+                const globalX = eventData.globalX;
+                const globalY = eventData.globalY;
+                const localPos = map.getLocalPos(new math.Point(globalX, globalY));
 
-                    // 确定被点击的格子位置
-                    const row = Math.floor(localPos.x / TILE_SIZE);
-                    const col = Math.floor(localPos.y / TILE_SIZE);
+                // 确定被点击的格子位置
+                const row = Math.floor(localPos.x / TILE_SIZE);
+                const col = Math.floor(localPos.y / TILE_SIZE);
 
-                    // 添加行走命令
-                    const walk = new WalkCommand(player.x, player.y, row, col);
-                    commandPool.addCommand(walk);
+                // 添加行走命令
+                const walk = new WalkCommand(player.x, player.y, row, col);
+                commandPool.addCommand(walk);
 
-                    // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-                    const nodeInfo = map.getNodeInfo(row, col);
-                    if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
-                        const weapon = new Equipment();
-                        weapon.name = "屠龙宝刀";
-                        weapon.attack = 20;
+                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
+                const nodeInfo = map.getNodeInfo(row, col);
+                if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
+                    const weapon = new Equipment();
+                    weapon.name = "屠龙宝刀";
+                    weapon.attack = 20;
 
-                        const pick = new PickCommand(weapon);
-                        commandPool.addCommand(pick);
-                    }
-
-                    player.moveStatus = false;
-
-                    // 执行命令池的命令
-                    commandPool.execute();
+                    const pick = new PickCommand(weapon);
+                    commandPool.addCommand(pick);
                 }
-            }
-            else if (eventData.message == 'pickEquipment') {
-                for (let item of map.config) {
-                    if (item.equipment) {
-                        item.equipment = 0;
-                        map.rebuild();
-                        van_pick_knife.play();
-                    }
-                }
+
+                player.moveStatus = false;
+
+                // 执行命令池的命令
+                commandPool.execute();
             }
         });
 
 
         // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
-        player.addEventListener((eventData: any) => {
-            if (eventData.message == 'walkOneStep') {
-                const targetX = eventData.nodeX * TILE_SIZE;
-                const targetY = eventData.nodeY * TILE_SIZE;
-                player.x = eventData.nodeX;
-                player.y = eventData.nodeY;
-                // this.role.x = targetX;
-                // this.role.y = targetY;
-            }
+        player.addEventListener('walkOneStep', (eventData: any) => {
+            const targetX = eventData.nodeX * TILE_SIZE;
+            const targetY = eventData.nodeY * TILE_SIZE;
+            player.x = eventData.nodeX;
+            player.y = eventData.nodeY;
+            // this.role.x = targetX;
+            // this.role.y = targetY;
         });
 
 
@@ -295,87 +282,6 @@ class GameMap extends DisplayObjectContainer {
 }
 
 
-/**
- * 走路命令
- */
-class WalkCommand extends Command {
-    fromX: number;
-    fromY: number;
-    toX: number;
-    toY: number;
-
-    constructor(fromX: number, fromY: number, toX: number, toY: number) {
-        super();
-        this.fromX = fromX;
-        this.fromY = fromY;
-        this.toX = toX;
-        this.toY = toY;
-    }
-
-    execute(callback: Function): void {
-        console.log(`开始走路！！！从(${this.fromX}, ${this.fromY})出发`);
-
-        map.grid.setStartNode(this.fromX, this.fromY);
-        map.grid.setEndNode(this.toX, this.toY);
-        const findpath = new astar.AStar();
-        findpath.setHeurisitic(findpath.diagonal);
-        const result = findpath.findPath(map.grid);
-        // console.log(map.grid.toString());
-        console.log(findpath._path);
-
-        let path;
-        if (result) {
-            path = findpath._path;
-            path.shift();
-            this.walk(path, callback);
-        } else {
-            player.moveStatus = true;
-            callback();
-        }
-
-        // setTimeout(() => {
-        //     console.log(`到达目标(${this.toX}, ${this.toY})`);
-        //     callback();
-        // }, 3000)
-    }
-
-    walk(path: astar.Node[], callback: Function) {
-        setTimeout(() => {
-            let node = path.shift();
-            if (node) {
-                player.dispatchEvent({ message: 'walkOneStep', nodeX: node.x, nodeY: node.y });
-            }
-            else {
-                console.log(`到达地点！！！(${this.toX},${this.toY})`);
-                player.moveStatus = true;
-                callback();
-                return;
-            }
-            this.walk(path, callback);
-        }, PLAYER_WALK_SPEED);
-    }
-}
-
-
-/**
- * 拾取命令
- */
-class PickCommand extends Command {
-    equipment: Equipment;
-
-    constructor(equipment: Equipment) {
-        super();
-        this.equipment = equipment;
-    }
-
-    execute(callback: Function): void {
-        player.pick(this.equipment);
-        console.log(`捡起了${this.equipment.toString()}`);
-        map.dispatchEvent({ message: 'pickEquipment' });
-        callback();
-    }
-}
-
 
 
 
@@ -386,11 +292,11 @@ canvas.onclick = function (event) {
 
     let hitResult = stage.hitTest(new math.Point(globalX, globalY));
     if (hitResult) {
-        hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
+        hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
             // console.log(hitResult);
             hitResult = hitResult.parent;
-            hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
+            hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 }

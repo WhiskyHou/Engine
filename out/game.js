@@ -72,7 +72,7 @@ var MenuState = /** @class */ (function (_super) {
     }
     MenuState.prototype.onEnter = function () {
         stage.addChild(this.title);
-        stage.addEventListener(this.onClick);
+        stage.addEventListener("onClick", this.onClick);
     };
     MenuState.prototype.onUpdate = function () {
     };
@@ -114,54 +114,39 @@ var PlayingState = /** @class */ (function (_super) {
         // 给map添加监听器
         // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         // 2 角色捡起了装备，监听器就执行更新地图物品信息
-        map.addEventListener(function (eventData) {
-            if (eventData.message == 'onClick') {
-                if (player.moveStatus) {
-                    var globalX = eventData.globalX;
-                    var globalY = eventData.globalY;
-                    var localPos = map.getLocalPos(new math.Point(globalX, globalY));
-                    // 确定被点击的格子位置
-                    var row = Math.floor(localPos.x / TILE_SIZE);
-                    var col = Math.floor(localPos.y / TILE_SIZE);
-                    // 添加行走命令
-                    var walk = new WalkCommand(player.x, player.y, row, col);
-                    commandPool.addCommand(walk);
-                    // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-                    var nodeInfo = map.getNodeInfo(row, col);
-                    if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
-                        var weapon = new Equipment();
-                        weapon.name = "屠龙宝刀";
-                        weapon.attack = 20;
-                        var pick = new PickCommand(weapon);
-                        commandPool.addCommand(pick);
-                    }
-                    player.moveStatus = false;
-                    // 执行命令池的命令
-                    commandPool.execute();
+        map.addEventListener('onClick', function (eventData) {
+            if (player.moveStatus) {
+                var globalX = eventData.globalX;
+                var globalY = eventData.globalY;
+                var localPos = map.getLocalPos(new math.Point(globalX, globalY));
+                // 确定被点击的格子位置
+                var row = Math.floor(localPos.x / TILE_SIZE);
+                var col = Math.floor(localPos.y / TILE_SIZE);
+                // 添加行走命令
+                var walk = new WalkCommand(player.x, player.y, row, col);
+                commandPool.addCommand(walk);
+                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
+                var nodeInfo = map.getNodeInfo(row, col);
+                if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
+                    var weapon = new Equipment();
+                    weapon.name = "屠龙宝刀";
+                    weapon.attack = 20;
+                    var pick = new PickCommand(weapon);
+                    commandPool.addCommand(pick);
                 }
-            }
-            else if (eventData.message == 'pickEquipment') {
-                for (var _i = 0, _a = map.config; _i < _a.length; _i++) {
-                    var item = _a[_i];
-                    if (item.equipment) {
-                        item.equipment = 0;
-                        map.rebuild();
-                        van_pick_knife.play();
-                        // alert('恭喜你！获得“屠龙宝刀”一把！')
-                    }
-                }
+                player.moveStatus = false;
+                // 执行命令池的命令
+                commandPool.execute();
             }
         });
         // 给player数据模型添加监听器，走路命令中每走一格，向监听器报告一次新位置
-        player.addEventListener(function (eventData) {
-            if (eventData.message == 'walkOneStep') {
-                var targetX = eventData.nodeX * TILE_SIZE;
-                var targetY = eventData.nodeY * TILE_SIZE;
-                player.x = eventData.nodeX;
-                player.y = eventData.nodeY;
-                // this.role.x = targetX;
-                // this.role.y = targetY;
-            }
+        player.addEventListener('walkOneStep', function (eventData) {
+            var targetX = eventData.nodeX * TILE_SIZE;
+            var targetY = eventData.nodeY * TILE_SIZE;
+            player.x = eventData.nodeX;
+            player.y = eventData.nodeY;
+            // this.role.x = targetX;
+            // this.role.y = targetY;
         });
         this.changeRolePosture();
     };
@@ -268,11 +253,11 @@ canvas.onclick = function (event) {
     var globalY = event.offsetY;
     var hitResult = stage.hitTest(new math.Point(globalX, globalY));
     if (hitResult) {
-        hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
+        hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
             // console.log(hitResult);
             hitResult = hitResult.parent;
-            hitResult.dispatchEvent({ message: 'onClick', target: hitResult, globalX: globalX, globalY: globalY });
+            hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 };

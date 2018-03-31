@@ -4,9 +4,13 @@ const MAX_ATTACK = 200;
 const USER_ATTACK_PRE = 100;
 
 
+/**
+ * 玩家
+ */
 class User extends EventDispatcher {
     x: number;
     y: number;
+    view: Bitmap;
     moveStatus: boolean = true;
     name: string = '';
     hp: number = 10;
@@ -20,12 +24,12 @@ class User extends EventDispatcher {
     }
     set level(level: number) {
         this._level = level;
-        this.dispatchEvent({ message: 'setLevel' });
+        this.dispatchEvent('updateUserInfo', null);
     }
 
     pick(equipment: Equipment) {
         this.mounthedEquipment.push(equipment);
-        this.dispatchEvent({ message: 'pickEquipment' });
+        this.dispatchEvent('updateUserInfo', null);
     }
     drop() {
 
@@ -46,6 +50,9 @@ class User extends EventDispatcher {
 
 
 
+/**
+ * 装备
+ */
 class Equipment {
     name: string = '';
     attack: number = 10;
@@ -54,3 +61,16 @@ class Equipment {
         return `[Equipment ~ name:${this.name}, attack:${this.attack}]`;
     }
 }
+
+
+/**
+ * 任务
+ */
+
+
+
+/**
+ * NPC
+ */
+
+

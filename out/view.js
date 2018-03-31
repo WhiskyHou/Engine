@@ -24,20 +24,28 @@ var UserInfoUI = /** @class */ (function (_super) {
         _this.addChild(_this.userLevel);
         _this.addChild(_this.userAttack);
         _this.addChild(_this.userEquipment);
-        player.addEventListener(function (eventData) {
-            if (eventData.message == 'setLevel' || eventData.message == 'pickEquipment') {
-                _this.userLevel.text = 'Lv:' + player.level;
-                _this.userAttack.text = 'Attck:' + player.attack;
-                var equipments = '';
-                for (var _i = 0, _a = player.mounthedEquipment; _i < _a.length; _i++) {
-                    var item = _a[_i];
-                    equipments += item.name.toString();
-                }
-                _this.userEquipment.text = '装备: ' + equipments;
+        player.addEventListener('updateUserInfo', function (eventData) {
+            _this.userLevel.text = 'Lv:' + player.level;
+            _this.userAttack.text = 'Attck:' + player.attack;
+            var equipments = '';
+            for (var _i = 0, _a = player.mounthedEquipment; _i < _a.length; _i++) {
+                var item = _a[_i];
+                equipments += item.name.toString();
             }
+            _this.userEquipment.text = '装备: ' + equipments;
         });
         return _this;
         // console.log(player);
     }
     return UserInfoUI;
+}(DisplayObjectContainer));
+/**
+ * 任务栏UI
+ */
+var MissionInfoUI = /** @class */ (function (_super) {
+    __extends(MissionInfoUI, _super);
+    function MissionInfoUI() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return MissionInfoUI;
 }(DisplayObjectContainer));

@@ -58,19 +58,25 @@ var EventDispatcher = /** @class */ (function () {
     function EventDispatcher() {
         this.listeners = [];
     }
-    EventDispatcher.prototype.dispatchEvent = function (eventData) {
+    EventDispatcher.prototype.dispatchEvent = function (type, eventData) {
         for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
             var listener = _a[_i];
-            listener(eventData);
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
         }
     };
-    EventDispatcher.prototype.addEventListener = function (callback) {
-        this.listeners.push(callback);
+    EventDispatcher.prototype.addEventListener = function (type, callback) {
+        this.listeners.push({ type: type, callback: callback });
     };
-    EventDispatcher.prototype.deleteEventListener = function (callback) {
-        var index = this.listeners.indexOf(callback);
-        if (index != -1) {
-            this.listeners.splice(index, 1);
+    EventDispatcher.prototype.deleteEventListener = function (type, callback) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listener = _a[_i];
+            if (listener.type == type && listener.callback == callback) {
+                var index = this.listeners.indexOf(listener);
+                this.listeners.splice(index, 1);
+                break;
+            }
         }
     };
     EventDispatcher.prototype.deleteAllEventListener = function () {
@@ -89,79 +95,6 @@ var Command = /** @class */ (function () {
     return Command;
 }());
 /**
- * 走路命令
- */
-var WalkCommand = /** @class */ (function (_super) {
-    __extends(WalkCommand, _super);
-    function WalkCommand(fromX, fromY, toX, toY) {
-        var _this = _super.call(this) || this;
-        _this.fromX = fromX;
-        _this.fromY = fromY;
-        _this.toX = toX;
-        _this.toY = toY;
-        return _this;
-    }
-    WalkCommand.prototype.execute = function (callback) {
-        console.log("\u5F00\u59CB\u8D70\u8DEF\uFF01\uFF01\uFF01\u4ECE(" + this.fromX + ", " + this.fromY + ")\u51FA\u53D1");
-        map.grid.setStartNode(this.fromX, this.fromY);
-        map.grid.setEndNode(this.toX, this.toY);
-        var findpath = new astar.AStar();
-        findpath.setHeurisitic(findpath.diagonal);
-        var result = findpath.findPath(map.grid);
-        // console.log(map.grid.toString());
-        console.log(findpath._path);
-        var path;
-        if (result) {
-            path = findpath._path;
-            path.shift();
-            this.walk(path, callback);
-        }
-        else {
-            player.moveStatus = true;
-            callback();
-        }
-        // setTimeout(() => {
-        //     console.log(`到达目标(${this.toX}, ${this.toY})`);
-        //     callback();
-        // }, 3000)
-    };
-    WalkCommand.prototype.walk = function (path, callback) {
-        var _this = this;
-        setTimeout(function () {
-            var node = path.shift();
-            if (node) {
-                player.dispatchEvent({ message: 'walkOneStep', nodeX: node.x, nodeY: node.y });
-            }
-            else {
-                console.log("\u5230\u8FBE\u5730\u70B9\uFF01\uFF01\uFF01(" + _this.toX + "," + _this.toY + ")");
-                player.moveStatus = true;
-                callback();
-                return;
-            }
-            _this.walk(path, callback);
-        }, PLAYER_WALK_SPEED);
-    };
-    return WalkCommand;
-}(Command));
-/**
- * 拾取命令
- */
-var PickCommand = /** @class */ (function (_super) {
-    __extends(PickCommand, _super);
-    function PickCommand(equipment) {
-        var _this = _super.call(this) || this;
-        _this.equipment = equipment;
-        return _this;
-    }
-    PickCommand.prototype.execute = function (callback) {
-        player.pick(this.equipment);
-        console.log("\u6361\u8D77\u4E86" + this.equipment.toString());
-        map.dispatchEvent({ message: 'pickEquipment' });
-        callback();
-    };
-    return PickCommand;
-}(Command));
-/**
  * 命令池
  */
 var CommandPool = /** @class */ (function () {
@@ -172,12 +105,6 @@ var CommandPool = /** @class */ (function () {
         this.list.push(command);
     };
     CommandPool.prototype.execute = function () {
-        // let command = this.list.shift();
-        // if (command) {
-        //     command.execute(() => {
-        //         this.execute()
-        //     });
-        // }
         // 取出第一个命令，执行，并且给一个回调函数onFinish，这个函数的内容是让命令池等1ms后去执行下一个命令
         var self = this;
         var command = this.list.shift();
