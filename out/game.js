@@ -77,7 +77,7 @@ var MenuState = /** @class */ (function (_super) {
     MenuState.prototype.onUpdate = function () {
     };
     MenuState.prototype.onExit = function () {
-        console.log('onExit');
+        console.log('Login State onExit');
         stage.deleteAllEventListener();
         stage.deleteAll();
         // this.onCreatePlayer();
@@ -88,6 +88,7 @@ var MenuState = /** @class */ (function (_super) {
         player.name = 'Van';
         player.x = PLAYER_INDEX_X;
         player.y = PLAYER_INDEX_Y;
+        player.view = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
     };
     return MenuState;
 }(State));
@@ -100,20 +101,20 @@ var PlayingState = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         map = new GameMap();
         _this.bg = new Bitmap(0, 0, bg);
-        _this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
-        _this.ui = new UserInfoUI(0, TILE_SIZE * 6);
+        _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
         _this.gameContainer = new DisplayObjectContainer(16, 6);
+        _this.missionContainer = new DisplayObjectContainer(800, 200);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
+        stage.addChild(this.missionContainer);
         this.gameContainer.addChild(map);
-        this.gameContainer.addChild(this.role);
-        this.gameContainer.addChild(this.ui);
+        this.gameContainer.addChild(player.view);
+        this.gameContainer.addChild(this.userInfoUI);
         // 给map添加监听器
-        // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
-        // 2 角色捡起了装备，监听器就执行更新地图物品信息
+        // 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         map.addEventListener('onClick', function (eventData) {
             if (player.moveStatus) {
                 var globalX = eventData.globalX;
@@ -125,13 +126,10 @@ var PlayingState = /** @class */ (function (_super) {
                 // 添加行走命令
                 var walk = new WalkCommand(player.x, player.y, row, col);
                 commandPool.addCommand(walk);
-                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-                var nodeInfo = map.getNodeInfo(row, col);
-                if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
-                    var weapon = new Equipment();
-                    weapon.name = "屠龙宝刀";
-                    weapon.attack = 20;
-                    var pick = new PickCommand(weapon);
+                // 获取被点击格子的装备信息 如果有东西的话 就添加一个拾取命令
+                var equipmentInfo = map.getEquipmentInfo(row, col);
+                if (equipmentInfo) {
+                    var pick = new PickCommand(equipmentInfo);
                     commandPool.addCommand(pick);
                 }
                 player.moveStatus = false;
@@ -145,51 +143,24 @@ var PlayingState = /** @class */ (function (_super) {
             var targetY = eventData.nodeY * TILE_SIZE;
             player.x = eventData.nodeX;
             player.y = eventData.nodeY;
-            // this.role.x = targetX;
-            // this.role.y = targetY;
         });
-        this.changeRolePosture();
+        this.changePlayerViewPosture();
     };
     PlayingState.prototype.onUpdate = function () {
-        this.roleMove();
+        // this.playerViewMove();
+        player.update();
     };
     PlayingState.prototype.onExit = function () {
         stage.deleteAll();
         this.gameContainer.deleteAll();
     };
     // 角色原地动画
-    PlayingState.prototype.changeRolePosture = function () {
+    PlayingState.prototype.changePlayerViewPosture = function () {
         var _this = this;
         setTimeout(function () {
-            _this.role.img = (_this.role.img == van1) ? van2 : van1;
-            _this.changeRolePosture();
+            player.view.img = (player.view.img == van1) ? van2 : van1;
+            _this.changePlayerViewPosture();
         }, 600);
-    };
-    // 角色每帧移动动画
-    PlayingState.prototype.roleMove = function () {
-        var targetX = player.x * TILE_SIZE;
-        var targetY = player.y * TILE_SIZE;
-        if (this.role.x == targetX && this.role.y == targetY) {
-            return;
-        }
-        var stepX = 0;
-        var stepY = 0;
-        if (Math.abs(targetX - this.role.x) > 2) {
-            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-            stepX = (targetX < this.role.x) ? -stepX : stepX;
-            this.role.x += stepX;
-        }
-        else {
-            this.role.x = targetX;
-        }
-        if (Math.abs(targetY - this.role.y) > 2) {
-            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-            stepY = (targetY < this.role.y) ? -stepY : stepY;
-            this.role.y += stepY;
-        }
-        else {
-            this.role.y = targetY;
-        }
     };
     return PlayingState;
 }(State));
@@ -208,10 +179,13 @@ var GameMap = /** @class */ (function (_super) {
             { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
             { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
         ];
-        _this.rebuild();
+        _this.equipmentConfig = {};
+        _this.npcConfig = {};
+        _this.update();
         return _this;
     }
-    GameMap.prototype.rebuild = function () {
+    // 好像只调用了一次…… 初始化……
+    GameMap.prototype.update = function () {
         this.grid = new astar.Grid(COL_NUM, ROW_NUM);
         for (var _i = 0, _a = this.config; _i < _a.length; _i++) {
             var item = _a[_i];
@@ -231,8 +205,18 @@ var GameMap = /** @class */ (function (_super) {
                 this.addChild(tile_2);
             }
             if (item.equipment) {
-                var tile_3 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                this.addChild(tile_3);
+                // const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
+                // this.addChild(tile);
+                var equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
+                var equipmentTiem = new Equipment();
+                equipmentTiem.view = equipmentView;
+                equipmentTiem.name = '屠龙刀';
+                equipmentTiem.attack = 35;
+                equipmentTiem.x = item.x;
+                equipmentTiem.y = item.y;
+                var key = item.x + '_' + item.y;
+                this.equipmentConfig[key] = equipmentTiem;
+                this.addChild(equipmentView);
             }
         }
     };
@@ -245,8 +229,31 @@ var GameMap = /** @class */ (function (_super) {
         }
         return null;
     };
+    GameMap.prototype.getEquipmentInfo = function (row, col) {
+        var key = row + '_' + col;
+        return this.equipmentConfig[key];
+    };
+    GameMap.prototype.getNpcInfo = function (row, col) {
+        var key = row + '_' + col;
+        return this.npcConfig[key];
+    };
+    GameMap.prototype.deleteEquipment = function (equipment) {
+        var key = equipment.x + '_' + equipment.y;
+        delete this.equipmentConfig[key];
+        this.deleteChild(equipment.view);
+    };
     return GameMap;
 }(DisplayObjectContainer));
+/**
+ * 任务管理器
+ */
+var MissionManager = /** @class */ (function (_super) {
+    __extends(MissionManager, _super);
+    function MissionManager() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return MissionManager;
+}(EventDispatcher));
 // 鼠标点击事件，捕获所有被点击到的 DisplayObject，并从叶子节点依次向上通知它们的监听器，监听器执行
 canvas.onclick = function (event) {
     var globalX = event.offsetX;

@@ -56,6 +56,32 @@ var User = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    User.prototype.update = function () {
+        // 角色每帧移动
+        var targetX = player.x * TILE_SIZE;
+        var targetY = player.y * TILE_SIZE;
+        if (player.view.x == targetX && player.view.y == targetY) {
+            return;
+        }
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(targetX - player.view.x) > 2) {
+            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepX = (targetX < player.view.x) ? -stepX : stepX;
+            player.view.x += stepX;
+        }
+        else {
+            player.view.x = targetX;
+        }
+        if (Math.abs(targetY - player.view.y) > 2) {
+            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepY = (targetY < player.view.y) ? -stepY : stepY;
+            player.view.y += stepY;
+        }
+        else {
+            player.view.y = targetY;
+        }
+    };
     User.prototype.toString = function () {
         return "[User ~ name:" + this.name + ", level:" + this.level + ", hp:" + this.hp + ", attack:" + this.attack + "]";
     };
@@ -66,6 +92,8 @@ var User = /** @class */ (function (_super) {
  */
 var Equipment = /** @class */ (function () {
     function Equipment() {
+        this.x = 0;
+        this.y = 0;
         this.name = '';
         this.attack = 10;
     }
@@ -77,6 +105,36 @@ var Equipment = /** @class */ (function () {
 /**
  * 任务
  */
+var MissionStatus;
+(function (MissionStatus) {
+    MissionStatus[MissionStatus["UNACCEPT"] = 0] = "UNACCEPT";
+    MissionStatus[MissionStatus["CAN_ACCEPT"] = 1] = "CAN_ACCEPT";
+    MissionStatus[MissionStatus["DURRING"] = 2] = "DURRING";
+    MissionStatus[MissionStatus["CAN_SUBMIT"] = 3] = "CAN_SUBMIT";
+    MissionStatus[MissionStatus["FINISH"] = 4] = "FINISH";
+})(MissionStatus || (MissionStatus = {}));
+var Mission = /** @class */ (function () {
+    function Mission() {
+        this.id = 0;
+        this.name = '';
+        this.needLevel = 0;
+        this.fromNpcId = 0;
+        this.toNpcId = 0;
+        this.isAccepted = false;
+        this.isSubmit = false;
+        this.current = 0;
+        this.total = 1;
+        this.status = MissionStatus.UNACCEPT;
+    }
+    Mission.prototype.update = function () {
+    };
+    return Mission;
+}());
 /**
  * NPC
  */
+var Npc = /** @class */ (function () {
+    function Npc() {
+    }
+    return Npc;
+}());

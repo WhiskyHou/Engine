@@ -204,7 +204,7 @@ class DisplayObjectContainer extends DisplayObject {
     deleteChild(child: DisplayObject) {
         const index = this.children.indexOf(child);
         if (index != -1)
-            this.children.splice(index);
+            this.children.splice(index, 1);
     }
 
     deleteAll() {

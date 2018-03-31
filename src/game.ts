@@ -73,7 +73,7 @@ class MenuState extends State {
 
     }
     onExit(): void {
-        console.log('onExit');
+        console.log('Login State onExit');
         stage.deleteAllEventListener();
         stage.deleteAll();
         // this.onCreatePlayer();
@@ -85,6 +85,7 @@ class MenuState extends State {
         player.name = 'Van';
         player.x = PLAYER_INDEX_X;
         player.y = PLAYER_INDEX_Y;
+        player.view = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
     }
 
     onClick = (eventData: any) => {
@@ -103,34 +104,35 @@ class MenuState extends State {
  */
 class PlayingState extends State {
     bg: Bitmap;
-    role: Bitmap;
-    ui: UserInfoUI;
+    userInfoUI: UserInfoUI;
 
     gameContainer: DisplayObjectContainer;
+    missionContainer: DisplayObjectContainer;
 
     constructor() {
         super();
 
         map = new GameMap();
         this.bg = new Bitmap(0, 0, bg);
-        this.role = new Bitmap(PLAYER_INDEX_X, PLAYER_INDEX_Y, van1);
-        this.ui = new UserInfoUI(0, TILE_SIZE * 6);
+        this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
 
         this.gameContainer = new DisplayObjectContainer(16, 6);
+        this.missionContainer = new DisplayObjectContainer(800, 200);
     }
 
     onEnter(): void {
         stage.addChild(this.bg);
         stage.addChild(this.gameContainer);
+        stage.addChild(this.missionContainer);
 
         this.gameContainer.addChild(map);
-        this.gameContainer.addChild(this.role);
-        this.gameContainer.addChild(this.ui);
+        this.gameContainer.addChild(player.view);
+        this.gameContainer.addChild(this.userInfoUI);
+
 
 
         // 给map添加监听器
-        // 1 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
-        // 2 角色捡起了装备，监听器就执行更新地图物品信息
+        // 鼠标点击到map容器上了，监听器就执行到目标点的走路命令
         map.addEventListener('onClick', (eventData: any) => {
             if (player.moveStatus) {
                 const globalX = eventData.globalX;
@@ -145,14 +147,10 @@ class PlayingState extends State {
                 const walk = new WalkCommand(player.x, player.y, row, col);
                 commandPool.addCommand(walk);
 
-                // 获取被点击的格子的信息，如果有道具的话，就添加一个拾取命令
-                const nodeInfo = map.getNodeInfo(row, col);
-                if (nodeInfo && nodeInfo.equipment == KILL_DARGON_KNIFE) {
-                    const weapon = new Equipment();
-                    weapon.name = "屠龙宝刀";
-                    weapon.attack = 20;
-
-                    const pick = new PickCommand(weapon);
+                // 获取被点击格子的装备信息 如果有东西的话 就添加一个拾取命令
+                const equipmentInfo = map.getEquipmentInfo(row, col);
+                if (equipmentInfo) {
+                    const pick = new PickCommand(equipmentInfo);
                     commandPool.addCommand(pick);
                 }
 
@@ -170,15 +168,14 @@ class PlayingState extends State {
             const targetY = eventData.nodeY * TILE_SIZE;
             player.x = eventData.nodeX;
             player.y = eventData.nodeY;
-            // this.role.x = targetX;
-            // this.role.y = targetY;
         });
 
 
-        this.changeRolePosture();
+        this.changePlayerViewPosture();
     }
     onUpdate(): void {
-        this.roleMove();
+        // this.playerViewMove();
+        player.update();
     }
     onExit(): void {
         stage.deleteAll();
@@ -186,38 +183,11 @@ class PlayingState extends State {
     }
 
     // 角色原地动画
-    changeRolePosture() {
+    changePlayerViewPosture() {
         setTimeout(() => {
-            this.role.img = (this.role.img == van1) ? van2 : van1;
-            this.changeRolePosture();
+            player.view.img = (player.view.img == van1) ? van2 : van1;
+            this.changePlayerViewPosture();
         }, 600);
-    }
-
-    // 角色每帧移动动画
-    roleMove() {
-        const targetX = player.x * TILE_SIZE;
-        const targetY = player.y * TILE_SIZE;
-        if (this.role.x == targetX && this.role.y == targetY) {
-            return;
-        }
-
-        var stepX = 0;
-        var stepY = 0;
-
-        if (Math.abs(targetX - this.role.x) > 2) {
-            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-            stepX = (targetX < this.role.x) ? -stepX : stepX;
-            this.role.x += stepX;
-        } else {
-            this.role.x = targetX;
-        }
-        if (Math.abs(targetY - this.role.y) > 2) {
-            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
-            stepY = (targetY < this.role.y) ? -stepY : stepY;
-            this.role.y += stepY;
-        } else {
-            this.role.y = targetY;
-        }
     }
 
 }
@@ -238,13 +208,17 @@ class GameMap extends DisplayObjectContainer {
         { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
     ]
 
+    private equipmentConfig: { [index: string]: Equipment } = {}
+    private npcConfig: { [index: string]: Npc } = {}
+
+
     constructor() {
         super(0, 0);
 
-        this.rebuild();
+        this.update();
     }
-
-    rebuild() {
+    // 好像只调用了一次…… 初始化……
+    update() {
         this.grid = new astar.Grid(COL_NUM, ROW_NUM);
 
         for (let item of this.config) {
@@ -265,8 +239,19 @@ class GameMap extends DisplayObjectContainer {
                 this.addChild(tile);
             }
             if (item.equipment) {
-                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                this.addChild(tile);
+                // const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
+                // this.addChild(tile);
+
+                const equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
+                const equipmentTiem = new Equipment();
+                equipmentTiem.view = equipmentView;
+                equipmentTiem.name = '屠龙刀'
+                equipmentTiem.attack = 35;
+                equipmentTiem.x = item.x;
+                equipmentTiem.y = item.y;
+                const key = item.x + '_' + item.y;
+                this.equipmentConfig[key] = equipmentTiem;
+                this.addChild(equipmentView);
             }
         }
     }
@@ -279,8 +264,29 @@ class GameMap extends DisplayObjectContainer {
         }
         return null;
     }
+    getEquipmentInfo(row: number, col: number) {
+        const key = row + '_' + col
+        return this.equipmentConfig[key]
+    }
+    getNpcInfo(row: number, col: number) {
+        const key = row + '_' + col;
+        return this.npcConfig[key];
+    }
+
+    deleteEquipment(equipment: Equipment) {
+        const key = equipment.x + '_' + equipment.y;
+        delete this.equipmentConfig[key];
+        this.deleteChild(equipment.view);
+    }
 }
 
+
+/**
+ * 任务管理器
+ */
+class MissionManager extends EventDispatcher {
+
+}
 
 
 

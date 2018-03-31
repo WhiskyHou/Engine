@@ -74,14 +74,7 @@ var PickCommand = /** @class */ (function (_super) {
         player.pick(this.equipment);
         console.log("\u6361\u8D77\u4E86" + this.equipment.toString());
         // map.dispatchEvent({ message: 'pickEquipment' });
-        for (var _i = 0, _a = map.config; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (item.equipment) {
-                item.equipment = 0;
-                map.rebuild();
-                van_pick_knife.play();
-            }
-        }
+        map.deleteEquipment(this.equipment);
         callback();
     };
     return PickCommand;

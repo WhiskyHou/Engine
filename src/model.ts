@@ -43,6 +43,31 @@ class User extends EventDispatcher {
         return this.level * USER_ATTACK_PRE + equipmentAttack;
     }
 
+    update() {
+        // 角色每帧移动
+        const targetX = player.x * TILE_SIZE;
+        const targetY = player.y * TILE_SIZE;
+        if (player.view.x == targetX && player.view.y == targetY) {
+            return;
+        }
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(targetX - player.view.x) > 2) {
+            stepX = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepX = (targetX < player.view.x) ? -stepX : stepX;
+            player.view.x += stepX;
+        } else {
+            player.view.x = targetX;
+        }
+        if (Math.abs(targetY - player.view.y) > 2) {
+            stepY = TILE_SIZE * INTERVAL / PLAYER_WALK_SPEED;
+            stepY = (targetY < player.view.y) ? -stepY : stepY;
+            player.view.y += stepY;
+        } else {
+            player.view.y = targetY;
+        }
+    }
+
     toString() {
         return `[User ~ name:${this.name}, level:${this.level}, hp:${this.hp}, attack:${this.attack}]`;
     }
@@ -54,8 +79,11 @@ class User extends EventDispatcher {
  * 装备
  */
 class Equipment {
+    x: number = 0;
+    y: number = 0;
     name: string = '';
     attack: number = 10;
+    view: DisplayObject;
 
     toString() {
         return `[Equipment ~ name:${this.name}, attack:${this.attack}]`;
@@ -66,11 +94,40 @@ class Equipment {
 /**
  * 任务
  */
+enum MissionStatus {
+    UNACCEPT = 0,
+    CAN_ACCEPT = 1,
+    DURRING = 2,
+    CAN_SUBMIT = 3,
+    FINISH = 4,
+}
+
+class Mission {
+    id: number = 0
+    name: string = ''
+    needLevel: number = 0
+    fromNpcId: number = 0
+    toNpcId: number = 0
+    isAccepted: boolean = false
+    isSubmit: boolean = false
+    current: number = 0
+    total: number = 1
+    status: MissionStatus = MissionStatus.UNACCEPT
+
+    update() {
+
+    }
+
+}
+
 
 
 
 /**
  * NPC
  */
+class Npc {
+
+}
 
 

@@ -71,13 +71,7 @@ class PickCommand extends Command {
         player.pick(this.equipment);
         console.log(`捡起了${this.equipment.toString()}`);
         // map.dispatchEvent({ message: 'pickEquipment' });
-        for (let item of map.config) {
-            if (item.equipment) {
-                item.equipment = 0;
-                map.rebuild();
-                van_pick_knife.play();
-            }
-        }
+        map.deleteEquipment(this.equipment);
         callback();
     }
 }
