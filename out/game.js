@@ -295,21 +295,40 @@ var MissionManager = /** @class */ (function (_super) {
     function MissionManager() {
         var _this = _super.call(this) || this;
         _this.missions = [];
-        var going = function (eventData) {
+        var mission1Going = function (eventData) {
             if (eventData.name === '屠龙刀') {
-                mission.current++;
-                console.log('任务进度加啦！！！！');
+                mission1.current++;
+                console.log('任务1进度加啦！！！！');
             }
         };
-        var mission = new Mission(going);
-        mission.id = 1;
-        mission.name = "捡起屠龙宝刀!";
-        mission.needLevel = 1;
-        mission.fromNpcId = 1;
-        mission.toNpcId = 1;
-        mission.status = MissionStatus.CAN_ACCEPT;
-        // mission.isAccepted = true;
-        _this.missions.push(mission);
+        var mission1Reward = function () {
+            player.levelUp();
+        };
+        var mission1 = new Mission('pickEquipment', mission1Going, mission1Reward);
+        mission1.id = 1;
+        mission1.name = "捡起屠龙宝刀!";
+        mission1.needLevel = 1;
+        mission1.fromNpcId = 1;
+        mission1.toNpcId = 1;
+        mission1.status = MissionStatus.CAN_ACCEPT;
+        _this.missions.push(mission1);
+        var mission2Going = function (eventData) {
+            if (eventData.name === '队长') {
+                mission2.current++;
+                console.log('任务2进度加啦！！！！');
+            }
+        };
+        var mission2Reward = function () {
+            player.levelUp();
+        };
+        var mission2 = new Mission('fightWithMonster', mission2Going, mission2Reward);
+        mission2.id = 2;
+        mission2.name = "打败队长!";
+        mission2.needLevel = 2;
+        mission2.fromNpcId = 1;
+        mission2.toNpcId = 1;
+        mission2.status = MissionStatus.UNACCEPT;
+        _this.missions.push(mission2);
         _this.init();
         return _this;
     }

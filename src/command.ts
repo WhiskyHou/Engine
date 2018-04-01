@@ -123,6 +123,7 @@ class FightCommand extends Command {
         this.monster.hp -= player.attack;
         player.hp -= this.monster.attack;
         if (this.monster.hp <= 0) {
+            player.fight(this.monster);
             map.deleteMonster(this.monster);
         }
         callback();

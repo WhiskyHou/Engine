@@ -36,6 +36,10 @@ class User extends EventDispatcher {
 
     }
 
+    fight(monster: Monster) {
+        this.dispatchEvent('fightWithMonster', { name: monster.name });
+    }
+
     get attack(): number {
         let equipmentAttack = 0;
         for (let equipment of this.mounthedEquipment) {
@@ -123,20 +127,27 @@ class Mission {
     toNpcId: number = 0
     isAccepted: boolean = false
     isSubmit: boolean = false
+    isReward: boolean = false
     current: number = 0
     total: number = 1
     status: MissionStatus = MissionStatus.UNACCEPT
 
     going: Function;
+    reward: Function;
 
-    constructor(going: Function) {
+    constructor(type: string, going: Function, reward: Function) {
         this.going = going;
-        player.addEventListener('pickEquipment', this.going)
+        this.reward = reward;
+        player.addEventListener(type, this.going)
     }
 
     update() {
         let nextStatus: MissionStatus = MissionStatus.UNACCEPT;
         if (this.isSubmit) {
+            if (!this.isReward) {
+                this.reward();
+                this.isReward = true;
+            }
             nextStatus = MissionStatus.FINISH;
         }
         else if (this.isAccepted) {

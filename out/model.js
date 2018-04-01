@@ -45,6 +45,9 @@ var User = /** @class */ (function (_super) {
     };
     User.prototype.drop = function () {
     };
+    User.prototype.fight = function (monster) {
+        this.dispatchEvent('fightWithMonster', { name: monster.name });
+    };
     Object.defineProperty(User.prototype, "attack", {
         get: function () {
             var equipmentAttack = 0;
@@ -125,7 +128,7 @@ var MissionStatus;
     MissionStatus[MissionStatus["FINISH"] = 4] = "FINISH";
 })(MissionStatus || (MissionStatus = {}));
 var Mission = /** @class */ (function () {
-    function Mission(going) {
+    function Mission(type, going, reward) {
         this.id = 0;
         this.name = '';
         this.needLevel = 0;
@@ -133,15 +136,21 @@ var Mission = /** @class */ (function () {
         this.toNpcId = 0;
         this.isAccepted = false;
         this.isSubmit = false;
+        this.isReward = false;
         this.current = 0;
         this.total = 1;
         this.status = MissionStatus.UNACCEPT;
         this.going = going;
-        player.addEventListener('pickEquipment', this.going);
+        this.reward = reward;
+        player.addEventListener(type, this.going);
     }
     Mission.prototype.update = function () {
         var nextStatus = MissionStatus.UNACCEPT;
         if (this.isSubmit) {
+            if (!this.isReward) {
+                this.reward();
+                this.isReward = true;
+            }
             nextStatus = MissionStatus.FINISH;
         }
         else if (this.isAccepted) {
