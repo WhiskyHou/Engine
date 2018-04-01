@@ -30,6 +30,7 @@ class User extends EventDispatcher {
     pick(equipment: Equipment) {
         this.mounthedEquipment.push(equipment);
         this.dispatchEvent('updateUserInfo', null);
+        this.dispatchEvent('pickEquipment', { name: equipment.name })
     }
     drop() {
 
@@ -48,7 +49,7 @@ class User extends EventDispatcher {
         this.y = col;
     }
 
-    update() {
+    moveSmooth() {
         // 角色每帧移动
         const targetX = player.x * TILE_SIZE;
         const targetY = player.y * TILE_SIZE;
@@ -71,6 +72,14 @@ class User extends EventDispatcher {
         } else {
             player.view.y = targetY;
         }
+    }
+
+    levelUp() {
+        this.level += 1;
+    }
+
+    update() {
+        this.moveSmooth();
     }
 
     toString() {
@@ -103,7 +112,7 @@ enum MissionStatus {
     CAN_ACCEPT = 1,
     DURRING = 2,
     CAN_SUBMIT = 3,
-    FINISH = 4,
+    FINISH = 4
 }
 
 class Mission {
@@ -118,12 +127,19 @@ class Mission {
     total: number = 1
     status: MissionStatus = MissionStatus.UNACCEPT
 
+    going: Function;
+
+    constructor(going: Function) {
+        this.going = going;
+        player.addEventListener('pickEquipment', this.going)
+    }
+
     update() {
         let nextStatus: MissionStatus = MissionStatus.UNACCEPT;
         if (this.isSubmit) {
             nextStatus = MissionStatus.FINISH;
         }
-        if (this.isAccepted) {
+        else if (this.isAccepted) {
             if (this.current >= this.total) {
                 nextStatus = MissionStatus.CAN_SUBMIT;
             } else {
@@ -192,3 +208,22 @@ class Npc {
 }
 
 
+
+
+/**
+ * 怪物
+ */
+class Monster extends EventDispatcher {
+    x: number = 0;
+    y: number = 0;
+    view: Bitmap;
+    id: number = 0;
+    name: string = '';
+    hp: number = 100;
+    attack: number = 100;
+
+
+    toString() {
+        return `[Monster ~ id:${this.id}, name:${this.name}, hp:${this.hp}, attack:${this.attack}]`
+    }
+}

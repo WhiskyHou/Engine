@@ -52,12 +52,16 @@ class MissionInfoUI extends DisplayObjectContainer {
         this.deleteAll();
         let index = 0;
         for (let mission of missionManager.missions) {
-            if (mission.status == MissionStatus.UNACCEPT ||
-                mission.status == MissionStatus.CAN_SUBMIT) {
-
+            if (mission.status == MissionStatus.DURRING) {
                 const missionLabel = new TextField("", 0, 0, 24);
                 this.addChild(missionLabel);
                 missionLabel.text = mission.name;
+                missionLabel.y = index * 24;
+                index++;
+            } else if (mission.status == MissionStatus.CAN_SUBMIT) {
+                const missionLabel = new TextField("", 0, 0, 24);
+                this.addChild(missionLabel);
+                missionLabel.text = "请提交任务！";
                 missionLabel.y = index * 24;
                 index++;
             }

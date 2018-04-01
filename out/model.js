@@ -41,6 +41,7 @@ var User = /** @class */ (function (_super) {
     User.prototype.pick = function (equipment) {
         this.mounthedEquipment.push(equipment);
         this.dispatchEvent('updateUserInfo', null);
+        this.dispatchEvent('pickEquipment', { name: equipment.name });
     };
     User.prototype.drop = function () {
     };
@@ -60,7 +61,7 @@ var User = /** @class */ (function (_super) {
         this.x = row;
         this.y = col;
     };
-    User.prototype.update = function () {
+    User.prototype.moveSmooth = function () {
         // 角色每帧移动
         var targetX = player.x * TILE_SIZE;
         var targetY = player.y * TILE_SIZE;
@@ -85,6 +86,12 @@ var User = /** @class */ (function (_super) {
         else {
             player.view.y = targetY;
         }
+    };
+    User.prototype.levelUp = function () {
+        this.level += 1;
+    };
+    User.prototype.update = function () {
+        this.moveSmooth();
     };
     User.prototype.toString = function () {
         return "[User ~ name:" + this.name + ", level:" + this.level + ", hp:" + this.hp + ", attack:" + this.attack + "]";
@@ -118,7 +125,7 @@ var MissionStatus;
     MissionStatus[MissionStatus["FINISH"] = 4] = "FINISH";
 })(MissionStatus || (MissionStatus = {}));
 var Mission = /** @class */ (function () {
-    function Mission() {
+    function Mission(going) {
         this.id = 0;
         this.name = '';
         this.needLevel = 0;
@@ -129,13 +136,15 @@ var Mission = /** @class */ (function () {
         this.current = 0;
         this.total = 1;
         this.status = MissionStatus.UNACCEPT;
+        this.going = going;
+        player.addEventListener('pickEquipment', this.going);
     }
     Mission.prototype.update = function () {
         var nextStatus = MissionStatus.UNACCEPT;
         if (this.isSubmit) {
             nextStatus = MissionStatus.FINISH;
         }
-        if (this.isAccepted) {
+        else if (this.isAccepted) {
             if (this.current >= this.total) {
                 nextStatus = MissionStatus.CAN_SUBMIT;
             }
@@ -197,3 +206,23 @@ var Npc = /** @class */ (function () {
     };
     return Npc;
 }());
+/**
+ * 怪物
+ */
+var Monster = /** @class */ (function (_super) {
+    __extends(Monster, _super);
+    function Monster() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.x = 0;
+        _this.y = 0;
+        _this.id = 0;
+        _this.name = '';
+        _this.hp = 100;
+        _this.attack = 100;
+        return _this;
+    }
+    Monster.prototype.toString = function () {
+        return "[Monster ~ id:" + this.id + ", name:" + this.name + ", hp:" + this.hp + ", attack:" + this.attack + "]";
+    };
+    return Monster;
+}(EventDispatcher));

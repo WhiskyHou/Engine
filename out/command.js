@@ -81,7 +81,7 @@ var PickCommand = /** @class */ (function (_super) {
     return PickCommand;
 }(Command));
 /**
- *
+ * 交谈命令
  */
 var TalkCommand = /** @class */ (function (_super) {
     __extends(TalkCommand, _super);
@@ -98,6 +98,33 @@ var TalkCommand = /** @class */ (function (_super) {
             missionManager.accept(mission);
             callback();
         }
+        if (this.npc.canSubmitMissions.length > 0) {
+            var mission = this.npc.canSubmitMissions[0];
+            console.log("\u5B8C\u6210\u4EFB\u52A1: " + mission.toString());
+            missionManager.submit(mission);
+            callback();
+        }
     };
     return TalkCommand;
+}(Command));
+/**
+ * 打架命令
+ */
+var FightCommand = /** @class */ (function (_super) {
+    __extends(FightCommand, _super);
+    function FightCommand(monster) {
+        var _this = _super.call(this) || this;
+        _this.monster = monster;
+        return _this;
+    }
+    FightCommand.prototype.execute = function (callback) {
+        console.log("\u5F00\u59CB\u6253\u67B6\uFF1A" + this.monster.toString());
+        this.monster.hp -= player.attack;
+        player.hp -= this.monster.attack;
+        if (this.monster.hp <= 0) {
+            map.deleteMonster(this.monster);
+        }
+        callback();
+    };
+    return FightCommand;
 }(Command));

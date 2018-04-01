@@ -79,7 +79,7 @@ class PickCommand extends Command {
 
 
 /**
- * 
+ * 交谈命令
  */
 class TalkCommand extends Command {
     npc: Npc;
@@ -97,5 +97,34 @@ class TalkCommand extends Command {
             missionManager.accept(mission);
             callback();
         }
+        if (this.npc.canSubmitMissions.length > 0) {
+            const mission = this.npc.canSubmitMissions[0];
+            console.log(`完成任务: ${mission.toString()}`);
+            missionManager.submit(mission);
+            callback();
+        }
+    }
+}
+
+
+/**
+ * 打架命令
+ */
+class FightCommand extends Command {
+    monster: Monster;
+
+    constructor(monster: Monster) {
+        super();
+        this.monster = monster;
+    }
+
+    execute(callback: Function): void {
+        console.log(`开始打架：${this.monster.toString()}`);
+        this.monster.hp -= player.attack;
+        player.hp -= this.monster.attack;
+        if (this.monster.hp <= 0) {
+            map.deleteMonster(this.monster);
+        }
+        callback();
     }
 }

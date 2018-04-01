@@ -22,6 +22,10 @@ var wall_middle = new Image();
 wall_middle.src = './assets/wall_middle.png';
 var wall_right = new Image();
 wall_right.src = './assets/wall_right.png';
+var gjl = new Image();
+gjl.src = './assets/npc.png';
+var captain = new Image();
+captain.src = './assets/monster.png';
 
 
 
@@ -43,6 +47,7 @@ const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
 const KILL_DARGON_KNIFE = 6;
 const NPC = 7;
+const MONSTER = 8;
 
 const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
@@ -164,6 +169,12 @@ class PlayingState extends State {
                     commandPool.addCommand(talk)
                 }
 
+                const monsterInfo = map.getMonsterInfo(row, col);
+                if (monsterInfo) {
+                    const fight = new FightCommand(monsterInfo);
+                    commandPool.addCommand(fight);
+                }
+
                 player.moveStatus = false;
 
                 // 执行命令池的命令
@@ -205,7 +216,7 @@ class GameMap extends DisplayObjectContainer {
     config = [
         { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D, npc: NPC },
         { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
-        { x: 0, y: 2, id: GRASS_L }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
+        { x: 0, y: 2, id: GRASS_L, monster: MONSTER }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
         { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
         { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
         { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
@@ -213,6 +224,8 @@ class GameMap extends DisplayObjectContainer {
 
     private equipmentConfig: { [index: string]: Equipment } = {}
     private npcConfig: { [index: string]: Npc } = {}
+    private monsterConfig: { [index: string]: Monster } = {}
+
 
 
     constructor() {
@@ -257,8 +270,21 @@ class GameMap extends DisplayObjectContainer {
                 this.addChild(equipmentView);
             }
 
+            if (item.monster) {
+                const monsterView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, captain);
+                const monsterItem = new Monster();
+                monsterItem.name = '队长';
+                monsterItem.view = monsterView;
+                monsterItem.hp = 120;
+                monsterItem.x = item.x;
+                monsterItem.y = item.y;
+                const key = item.x + '_' + item.y;
+                this.monsterConfig[key] = monsterItem;
+                this.addChild(monsterView);
+            }
+
             if (item.npc) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
+                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
                 const npcItem = new Npc(1, 'DDF');
                 npcItem.view = npcView;
                 npcItem.x = item.x;
@@ -286,11 +312,20 @@ class GameMap extends DisplayObjectContainer {
         const key = row + '_' + col;
         return this.npcConfig[key];
     }
+    getMonsterInfo(row: number, col: number) {
+        const key = row + '_' + col;
+        return this.monsterConfig[key];
+    }
 
     deleteEquipment(equipment: Equipment) {
         const key = equipment.x + '_' + equipment.y;
         delete this.equipmentConfig[key];
         this.deleteChild(equipment.view);
+    }
+    deleteMonster(monster: Monster) {
+        const key = monster.x + '_' + monster.y;
+        delete this.monsterConfig[key];
+        this.deleteChild(monster.view);
     }
 }
 
@@ -303,15 +338,24 @@ class MissionManager extends EventDispatcher {
 
     constructor() {
         super();
-        const mission = new Mission();
+
+        let going = (eventData: any) => {
+            if (eventData.name === '屠龙刀') {
+                mission.current++;
+                console.log('任务进度加啦！！！！')
+            }
+        }
+        const mission = new Mission(going);
         mission.id = 1;
         mission.name = "捡起屠龙宝刀!";
         mission.needLevel = 1;
         mission.fromNpcId = 1;
         mission.toNpcId = 1;
         mission.status = MissionStatus.CAN_ACCEPT;
+
         // mission.isAccepted = true;
         this.missions.push(mission);
+        this.init();
     }
 
     init() {
@@ -330,7 +374,7 @@ class MissionManager extends EventDispatcher {
 
     accept(mission: Mission) {
         mission.isAccepted = true;
-        mission.current = 1;
+        // mission.current = 1;
         this.update()
     }
 
