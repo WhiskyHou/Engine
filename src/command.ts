@@ -79,20 +79,59 @@ class PickCommand extends Command {
 
 
 /**
- * 交谈命令
+ * 对话命令
  */
+let mission_1_talk_config = [
+    "欢迎来到新日暮里",
+    "你的等级还很低",
+    "攻击力也相当低",
+    "所以我不能给你任何击杀任务",
+    "你先找到屠龙刀再回来找我"
+]
+let mission_2_talk_config = [
+    "恭喜你找到了屠龙刀",
+    "你的等级提升了",
+    "攻击力也比以前更强了",
+    "你现在要帮我杀了美队",
+    "加油你可以的，杀完回来找我"
+]
+let missionTalkConfig = [
+    [
+
+    ],
+    [
+        "欢迎来到新日暮里",
+        "你的等级还很低",
+        "攻击力也相当低",
+        "所以我不能给你任何击杀任务",
+        "你先找到屠龙刀再回来找我"
+    ],
+    [
+        "恭喜你找到了屠龙刀",
+        "你的等级提升了",
+        "攻击力也比以前更强了",
+        "你现在要帮我杀了美队",
+        "加油你可以的，杀完回来找我"
+    ]
+]
 class TalkCommand extends Command {
     npc: Npc;
+    window: TalkWindow;
 
     constructor(npc: Npc) {
         super();
         this.npc = npc;
+        this.window = new TalkWindow(180, 150);
     }
 
     execute(callback: Function): void {
         console.log(`开始和NPC：${this.npc.toString()}对话`)
         if (this.npc.canAcceptMissions.length > 0) {
             const mission = this.npc.canAcceptMissions[0];
+
+            this.window.config = missionTalkConfig[mission.id];
+            map.addChild(this.window);
+
             console.log(`接受任务：${mission.toString()}`);
             missionManager.accept(mission);
             callback();

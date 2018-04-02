@@ -26,6 +26,8 @@ var gjl = new Image();
 gjl.src = './assets/npc.png';
 var captain = new Image();
 captain.src = './assets/monster.png';
+var talk_window = new Image();
+talk_window.src = './assets/talkWindow.png';
 
 
 
@@ -424,6 +426,14 @@ canvas.onclick = function (event) {
             hitResult = hitResult.parent;
             hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
+    }
+}
+
+window.onkeydown = function (event) {
+    let key = event.keyCode ? event.keyCode : event.which;
+    if (32 === key) {
+        missionManager.dispatchEvent("onkeydown", null);
+        console.log("空格键");
     }
 }
 
