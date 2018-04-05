@@ -62,6 +62,41 @@ var missionManager: MissionManager;
 
 
 
+let missionTalkCanAcceptConfig = [
+    [
+
+    ],
+    [
+        "欢迎来到新日暮里",
+        "你的等级还很低",
+        "攻击力也相当低",
+        "所以我不能给你任何击杀任务",
+        "你先找到屠龙刀再回来找我"
+    ],
+    [
+        "你现在要帮我杀了美队",
+        "加油你可以的",
+        "杀完回来找我"
+    ]
+]
+let missionTalkCanSubmitConfig = [
+    [
+
+    ],
+    [
+        "恭喜你找到了屠龙刀",
+        "给你升一级作为奖励",
+        "你被加强了，快送"
+    ],
+    [
+        "非常感谢你替我杀了美队",
+        "再奖励你升一级吧",
+        "赶快去下一层吧勇士"
+    ]
+]
+
+
+
 
 /**
  * 开始状态
@@ -108,6 +143,8 @@ class MenuState extends State {
 }
 
 
+var talkUIContainer: DisplayObjectContainer;
+
 /**
  * 游戏状态
  */
@@ -116,7 +153,10 @@ class PlayingState extends State {
     userInfoUI: UserInfoUI;
     missionInfoUI: MissionInfoUI;
 
-    gameContainer: DisplayObjectContainer;
+    mapContainer: DisplayObjectContainer;
+    userUIContainer: DisplayObjectContainer;
+    missionUIContainer: DisplayObjectContainer;
+
 
     constructor() {
         super();
@@ -124,22 +164,27 @@ class PlayingState extends State {
         missionManager = new MissionManager();
         map = new GameMap();
 
+        this.mapContainer = new DisplayObjectContainer(16, 6);
+        this.userUIContainer = new DisplayObjectContainer(16, 6);
+        this.missionUIContainer = new DisplayObjectContainer(16, 6);
+        talkUIContainer = new DisplayObjectContainer(16, 6);
+
         this.bg = new Bitmap(0, 0, bg);
         this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
         this.missionInfoUI = new MissionInfoUI(784, 200);
-
-
-        this.gameContainer = new DisplayObjectContainer(16, 6);
     }
 
     onEnter(): void {
         stage.addChild(this.bg);
-        stage.addChild(this.gameContainer);
+        stage.addChild(this.mapContainer);
+        stage.addChild(this.userUIContainer);
+        stage.addChild(this.missionUIContainer);
+        stage.addChild(talkUIContainer);
 
-        this.gameContainer.addChild(map);
-        this.gameContainer.addChild(player.view);
-        this.gameContainer.addChild(this.userInfoUI);
-        this.gameContainer.addChild(this.missionInfoUI);
+        this.mapContainer.addChild(map);
+        this.mapContainer.addChild(player.view);
+        this.userUIContainer.addChild(this.userInfoUI);
+        this.missionUIContainer.addChild(this.missionInfoUI);
 
 
 
@@ -195,7 +240,7 @@ class PlayingState extends State {
     }
     onExit(): void {
         stage.deleteAll();
-        this.gameContainer.deleteAll();
+        this.mapContainer.deleteAll();
     }
 
     // 角色原地动画
@@ -204,208 +249,6 @@ class PlayingState extends State {
             player.view.img = (player.view.img == van1) ? van2 : van1;
             this.changePlayerViewPosture();
         }, 600);
-    }
-
-}
-
-
-/**
- * 游戏地图容器
- */
-class GameMap extends DisplayObjectContainer {
-    grid: astar.Grid;
-
-    config = [
-        { x: 0, y: 0, id: GRASS_L }, { x: 1, y: 0, id: GRASS_D }, { x: 2, y: 0, id: GRASS_L }, { x: 3, y: 0, id: GRASS_D }, { x: 4, y: 0, id: GRASS_L }, { x: 5, y: 0, id: GRASS_D, npc: NPC },
-        { x: 0, y: 1, id: GRASS_D, wall: WALL_LEFT }, { x: 1, y: 1, id: GRASS_L, wall: WALL_MIDDLE }, { x: 2, y: 1, id: GRASS_D, wall: WALL_MIDDLE }, { x: 3, y: 1, id: GRASS_L, wall: WALL_RIGHT }, { x: 4, y: 1, id: GRASS_D }, { x: 5, y: 1, id: GRASS_L },
-        { x: 0, y: 2, id: GRASS_L, monster: MONSTER }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
-        { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
-        { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
-        { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
-    ]
-
-    private equipmentConfig: { [index: string]: Equipment } = {}
-    private npcConfig: { [index: string]: Npc } = {}
-    private monsterConfig: { [index: string]: Monster } = {}
-
-
-
-    constructor() {
-        super(0, 0);
-
-        this.update();
-    }
-    // 好像只调用了一次…… 初始化……
-    update() {
-        this.grid = new astar.Grid(COL_NUM, ROW_NUM);
-
-        for (let item of this.config) {
-            const img = item.id == GRASS_L ? grassLight : grassDark;
-            const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
-            this.grid.setWalkable(item.x, item.y, true);
-            this.addChild(tile);
-
-            if (item.tree) {
-                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
-                this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile);
-            }
-            if (item.wall) {
-                const img = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
-                const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
-                this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile);
-            }
-            if (item.equipment) {
-                // const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                // this.addChild(tile);
-
-                const equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                const equipmentTiem = new Equipment();
-                equipmentTiem.view = equipmentView;
-                equipmentTiem.name = '屠龙刀'
-                equipmentTiem.attack = 35;
-                equipmentTiem.x = item.x;
-                equipmentTiem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.equipmentConfig[key] = equipmentTiem;
-                this.addChild(equipmentView);
-            }
-
-            if (item.monster) {
-                const monsterView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, captain);
-                const monsterItem = new Monster();
-                monsterItem.name = '队长';
-                monsterItem.view = monsterView;
-                monsterItem.hp = 120;
-                monsterItem.x = item.x;
-                monsterItem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.monsterConfig[key] = monsterItem;
-                this.addChild(monsterView);
-            }
-
-            if (item.npc) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                const npcItem = new Npc(1, 'DDF');
-                npcItem.view = npcView;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.addChild(npcView);
-            }
-        }
-    }
-
-    getNodeInfo(row: number, col: number) {
-        for (let item of this.config) {
-            if (item.x == row && item.y == col) {
-                return item;
-            }
-        }
-        return null;
-    }
-    getEquipmentInfo(row: number, col: number) {
-        const key = row + '_' + col
-        return this.equipmentConfig[key]
-    }
-    getNpcInfo(row: number, col: number) {
-        const key = row + '_' + col;
-        return this.npcConfig[key];
-    }
-    getMonsterInfo(row: number, col: number) {
-        const key = row + '_' + col;
-        return this.monsterConfig[key];
-    }
-
-    deleteEquipment(equipment: Equipment) {
-        const key = equipment.x + '_' + equipment.y;
-        delete this.equipmentConfig[key];
-        this.deleteChild(equipment.view);
-    }
-    deleteMonster(monster: Monster) {
-        const key = monster.x + '_' + monster.y;
-        delete this.monsterConfig[key];
-        this.deleteChild(monster.view);
-    }
-}
-
-
-/**
- * 任务管理器
- */
-class MissionManager extends EventDispatcher {
-    missions: Mission[] = []
-
-    constructor() {
-        super();
-
-
-        let mission1Going = (eventData: any) => {
-            if (eventData.name === '屠龙刀') {
-                mission1.current++;
-                console.log('任务1进度加啦！！！！')
-            }
-        }
-        let mission1Reward = () => {
-            player.levelUp();
-        }
-        const mission1 = new Mission('pickEquipment', mission1Going, mission1Reward);
-        mission1.id = 1;
-        mission1.name = "捡起屠龙宝刀!";
-        mission1.needLevel = 1;
-        mission1.fromNpcId = 1;
-        mission1.toNpcId = 1;
-        mission1.status = MissionStatus.CAN_ACCEPT;
-        this.missions.push(mission1);
-
-
-
-        let mission2Going = (eventData: any) => {
-            if (eventData.name === '队长') {
-                mission2.current++;
-                console.log('任务2进度加啦！！！！')
-            }
-        }
-        let mission2Reward = () => {
-            player.levelUp();
-        }
-        const mission2 = new Mission('fightWithMonster', mission2Going, mission2Reward);
-        mission2.id = 2;
-        mission2.name = "打败队长!";
-        mission2.needLevel = 2;
-        mission2.fromNpcId = 1;
-        mission2.toNpcId = 1;
-        mission2.status = MissionStatus.UNACCEPT;
-        this.missions.push(mission2)
-
-        this.init();
-    }
-
-    init() {
-        player.addEventListener('userChange', (eventData: any) => {
-            this.update();
-        })
-        this.update();
-    }
-
-    update() {
-        for (let mission of this.missions) {
-            mission.update();
-        }
-        this.dispatchEvent('missionUpdate', {});
-    }
-
-    accept(mission: Mission) {
-        mission.isAccepted = true;
-        // mission.current = 1;
-        this.update()
-    }
-
-    submit(mission: Mission) {
-        mission.isSubmit = true;
-        this.update();
     }
 
 }
@@ -422,20 +265,18 @@ canvas.onclick = function (event) {
     if (hitResult) {
         hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
-            // console.log(hitResult);
+            console.log(hitResult);
             hitResult = hitResult.parent;
             hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 }
 
-window.onkeydown = function (event) {
-    let key = event.keyCode ? event.keyCode : event.which;
-    if (32 === key) {
-        missionManager.dispatchEvent("onkeydown", null);
-        console.log("空格键");
-    }
-}
+// window.onkeydown = function (event) {
+//     let key = event.keyCode ? event.keyCode : event.which;
+//     missionManager.dispatchEvent("onkeydown_32", null);
+//     console.log("空格键");
+// }
 
 
 

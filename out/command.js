@@ -83,59 +83,42 @@ var PickCommand = /** @class */ (function (_super) {
 /**
  * 对话命令
  */
-var mission_1_talk_config = [
-    "欢迎来到新日暮里",
-    "你的等级还很低",
-    "攻击力也相当低",
-    "所以我不能给你任何击杀任务",
-    "你先找到屠龙刀再回来找我"
-];
-var mission_2_talk_config = [
-    "恭喜你找到了屠龙刀",
-    "你的等级提升了",
-    "攻击力也比以前更强了",
-    "你现在要帮我杀了美队",
-    "加油你可以的，杀完回来找我"
-];
-var missionTalkConfig = [
-    [],
-    [
-        "欢迎来到新日暮里",
-        "你的等级还很低",
-        "攻击力也相当低",
-        "所以我不能给你任何击杀任务",
-        "你先找到屠龙刀再回来找我"
-    ],
-    [
-        "恭喜你找到了屠龙刀",
-        "你的等级提升了",
-        "攻击力也比以前更强了",
-        "你现在要帮我杀了美队",
-        "加油你可以的，杀完回来找我"
-    ]
-];
 var TalkCommand = /** @class */ (function (_super) {
     __extends(TalkCommand, _super);
     function TalkCommand(npc) {
         var _this = _super.call(this) || this;
         _this.npc = npc;
-        _this.window = new TalkWindow(180, 150);
         return _this;
     }
     TalkCommand.prototype.execute = function (callback) {
         console.log("\u5F00\u59CB\u548CNPC\uFF1A" + this.npc.toString() + "\u5BF9\u8BDD");
+        var mission = null;
         if (this.npc.canAcceptMissions.length > 0) {
-            var mission = this.npc.canAcceptMissions[0];
-            this.window.config = missionTalkConfig[mission.id];
-            map.addChild(this.window);
-            console.log("\u63A5\u53D7\u4EFB\u52A1\uFF1A" + mission.toString());
-            missionManager.accept(mission);
-            callback();
+            mission = this.npc.canAcceptMissions[0];
         }
         if (this.npc.canSubmitMissions.length > 0) {
-            var mission = this.npc.canSubmitMissions[0];
-            console.log("\u5B8C\u6210\u4EFB\u52A1: " + mission.toString());
-            missionManager.submit(mission);
+            mission = this.npc.canSubmitMissions[0];
+        }
+        if (mission) {
+            var talkWindow_1 = new TalkWindow(100, 150);
+            talkUIContainer.addChild(talkWindow_1);
+            talkWindow_1.setMission(mission);
+            talkWindow_1.addEventListener("talkWiondowClose", function () {
+                talkUIContainer.deleteChild(talkWindow_1);
+                if (mission) {
+                    if (mission.status == MissionStatus.CAN_ACCEPT) {
+                        console.log("\u63A5\u53D7\u4EFB\u52A1\uFF1A" + mission.toString());
+                        missionManager.accept(mission);
+                    }
+                    else if (mission.status == MissionStatus.CAN_SUBMIT) {
+                        console.log("\u5B8C\u6210\u4EFB\u52A1: " + mission.toString());
+                        missionManager.submit(mission);
+                    }
+                    callback();
+                }
+            });
+        }
+        else {
             callback();
         }
     };

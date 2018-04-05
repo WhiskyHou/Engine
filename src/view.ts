@@ -74,48 +74,48 @@ class MissionInfoUI extends DisplayObjectContainer {
 /**
  * 对话窗口UI
  */
-class TalkWindow extends DisplayObjectContainer {
-    view: Bitmap;
-    text: TextField;
+// class TalkWindow extends DisplayObjectContainer {
+//     view: Bitmap;
+//     text: TextField;
 
-    count: number = 1;
+//     count: number = 1;
 
-    _config = [
-        "欢迎来到新日暮里",
-        "你的等级还很低",
-        "攻击力也相当低",
-        "所以我不能给你任何击杀任务",
-        "你先找到屠龙刀再回来找我"
-    ]
+//     _config = [
+//         "欢迎来到新日暮里",
+//         "你的等级还很低",
+//         "攻击力也相当低",
+//         "所以我不能给你任何击杀任务",
+//         "你先找到屠龙刀再回来找我"
+//     ]
 
-    constructor(x: number, y: number) {
-        super(x, y);
+//     constructor(x: number, y: number) {
+//         super(x, y);
 
-        this.init();
+//         this.init();
 
-        missionManager.addEventListener("onkeydown", (eventData: any) => {
-            if (this.count <= this._config.length - 1) {
-                this.text.text = this._config[this.count];
-                this.count++;
-            } else {
-                map.deleteChild(this);
-            }
-        })
-    }
+//         missionManager.addEventListener("onkeydown_32", (eventData: any) => {
+//             if (this.count <= this._config.length - 1) {
+//                 this.text.text = this._config[this.count];
+//                 this.count++;
+//             } else {
+//                 map.deleteChild(this);
+//             }
+//         })
+//     }
 
-    init() {
-        this.view = new Bitmap(0, 0, talk_window);
-        this.text = new TextField('', 140, 150, 40);
+//     init() {
+//         this.view = new Bitmap(0, 0, talk_window);
+//         this.text = new TextField('', 300, 200, 40);
 
-        this.addChild(this.view);
-        this.addChild(this.text);
-    }
+//         this.addChild(this.view);
+//         this.addChild(this.text);
+//     }
 
-    set config(config: string[]) {
-        this._config = config;
-        this.text.text = this._config[0];
-    }
-    get config() {
-        return this._config;
-    }
-}
+//     set config(config: string[]) {
+//         this._config = config;
+//         this.text.text = this._config[0];
+//     }
+//     get config() {
+//         return this._config;
+//     }
+// }

@@ -302,6 +302,9 @@ var TextField = /** @class */ (function (_super) {
         // 获取文本渲染的宽度
         this.width = context.measureText(this.text).width;
     };
+    TextField.prototype.centered = function () {
+        this.x -= this.width / 2;
+    };
     return TextField;
 }(DisplayObject));
 /**

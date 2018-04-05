@@ -334,6 +334,10 @@ class TextField extends DisplayObject {
         // 获取文本渲染的宽度
         this.width = context.measureText(this.text).width;
     }
+
+    centered() {
+        this.x -= this.width / 2;
+    }
 }
 
 
