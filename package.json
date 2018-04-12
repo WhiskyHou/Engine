@@ -4,7 +4,7 @@
   "description": "------\r ## 15081103 侯毅",
   "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "dev": "electron ."
   },
   "repository": {
     "type": "git",
