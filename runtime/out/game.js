@@ -44,7 +44,7 @@ talk_window.src = './assets/talkWindow.png';
  *
  * 全局变量
  */
-var TILE_SIZE = 128;
+var TILE_SIZE = 64;
 var ROW_NUM = 6;
 var COL_NUM = 6;
 var GRASS_L = 0;
@@ -61,7 +61,7 @@ var PLAYER_INDEX_Y = 0;
 var PLAYER_WALK_SPEED = 500;
 var player;
 var map;
-var missionManager;
+var missionManager = new MissionManager();
 var missionTalkCanAcceptConfig = [
     [],
     [
@@ -102,6 +102,7 @@ var MenuState = /** @class */ (function (_super) {
             // 如果这里就调用onExit的话，那么状态机里的onExit也会调用成功
             // this.onExit();
             _this.onCreatePlayer();
+            missionManager.init();
             fsm.replaceState(new PlayingState());
         };
         _this.title = new TextField('点击开始游戏', 200, 300, 60);
@@ -137,15 +138,14 @@ var PlayingState = /** @class */ (function (_super) {
     __extends(PlayingState, _super);
     function PlayingState() {
         var _this = _super.call(this) || this;
-        missionManager = new MissionManager();
         map = new GameMap();
-        _this.mapContainer = new DisplayObjectContainer(16, 6);
-        _this.userUIContainer = new DisplayObjectContainer(16, 6);
-        _this.missionUIContainer = new DisplayObjectContainer(16, 6);
-        talkUIContainer = new DisplayObjectContainer(16, 6);
+        talkUIContainer = new DisplayObjectContainer(16, 16);
+        _this.mapContainer = new DisplayObjectContainer(16, 16);
+        _this.userUIContainer = new DisplayObjectContainer(16, 16);
+        _this.missionUIContainer = new DisplayObjectContainer(16, 16);
         _this.bg = new Bitmap(0, 0, bg);
         _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
-        _this.missionInfoUI = new MissionInfoUI(784, 200);
+        _this.missionInfoUI = new MissionInfoUI(TILE_SIZE * 6, TILE_SIZE * 2);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {
@@ -220,16 +220,11 @@ canvas.onclick = function (event) {
     if (hitResult) {
         hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
-            console.log(hitResult);
+            // console.log(hitResult);
             hitResult = hitResult.parent;
             hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 };
-// window.onkeydown = function (event) {
-//     let key = event.keyCode ? event.keyCode : event.which;
-//     missionManager.dispatchEvent("onkeydown_32", null);
-//     console.log("空格键");
-// }
 // 初始状态设置
 fsm.replaceState(new MenuState());

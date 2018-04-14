@@ -30,10 +30,10 @@ var TalkWindow = /** @class */ (function (_super) {
     TalkWindow.prototype.update = function () {
         var contents = [];
         if (this.mission.status == MissionStatus.CAN_ACCEPT) {
-            contents = missionTalkCanAcceptConfig[this.mission.id];
+            contents = this.mission.canAcceptContent;
         }
         else if (this.mission.status == MissionStatus.CAN_SUBMIT) {
-            contents = missionTalkCanSubmitConfig[this.mission.id];
+            contents = this.mission.canSubmitContent;
         }
         if (this.count >= contents.length) {
             this.dispatchEvent("talkWiondowClose", null);

@@ -36,7 +36,7 @@ talk_window.src = './assets/talkWindow.png';
  * 
  * 全局变量
  */
-const TILE_SIZE = 128;
+const TILE_SIZE = 64;
 
 const ROW_NUM = 6;
 const COL_NUM = 6;
@@ -58,8 +58,7 @@ const PLAYER_WALK_SPEED = 500;
 
 var player: User;
 var map: GameMap;
-var missionManager: MissionManager;
-
+var missionManager = new MissionManager();
 
 
 let missionTalkCanAcceptConfig = [
@@ -138,6 +137,7 @@ class MenuState extends State {
         // this.onExit();
 
         this.onCreatePlayer();
+        missionManager.init();
         fsm.replaceState(new PlayingState());
     }
 }
@@ -161,17 +161,16 @@ class PlayingState extends State {
     constructor() {
         super();
 
-        missionManager = new MissionManager();
         map = new GameMap();
+        talkUIContainer = new DisplayObjectContainer(16, 16);
 
-        this.mapContainer = new DisplayObjectContainer(16, 6);
-        this.userUIContainer = new DisplayObjectContainer(16, 6);
-        this.missionUIContainer = new DisplayObjectContainer(16, 6);
-        talkUIContainer = new DisplayObjectContainer(16, 6);
+        this.mapContainer = new DisplayObjectContainer(16, 16);
+        this.userUIContainer = new DisplayObjectContainer(16, 16);
+        this.missionUIContainer = new DisplayObjectContainer(16, 16);
 
         this.bg = new Bitmap(0, 0, bg);
         this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
-        this.missionInfoUI = new MissionInfoUI(784, 200);
+        this.missionInfoUI = new MissionInfoUI(TILE_SIZE * 6, TILE_SIZE * 2);
     }
 
     onEnter(): void {
@@ -265,18 +264,12 @@ canvas.onclick = function (event) {
     if (hitResult) {
         hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         while (hitResult.parent) {
-            console.log(hitResult);
+            // console.log(hitResult);
             hitResult = hitResult.parent;
             hitResult.dispatchEvent('onClick', { target: hitResult, globalX: globalX, globalY: globalY });
         }
     }
 }
-
-// window.onkeydown = function (event) {
-//     let key = event.keyCode ? event.keyCode : event.which;
-//     missionManager.dispatchEvent("onkeydown_32", null);
-//     console.log("空格键");
-// }
 
 
 

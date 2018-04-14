@@ -1,0 +1,46 @@
+{
+    "mission": [
+        {
+            "id": 1,
+            "name": "捡起屠龙宝刀",
+            "needLevel": 1,
+            "fromNpcId": 1,
+            "toNpcId": 1,
+            "canAcceptConfig": [
+                "欢迎来到新日暮里111",
+                "你的等级还很低",
+                "攻击力也相当低",
+                "所以我不能给你任何击杀任务",
+                "你先找到屠龙刀再回来找我"
+            ],
+            "canSubmitConfig": [
+                "恭喜你找到了屠龙刀",
+                "给你升一级作为奖励",
+                "你被加强了，快送"
+            ],
+            "going": "pickEquipment",
+            "goingFunc": "屠龙刀",
+            "reward": "levelUp"
+        },
+        {
+            "id": 2,
+            "name": "打败队长",
+            "needLevel": 2,
+            "fromNpcId": 1,
+            "toNpcId": 1,
+            "canAcceptConfig": [
+                "你现在要帮我杀了美队111",
+                "加油你可以的",
+                "杀完回来找我"
+            ],
+            "canSubmitConfig": [
+                "非常感谢你替我杀了美队",
+                "再奖励你升一级吧",
+                "赶快去下一层吧勇士"
+            ],
+            "going": "fightWithMonster",
+            "goingFunc": "队长",
+            "reward": "levelUp"
+        }
+    ]
+}

@@ -17,43 +17,6 @@ var MissionManager = /** @class */ (function (_super) {
     function MissionManager() {
         var _this = _super.call(this) || this;
         _this.missions = [];
-        // mission 1
-        var mission1Going = function (eventData) {
-            if (eventData.name === '屠龙刀') {
-                mission1.current++;
-                console.log('任务1进度加啦！！！！');
-            }
-        };
-        var mission1Reward = function () {
-            player.levelUp();
-        };
-        var mission1 = new Mission('pickEquipment', mission1Going, mission1Reward);
-        mission1.id = 1;
-        mission1.name = "捡起屠龙宝刀!";
-        mission1.needLevel = 1;
-        mission1.fromNpcId = 1;
-        mission1.toNpcId = 1;
-        mission1.status = MissionStatus.CAN_ACCEPT;
-        _this.missions.push(mission1);
-        // mission 2
-        var mission2Going = function (eventData) {
-            if (eventData.name === '队长') {
-                mission2.current++;
-                console.log('任务2进度加啦！！！！');
-            }
-        };
-        var mission2Reward = function () {
-            player.levelUp();
-        };
-        var mission2 = new Mission('fightWithMonster', mission2Going, mission2Reward);
-        mission2.id = 2;
-        mission2.name = "打败队长!";
-        mission2.needLevel = 2;
-        mission2.fromNpcId = 1;
-        mission2.toNpcId = 1;
-        mission2.status = MissionStatus.UNACCEPT;
-        _this.missions.push(mission2);
-        _this.init();
         return _this;
     }
     MissionManager.prototype.init = function () {
@@ -61,6 +24,14 @@ var MissionManager = /** @class */ (function (_super) {
         player.addEventListener('userChange', function (eventData) {
             _this.update();
         });
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", "config/mission.json");
+        xhr.send();
+        xhr.onload = function () {
+            var obj = JSON.parse(xhr.response);
+            console.log(xhr.response);
+            _this.parseFromConfig(obj);
+        };
         this.update();
     };
     MissionManager.prototype.update = function () {
@@ -69,6 +40,34 @@ var MissionManager = /** @class */ (function (_super) {
             mission.update();
         }
         this.dispatchEvent('missionUpdate', {});
+    };
+    MissionManager.prototype.parseFromConfig = function (config) {
+        var _loop_1 = function (item) {
+            var going = item.going;
+            var goingFunc = function (eventData) {
+                if (eventData.name === item.goingFunc) {
+                    mission.current++;
+                }
+            };
+            var rewardFunc = function () {
+                player.levelUp();
+            };
+            var mission = new Mission(going, goingFunc, rewardFunc);
+            mission.id = item.id;
+            mission.name = item.name;
+            mission.needLevel = item.needLevel;
+            mission.fromNpcId = item.fromNpcId;
+            mission.toNpcId = item.toNpcId;
+            mission.canAcceptContent = item.canAcceptConfig;
+            mission.canSubmitContent = item.canSubmitConfig;
+            mission.status = MissionStatus.UNACCEPT;
+            this_1.missions.push(mission);
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = config.mission; _i < _a.length; _i++) {
+            var item = _a[_i];
+            _loop_1(item);
+        }
     };
     MissionManager.prototype.accept = function (mission) {
         mission.isAccepted = true;

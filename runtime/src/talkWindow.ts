@@ -27,10 +27,10 @@ class TalkWindow extends DisplayObjectContainer {
     update() {
         let contents: string[] = [];
         if (this.mission.status == MissionStatus.CAN_ACCEPT) {
-            contents = missionTalkCanAcceptConfig[this.mission.id];
+            contents = this.mission.canAcceptContent;
         }
         else if (this.mission.status == MissionStatus.CAN_SUBMIT) {
-            contents = missionTalkCanSubmitConfig[this.mission.id];
+            contents = this.mission.canSubmitContent;
         }
 
 

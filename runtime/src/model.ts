@@ -128,6 +128,8 @@ class Mission {
     isAccepted: boolean = false
     isSubmit: boolean = false
     isReward: boolean = false
+    canAcceptContent: string[] = []
+    canSubmitContent: string[] = []
     current: number = 0
     total: number = 1
     status: MissionStatus = MissionStatus.UNACCEPT
