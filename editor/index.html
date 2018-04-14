@@ -10,16 +10,22 @@
 <body>
     <div style="display: flex">
         <div>
-            <button></button>
-            <button></button>
+            <p>gameObjectTree</p>
         </div>
 
-        <webview style="width:1100px; height:900px;" src='../runtime/index.html'></webview>
+        <webview id="runtime" style="width:1100px; height:900px;" src='../runtime/index.html'></webview>
 
         <div>
-
+            <p>inspector</p>
+            <div style="background-color: hotpink">
+                <p>Mission Editor</p>
+                <div id="missionEditorContent"></div>
+            </div>
         </div>
     </div>
+    <script>
+        require('./out/editor.js')
+    </script>
 </body>
 
 </html>
