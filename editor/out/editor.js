@@ -11,23 +11,41 @@ var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 var MissionEditorRender = /** @class */ (function () {
     function MissionEditorRender(item) {
-        var _this = this;
         var container = document.createElement('div');
-        var propertyName = document.createElement('span');
-        var propertyValue = document.createElement('input');
+        var nameContainer = this.setPropertyEditPanel(item, 'name');
+        var needLevelContainer = this.setPropertyEditPanel(item, 'needLevel');
+        var fromNpcContainer = this.setPropertyEditPanel(item, 'fromNpcId');
+        var toNpcContainer = this.setPropertyEditPanel(item, 'toNpcId');
         var button = document.createElement('button');
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
+        container.appendChild(nameContainer);
+        container.appendChild(needLevelContainer);
+        container.appendChild(fromNpcContainer);
+        container.appendChild(toNpcContainer);
         container.appendChild(button);
-        propertyName.innerText = '12333';
-        propertyValue.value = item.name;
-        button.innerText = 'submit';
+        button.innerText = '确认';
         button.onclick = function () {
-            item.name = propertyValue.value;
-            _this.saveAndReload();
+            var nodes = nameContainer.childNodes;
+            for (var i = 0; i < nodes.length; ++i) {
+                var node = nodes.item(i);
+            }
         };
         this.view = container;
     }
+    MissionEditorRender.prototype.setPropertyEditPanel = function (item, type) {
+        var container = document.createElement('div');
+        var propertyName = document.createElement('span');
+        var propertyValue = document.createElement('input');
+        for (var key in item) {
+            if (key == type) {
+                container.id = key;
+                propertyName.innerText = key;
+                propertyValue.value = item[key];
+            }
+        }
+        container.appendChild(propertyName);
+        container.appendChild(propertyValue);
+        return container;
+    };
     MissionEditorRender.prototype.saveAndReload = function () {
         var content = JSON.stringify(jsonData, null, '\t');
         fs.writeFileSync(missionConfigPath, content);

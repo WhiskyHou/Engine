@@ -8,25 +8,52 @@ class MissionEditorRender {
 
     constructor(item: any) {
         const container = document.createElement('div');
-        const propertyName = document.createElement('span');
-        const propertyValue = document.createElement('input');
-        const button = document.createElement('button')
 
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
+        const nameContainer = this.setPropertyEditPanel(item, 'name');
+        const needLevelContainer = this.setPropertyEditPanel(item, 'needLevel');
+        const fromNpcContainer = this.setPropertyEditPanel(item, 'fromNpcId');
+        const toNpcContainer = this.setPropertyEditPanel(item, 'toNpcId');
+        const button = document.createElement('button');
+
+        container.appendChild(nameContainer);
+        container.appendChild(needLevelContainer);
+        container.appendChild(fromNpcContainer);
+        container.appendChild(toNpcContainer);
         container.appendChild(button);
 
-        propertyName.innerText = '12333';
-        propertyValue.value = item.name;
-        button.innerText = 'submit';
-
+        button.innerText = '确认';
         button.onclick = () => {
-            item.name = propertyValue.value;
-            this.saveAndReload();
+            const nodes = nameContainer.childNodes;
+            for (let i = 0; i < nodes.length; ++i) {
+                const node = nodes.item(i);
+
+            }
         }
 
         this.view = container;
     }
+
+
+    private setPropertyEditPanel(item: any, type: string): HTMLDivElement {
+        let container = document.createElement('div');
+
+        const propertyName = document.createElement('span');
+        const propertyValue = document.createElement('input');
+
+        for (let key in item) {
+            if (key == type) {
+                container.id = key;
+                propertyName.innerText = key;
+                propertyValue.value = item[key];
+            }
+        }
+
+        container.appendChild(propertyName);
+        container.appendChild(propertyValue);
+
+        return container;
+    }
+
 
     private saveAndReload() {
         const content = JSON.stringify(jsonData, null, '\t');
