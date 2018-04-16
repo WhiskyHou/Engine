@@ -70,6 +70,22 @@ const content = fs.readFileSync(missionConfigPath, 'utf-8');
 const jsonData = JSON.parse(content);
 
 const missionEditorContent = document.getElementById("missionEditorContent");
+const missionChoice = document.getElementById("missionChoice");
+
+if (missionChoice) {
+    for (let item of jsonData.mission) {
+        // console.log(item)
+        for (let key in item) {
+            // console.log(key)
+            if (key == 'name') {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.innerText = item[key];
+                missionChoice.appendChild(option);
+            }
+        }
+    }
+}
 
 if (missionEditorContent) {
     for (let item of jsonData.mission) {

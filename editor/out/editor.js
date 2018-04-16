@@ -60,9 +60,25 @@ var missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.js
 var content = fs.readFileSync(missionConfigPath, 'utf-8');
 var jsonData = JSON.parse(content);
 var missionEditorContent = document.getElementById("missionEditorContent");
-if (missionEditorContent) {
+var missionChoice = document.getElementById("missionChoice");
+if (missionChoice) {
     for (var _i = 0, _a = jsonData.mission; _i < _a.length; _i++) {
         var item = _a[_i];
+        // console.log(item)
+        for (var key in item) {
+            // console.log(key)
+            if (key == 'name') {
+                var option = document.createElement('option');
+                option.value = item.id;
+                option.innerText = item[key];
+                missionChoice.appendChild(option);
+            }
+        }
+    }
+}
+if (missionEditorContent) {
+    for (var _b = 0, _c = jsonData.mission; _b < _c.length; _b++) {
+        var item = _c[_b];
         var itemRender = new MissionEditorRender(item);
         missionEditorContent.appendChild(itemRender.view);
     }
