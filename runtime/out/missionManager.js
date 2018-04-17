@@ -45,7 +45,8 @@ var MissionManager = /** @class */ (function (_super) {
         var _loop_1 = function (item) {
             var going = item.going;
             var goingFunc = function (eventData) {
-                if (eventData.name === item.goingFunc) {
+                if (mission.status == MissionStatus.DURRING
+                    && eventData.name === item.goingFunc) {
                     mission.current++;
                 }
             };

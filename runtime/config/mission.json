@@ -3,9 +3,9 @@
 		{
 			"id": 1,
 			"name": "捡起屠龙宝刀",
-			"needLevel": 1,
-			"fromNpcId": 1,
-			"toNpcId": 1,
+			"needLevel": "1",
+			"fromNpcId": "1",
+			"toNpcId": "1",
 			"canAcceptConfig": [
 				"欢迎来到新日暮里111",
 				"你的等级还很低",
