@@ -25,9 +25,9 @@
 		{
 			"id": 2,
 			"name": "打败队长",
-			"needLevel": 2,
-			"fromNpcId": 1,
-			"toNpcId": 1,
+			"needLevel": "2",
+			"fromNpcId": "1",
+			"toNpcId": "1",
 			"canAcceptConfig": [
 				"你现在要帮我杀了美队111",
 				"加油你可以的",

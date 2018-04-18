@@ -9,59 +9,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
-var MissionEditorRender = /** @class */ (function () {
-    function MissionEditorRender(item) {
-        var container = document.createElement('div');
-        var nameContainer = this.setPropertyEditPanel(item, 'name');
-        var needLevelContainer = this.setPropertyEditPanel(item, 'needLevel');
-        var fromNpcContainer = this.setPropertyEditPanel(item, 'fromNpcId');
-        var toNpcContainer = this.setPropertyEditPanel(item, 'toNpcId');
-        var button = document.createElement('button');
-        container.appendChild(nameContainer);
-        container.appendChild(needLevelContainer);
-        container.appendChild(fromNpcContainer);
-        container.appendChild(toNpcContainer);
-        container.appendChild(button);
-        button.innerText = '确认';
-        button.onclick = function () {
-            var nodes = nameContainer.childNodes;
-            for (var i = 0; i < nodes.length; ++i) {
-                var node = nodes.item(i);
-                // TODO
-            }
-        };
-        this.view = container;
-    }
-    MissionEditorRender.prototype.setPropertyEditPanel = function (item, type) {
-        var container = document.createElement('div');
-        var propertyName = document.createElement('span');
-        var propertyValue = document.createElement('input');
-        for (var key in item) {
-            if (key == type) {
-                container.id = key;
-                propertyName.innerText = key;
-                propertyValue.value = item[key];
-            }
-        }
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
-        return container;
-    };
-    MissionEditorRender.prototype.saveAndReload = function () {
-        var content = JSON.stringify(jsonData, null, '\t');
-        fs.writeFileSync(missionConfigPath, content);
-        var runtime = document.getElementById("runtime");
-        if (runtime) {
-            runtime.reload();
-        }
-    };
-    return MissionEditorRender;
-}());
-var missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
-var content = fs.readFileSync(missionConfigPath, 'utf-8');
-var jsonData = JSON.parse(content);
-var missionEditorChoice = document.getElementById("missionEditorChoice");
-var missionEditorContent = document.getElementById("missionEditorContent");
+/**
+ * 任务属性编辑器
+ */
 var MissionEditor = /** @class */ (function () {
     function MissionEditor(choice, content, data) {
         this.viewChoice = choice;
@@ -72,7 +22,19 @@ var MissionEditor = /** @class */ (function () {
     }
     MissionEditor.prototype.initChoice = function (missions) {
         var _this = this;
-        var select = document.createElement('select');
+        this.choiceSelect = document.createElement('select');
+        this.updateChoice(missions);
+        var button = document.createElement('button');
+        button.innerText = '切换';
+        button.onclick = function () {
+            var id = _this.choiceSelect.options[_this.choiceSelect.selectedIndex].value;
+            _this.updateContent(id);
+        };
+        this.viewChoice.appendChild(this.choiceSelect);
+        this.viewChoice.appendChild(button);
+    };
+    MissionEditor.prototype.updateChoice = function (missions) {
+        this.choiceSelect.innerText = '';
         for (var _i = 0, missions_1 = missions; _i < missions_1.length; _i++) {
             var mission = missions_1[_i];
             // for (let key in mission) {
@@ -80,23 +42,15 @@ var MissionEditor = /** @class */ (function () {
             var option = document.createElement('option');
             option.value = mission.id;
             option.innerText = mission.name;
-            select.appendChild(option);
+            this.choiceSelect.appendChild(option);
             //     }
             // }
         }
-        var button = document.createElement('button');
-        button.innerText = '切换';
-        button.onclick = function () {
-            var id = select.options[select.selectedIndex].value;
-            _this.updateContent(id);
-        };
-        this.viewChoice.appendChild(select);
-        this.viewChoice.appendChild(button);
     };
     MissionEditor.prototype.initContent = function (missions) {
         var _this = this;
         this.nameContainerItem = new PropertyItem('name', '');
-        this.needLevelContainerItem = new PropertyItem('needLeve', '');
+        this.needLevelContainerItem = new PropertyItem('needLevel', '');
         this.fromNpcContainerItem = new PropertyItem('fromNpcId', '');
         this.toNpcContainerItem = new PropertyItem('toNpcId', '');
         var button = document.createElement('button');
@@ -111,6 +65,7 @@ var MissionEditor = /** @class */ (function () {
             _this.currentMission.needLevel = _this.needLevelContainerItem.getValue();
             _this.currentMission.fromNpcId = _this.fromNpcContainerItem.getValue();
             _this.currentMission.toNpcId = _this.toNpcContainerItem.getValue();
+            _this.updateChoice(_this.jsonData.mission);
             _this.saveAndReload();
         };
         this.updateContent('1');
@@ -139,19 +94,11 @@ var MissionEditor = /** @class */ (function () {
             runtime.reload();
         }
     };
-    MissionEditor.prototype.setPropertyEditPanel = function (item, type) {
-        var container = document.createElement('div');
-        var propertyName = document.createElement('span');
-        var propertyValue = document.createElement('input');
-        propertyName.innerText = type;
-        propertyValue.value = item[type];
-        propertyValue.name = type;
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
-        return container;
-    };
     return MissionEditor;
 }());
+/**
+ * 属性编辑项
+ */
 var PropertyItem = /** @class */ (function () {
     function PropertyItem(propertyName, propertyValue) {
         this.container = document.createElement('div');
@@ -170,26 +117,12 @@ var PropertyItem = /** @class */ (function () {
     };
     return PropertyItem;
 }());
+// 读取任务配置文件
+var missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
+var content = fs.readFileSync(missionConfigPath, 'utf-8');
+var jsonData = JSON.parse(content);
+// 拿到任务选择和任务编辑节点
+var missionEditorChoice = document.getElementById("missionEditorChoice");
+var missionEditorContent = document.getElementById("missionEditorContent");
+// 创建任务编辑器
 var missionEditor = new MissionEditor(missionEditorChoice, missionEditorContent, jsonData);
-// missionEditor.initChoice(jsonData.mission);
-// missionEditor.initContent(jsonData.mission);
-// if (missionChoice) {
-//     for (let item of jsonData.mission) {
-//         // console.log(item)
-//         for (let key in item) {
-//             // console.log(key)
-//             if (key == 'name') {
-//                 const option = document.createElement('option');
-//                 option.value = item.id;
-//                 option.innerText = item[key];
-//                 missionChoice.appendChild(option);
-//             }
-//         }
-//     }
-// }
-// if (missionEditorContent) {
-//     for (let item of jsonData.mission) {
-//         const itemRender = new MissionEditorRender(item);
-//         missionEditorContent.appendChild(itemRender.view)
-//     }
-// }

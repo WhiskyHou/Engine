@@ -3,91 +3,19 @@ import * as path from 'path'
 import * as electron from 'electron'
 
 
-class MissionEditorRender {
-    view: HTMLElement;
-
-    constructor(item: any) {
-        const container = document.createElement('div');
-
-        const nameContainer = this.setPropertyEditPanel(item, 'name');
-        const needLevelContainer = this.setPropertyEditPanel(item, 'needLevel');
-        const fromNpcContainer = this.setPropertyEditPanel(item, 'fromNpcId');
-        const toNpcContainer = this.setPropertyEditPanel(item, 'toNpcId');
-        const button = document.createElement('button');
-
-        container.appendChild(nameContainer);
-        container.appendChild(needLevelContainer);
-        container.appendChild(fromNpcContainer);
-        container.appendChild(toNpcContainer);
-        container.appendChild(button);
-
-        button.innerText = '确认';
-        button.onclick = () => {
-            const nodes = nameContainer.childNodes;
-            for (let i = 0; i < nodes.length; ++i) {
-                const node = nodes.item(i);
-                // TODO
-            }
-        }
-
-        this.view = container;
-    }
-
-
-    private setPropertyEditPanel(item: any, type: string): HTMLDivElement {
-        let container = document.createElement('div');
-
-        const propertyName = document.createElement('span');
-        const propertyValue = document.createElement('input');
-
-        for (let key in item) {
-            if (key == type) {
-                container.id = key;
-                propertyName.innerText = key;
-                propertyValue.value = item[key];
-            }
-        }
-
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
-
-        return container;
-    }
-
-
-    private saveAndReload() {
-        const content = JSON.stringify(jsonData, null, '\t');
-        fs.writeFileSync(missionConfigPath, content);
-        const runtime = document.getElementById("runtime") as electron.WebviewTag;
-        if (runtime) {
-            runtime.reload()
-        }
-    }
-}
-
-
-const missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
-const content = fs.readFileSync(missionConfigPath, 'utf-8');
-const jsonData = JSON.parse(content);
-
-const missionEditorChoice = document.getElementById("missionEditorChoice");
-const missionEditorContent = document.getElementById("missionEditorContent");
-
-
+/**
+ * 任务属性编辑器
+ */
 class MissionEditor {
-
-    viewChoice: HTMLElement;
-
-    viewContent: HTMLElement;
-
     jsonData: any;
 
+    viewChoice: HTMLElement;
+    private choiceSelect: HTMLSelectElement;
+
+    viewContent: HTMLElement;
     private nameContainerItem: PropertyItem;
-
     private needLevelContainerItem: PropertyItem;
-
     private fromNpcContainerItem: PropertyItem;
-
     private toNpcContainerItem: PropertyItem;
 
     private currentMission: any;
@@ -102,31 +30,38 @@ class MissionEditor {
     }
 
     initChoice(missions: any) {
-        const select = document.createElement('select');
+        this.choiceSelect = document.createElement('select');
+
+        this.updateChoice(missions);
+
+        const button = document.createElement('button');
+        button.innerText = '切换';
+        button.onclick = () => {
+            const id = this.choiceSelect.options[this.choiceSelect.selectedIndex].value;
+            this.updateContent(id);
+        }
+
+        this.viewChoice.appendChild(this.choiceSelect);
+        this.viewChoice.appendChild(button);
+    }
+
+    updateChoice(missions: any) {
+        this.choiceSelect.innerText = '';
         for (let mission of missions) {
             // for (let key in mission) {
             //     if (key == 'name') {
             const option = document.createElement('option');
             option.value = mission.id;
             option.innerText = mission.name;
-            select.appendChild(option);
+            this.choiceSelect.appendChild(option);
             //     }
             // }
         }
-        const button = document.createElement('button');
-        button.innerText = '切换';
-        button.onclick = () => {
-            const id = select.options[select.selectedIndex].value;
-            this.updateContent(id);
-        }
-
-        this.viewChoice.appendChild(select);
-        this.viewChoice.appendChild(button);
     }
 
     initContent(missions: any) {
         this.nameContainerItem = new PropertyItem('name', '');
-        this.needLevelContainerItem = new PropertyItem('needLeve', '');
+        this.needLevelContainerItem = new PropertyItem('needLevel', '');
         this.fromNpcContainerItem = new PropertyItem('fromNpcId', '');
         this.toNpcContainerItem = new PropertyItem('toNpcId', '');
         const button = document.createElement('button');
@@ -143,6 +78,8 @@ class MissionEditor {
             this.currentMission.needLevel = this.needLevelContainerItem.getValue();
             this.currentMission.fromNpcId = this.fromNpcContainerItem.getValue();
             this.currentMission.toNpcId = this.toNpcContainerItem.getValue();
+
+            this.updateChoice(this.jsonData.mission);
 
             this.saveAndReload();
         }
@@ -176,28 +113,17 @@ class MissionEditor {
             runtime.reload()
         }
     }
-
-    private setPropertyEditPanel(item: any, type: string): HTMLDivElement {
-        const container = document.createElement('div');
-
-        const propertyName = document.createElement('span');
-        const propertyValue = document.createElement('input');
-
-        propertyName.innerText = type;
-        propertyValue.value = item[type];
-        propertyValue.name = type;
-
-        container.appendChild(propertyName);
-        container.appendChild(propertyValue);
-
-        return container;
-    }
 }
 
-
+/**
+ * 属性编辑项
+ */
 class PropertyItem {
+
     container: HTMLDivElement;
+
     name: HTMLSpanElement;
+
     content: HTMLInputElement;
 
     constructor(propertyName: string, propertyValue: string) {
@@ -222,29 +148,14 @@ class PropertyItem {
 }
 
 
+// 读取任务配置文件
+const missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
+const content = fs.readFileSync(missionConfigPath, 'utf-8');
+const jsonData = JSON.parse(content);
+
+// 拿到任务选择和任务编辑节点
+const missionEditorChoice = document.getElementById("missionEditorChoice");
+const missionEditorContent = document.getElementById("missionEditorContent");
+
+// 创建任务编辑器
 const missionEditor = new MissionEditor(missionEditorChoice, missionEditorContent, jsonData);
-// missionEditor.initChoice(jsonData.mission);
-// missionEditor.initContent(jsonData.mission);
-
-
-// if (missionChoice) {
-//     for (let item of jsonData.mission) {
-//         // console.log(item)
-//         for (let key in item) {
-//             // console.log(key)
-//             if (key == 'name') {
-//                 const option = document.createElement('option');
-//                 option.value = item.id;
-//                 option.innerText = item[key];
-//                 missionChoice.appendChild(option);
-//             }
-//         }
-//     }
-// }
-
-// if (missionEditorContent) {
-//     for (let item of jsonData.mission) {
-//         const itemRender = new MissionEditorRender(item);
-//         missionEditorContent.appendChild(itemRender.view)
-//     }
-// }
