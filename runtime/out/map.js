@@ -27,6 +27,12 @@ var GameMap = /** @class */ (function (_super) {
         _this.equipmentConfig = {};
         _this.npcConfig = {};
         _this.monsterConfig = {};
+        _this.tileContainer = new DisplayObjectContainer(0, 0);
+        _this.itemContainer = new DisplayObjectContainer(0, 0);
+        _this.roleContainer = new DisplayObjectContainer(0, 0);
+        _this.addChild(_this.tileContainer);
+        _this.addChild(_this.itemContainer);
+        _this.addChild(_this.roleContainer);
         _this.init();
         return _this;
     }
@@ -38,17 +44,17 @@ var GameMap = /** @class */ (function (_super) {
             var img = item.id == GRASS_L ? grassLight : grassDark;
             var tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
             this.grid.setWalkable(item.x, item.y, true);
-            this.addChild(tile);
+            this.tileContainer.addChild(tile);
             if (item.tree) {
                 var tile_1 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
                 this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile_1);
+                this.tileContainer.addChild(tile_1);
             }
             if (item.wall) {
                 var img_1 = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
                 var tile_2 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img_1);
                 this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile_2);
+                this.tileContainer.addChild(tile_2);
             }
             if (item.equipment) {
                 // const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
@@ -62,7 +68,7 @@ var GameMap = /** @class */ (function (_super) {
                 equipmentTiem.y = item.y;
                 var key = item.x + '_' + item.y;
                 this.equipmentConfig[key] = equipmentTiem;
-                this.addChild(equipmentView);
+                this.itemContainer.addChild(equipmentView);
             }
             if (item.monster) {
                 var monsterView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, captain);
@@ -74,17 +80,17 @@ var GameMap = /** @class */ (function (_super) {
                 monsterItem.y = item.y;
                 var key = item.x + '_' + item.y;
                 this.monsterConfig[key] = monsterItem;
-                this.addChild(monsterView);
+                this.roleContainer.addChild(monsterView);
             }
             if (item.npc) {
                 var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                var npcItem = new Npc(1, 'DDF');
+                var npcItem = new Npc(1, 'DDF'); // TODO
                 npcItem.view = npcView;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 var key = item.x + '_' + item.y;
                 this.npcConfig[key] = npcItem;
-                this.addChild(npcView);
+                this.roleContainer.addChild(npcView);
             }
         }
     };
