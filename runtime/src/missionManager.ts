@@ -40,7 +40,8 @@ class MissionManager extends EventDispatcher {
         for (let item of config.mission) {
             const going: string = item.going;
             const goingFunc = (eventData: any) => {
-                if (eventData.name === item.goingFunc) {
+                if (mission.status == MissionStatus.DURRING
+                    && eventData.name === item.goingFunc) {
                     mission.current++;
                 }
             }
