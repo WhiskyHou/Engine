@@ -17,10 +17,18 @@ class GameMap extends DisplayObjectContainer {
     private npcConfig: { [index: string]: Npc } = {}
     private monsterConfig: { [index: string]: Monster } = {}
 
+    private tileContainer = new DisplayObjectContainer(0, 0);
+    private itemContainer = new DisplayObjectContainer(0, 0);
+    private roleContainer = new DisplayObjectContainer(0, 0);
+
 
 
     constructor() {
         super(0, 0);
+
+        this.addChild(this.tileContainer);
+        this.addChild(this.itemContainer);
+        this.addChild(this.roleContainer);
 
         this.init();
     }
@@ -32,18 +40,18 @@ class GameMap extends DisplayObjectContainer {
             const img = item.id == GRASS_L ? grassLight : grassDark;
             const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
             this.grid.setWalkable(item.x, item.y, true);
-            this.addChild(tile);
+            this.tileContainer.addChild(tile);
 
             if (item.tree) {
                 const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
                 this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile);
+                this.tileContainer.addChild(tile);
             }
             if (item.wall) {
                 const img = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
                 const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
                 this.grid.setWalkable(item.x, item.y, false);
-                this.addChild(tile);
+                this.tileContainer.addChild(tile);
             }
             if (item.equipment) {
                 // const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
@@ -58,7 +66,7 @@ class GameMap extends DisplayObjectContainer {
                 equipmentTiem.y = item.y;
                 const key = item.x + '_' + item.y;
                 this.equipmentConfig[key] = equipmentTiem;
-                this.addChild(equipmentView);
+                this.itemContainer.addChild(equipmentView);
             }
 
             if (item.monster) {
@@ -71,18 +79,18 @@ class GameMap extends DisplayObjectContainer {
                 monsterItem.y = item.y;
                 const key = item.x + '_' + item.y;
                 this.monsterConfig[key] = monsterItem;
-                this.addChild(monsterView);
+                this.roleContainer.addChild(monsterView);
             }
 
             if (item.npc) {
                 const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                const npcItem = new Npc(1, 'DDF');
+                const npcItem = new Npc(1, 'DDF'); // TODO
                 npcItem.view = npcView;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 const key = item.x + '_' + item.y;
                 this.npcConfig[key] = npcItem;
-                this.addChild(npcView);
+                this.roleContainer.addChild(npcView);
             }
         }
     }
