@@ -49,6 +49,7 @@ const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
 const KILL_DARGON_KNIFE = 6;
 const NPC = 7;
+const NPC2 = 9;
 const MONSTER = 8;
 
 const PLAYER_INDEX_X = 0;
@@ -59,41 +60,6 @@ const PLAYER_WALK_SPEED = 500;
 var player: User;
 var map: GameMap;
 var missionManager = new MissionManager();
-
-
-let missionTalkCanAcceptConfig = [
-    [
-
-    ],
-    [
-        "欢迎来到新日暮里",
-        "你的等级还很低",
-        "攻击力也相当低",
-        "所以我不能给你任何击杀任务",
-        "你先找到屠龙刀再回来找我"
-    ],
-    [
-        "你现在要帮我杀了美队",
-        "加油你可以的",
-        "杀完回来找我"
-    ]
-]
-let missionTalkCanSubmitConfig = [
-    [
-
-    ],
-    [
-        "恭喜你找到了屠龙刀",
-        "给你升一级作为奖励",
-        "你被加强了，快送"
-    ],
-    [
-        "非常感谢你替我杀了美队",
-        "再奖励你升一级吧",
-        "赶快去下一层吧勇士"
-    ]
-]
-
 
 
 

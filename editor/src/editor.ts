@@ -13,10 +13,8 @@ class MissionEditor {
     private choiceSelect: HTMLSelectElement;
 
     viewContent: HTMLElement;
-    private nameContainerItem: PropertyItem;
-    private needLevelContainerItem: PropertyItem;
-    private fromNpcContainerItem: PropertyItem;
-    private toNpcContainerItem: PropertyItem;
+
+    private arr: { [index: string]: any } = {}
 
     private currentMission: any;
 
@@ -48,36 +46,37 @@ class MissionEditor {
     updateChoice(missions: any) {
         this.choiceSelect.innerText = '';
         for (let mission of missions) {
-            // for (let key in mission) {
-            //     if (key == 'name') {
             const option = document.createElement('option');
             option.value = mission.id;
             option.innerText = mission.name;
             this.choiceSelect.appendChild(option);
-            //     }
-            // }
         }
     }
 
     initContent(missions: any) {
-        this.nameContainerItem = new PropertyItem('name', '');
-        this.needLevelContainerItem = new PropertyItem('needLevel', '');
-        this.fromNpcContainerItem = new PropertyItem('fromNpcId', '');
-        this.toNpcContainerItem = new PropertyItem('toNpcId', '');
+        const nameContainerItem = new PropertyItem('name', '');
+        const needLevelContainerItem = new PropertyItem('needLevel', '');
+        const fromNpcContainerItem = new PropertyItem('fromNpcId', '');
+        const toNpcContainerItem = new PropertyItem('toNpcId', '');
         const button = document.createElement('button');
 
-        this.viewContent.appendChild(this.nameContainerItem.container);
-        this.viewContent.appendChild(this.needLevelContainerItem.container);
-        this.viewContent.appendChild(this.fromNpcContainerItem.container);
-        this.viewContent.appendChild(this.toNpcContainerItem.container);
+        this.viewContent.appendChild(nameContainerItem.container);
+        this.viewContent.appendChild(needLevelContainerItem.container);
+        this.viewContent.appendChild(fromNpcContainerItem.container);
+        this.viewContent.appendChild(toNpcContainerItem.container);
         this.viewContent.appendChild(button);
+
+        this.arr['name'] = nameContainerItem;
+        this.arr['needLevel'] = needLevelContainerItem;
+        this.arr['fromNpcId'] = fromNpcContainerItem;
+        this.arr['toNpcId'] = toNpcContainerItem;
 
         button.innerText = '保存';
         button.onclick = () => {
-            this.currentMission.name = this.nameContainerItem.getValue();
-            this.currentMission.needLevel = this.needLevelContainerItem.getValue();
-            this.currentMission.fromNpcId = this.fromNpcContainerItem.getValue();
-            this.currentMission.toNpcId = this.toNpcContainerItem.getValue();
+            this.currentMission.name = this.arr['name'].getValue();
+            this.currentMission.needLevel = this.arr['needLevel'].getValue();
+            this.currentMission.fromNpcId = this.arr['fromNpcId'].getValue();
+            this.currentMission.toNpcId = this.arr['toNpcId'].getValue();
 
             this.updateChoice(this.jsonData.mission);
 
@@ -98,10 +97,11 @@ class MissionEditor {
         this.currentMission = currentMission;
 
         if (currentMission) {
-            this.nameContainerItem.update('name', currentMission.name);
-            this.needLevelContainerItem.update('needLevel', currentMission.needLevel);
-            this.fromNpcContainerItem.update('fromNpcId', currentMission.fromNpcId);
-            this.toNpcContainerItem.update('toNpcId', currentMission.toNpcId);
+
+            this.arr['name'].update('name', currentMission.name);
+            this.arr['needLevel'].update('needLevel', currentMission.needLevel);
+            this.arr['fromNpcId'].update('fromNpcId', currentMission.fromNpcId);
+            this.arr['toNpcId'].update('toNpcId', currentMission.toNpcId);
         }
     }
 
@@ -154,8 +154,8 @@ const content = fs.readFileSync(missionConfigPath, 'utf-8');
 const jsonData = JSON.parse(content);
 
 // 拿到任务选择和任务编辑节点
-const missionEditorChoice = document.getElementById("missionEditorChoice");
-const missionEditorContent = document.getElementById("missionEditorContent");
+const propertySelect = document.getElementById("propertySelect");
+const propertyContent = document.getElementById("propertyContent");
 
 // 创建任务编辑器
-const missionEditor = new MissionEditor(missionEditorChoice, missionEditorContent, jsonData);
+const missionEditor = new MissionEditor(propertySelect, propertyContent, jsonData);

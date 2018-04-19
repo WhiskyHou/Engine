@@ -14,6 +14,7 @@ var path = __importStar(require("path"));
  */
 var MissionEditor = /** @class */ (function () {
     function MissionEditor(choice, content, data) {
+        this.arr = {};
         this.viewChoice = choice;
         this.viewContent = content;
         this.jsonData = data;
@@ -37,34 +38,34 @@ var MissionEditor = /** @class */ (function () {
         this.choiceSelect.innerText = '';
         for (var _i = 0, missions_1 = missions; _i < missions_1.length; _i++) {
             var mission = missions_1[_i];
-            // for (let key in mission) {
-            //     if (key == 'name') {
             var option = document.createElement('option');
             option.value = mission.id;
             option.innerText = mission.name;
             this.choiceSelect.appendChild(option);
-            //     }
-            // }
         }
     };
     MissionEditor.prototype.initContent = function (missions) {
         var _this = this;
-        this.nameContainerItem = new PropertyItem('name', '');
-        this.needLevelContainerItem = new PropertyItem('needLevel', '');
-        this.fromNpcContainerItem = new PropertyItem('fromNpcId', '');
-        this.toNpcContainerItem = new PropertyItem('toNpcId', '');
+        var nameContainerItem = new PropertyItem('name', '');
+        var needLevelContainerItem = new PropertyItem('needLevel', '');
+        var fromNpcContainerItem = new PropertyItem('fromNpcId', '');
+        var toNpcContainerItem = new PropertyItem('toNpcId', '');
         var button = document.createElement('button');
-        this.viewContent.appendChild(this.nameContainerItem.container);
-        this.viewContent.appendChild(this.needLevelContainerItem.container);
-        this.viewContent.appendChild(this.fromNpcContainerItem.container);
-        this.viewContent.appendChild(this.toNpcContainerItem.container);
+        this.viewContent.appendChild(nameContainerItem.container);
+        this.viewContent.appendChild(needLevelContainerItem.container);
+        this.viewContent.appendChild(fromNpcContainerItem.container);
+        this.viewContent.appendChild(toNpcContainerItem.container);
         this.viewContent.appendChild(button);
+        this.arr['name'] = nameContainerItem;
+        this.arr['needLevel'] = needLevelContainerItem;
+        this.arr['fromNpcId'] = fromNpcContainerItem;
+        this.arr['toNpcId'] = toNpcContainerItem;
         button.innerText = '保存';
         button.onclick = function () {
-            _this.currentMission.name = _this.nameContainerItem.getValue();
-            _this.currentMission.needLevel = _this.needLevelContainerItem.getValue();
-            _this.currentMission.fromNpcId = _this.fromNpcContainerItem.getValue();
-            _this.currentMission.toNpcId = _this.toNpcContainerItem.getValue();
+            _this.currentMission.name = _this.arr['name'].getValue();
+            _this.currentMission.needLevel = _this.arr['needLevel'].getValue();
+            _this.currentMission.fromNpcId = _this.arr['fromNpcId'].getValue();
+            _this.currentMission.toNpcId = _this.arr['toNpcId'].getValue();
             _this.updateChoice(_this.jsonData.mission);
             _this.saveAndReload();
         };
@@ -80,10 +81,10 @@ var MissionEditor = /** @class */ (function () {
         }
         this.currentMission = currentMission;
         if (currentMission) {
-            this.nameContainerItem.update('name', currentMission.name);
-            this.needLevelContainerItem.update('needLevel', currentMission.needLevel);
-            this.fromNpcContainerItem.update('fromNpcId', currentMission.fromNpcId);
-            this.toNpcContainerItem.update('toNpcId', currentMission.toNpcId);
+            this.arr['name'].update('name', currentMission.name);
+            this.arr['needLevel'].update('needLevel', currentMission.needLevel);
+            this.arr['fromNpcId'].update('fromNpcId', currentMission.fromNpcId);
+            this.arr['toNpcId'].update('toNpcId', currentMission.toNpcId);
         }
     };
     MissionEditor.prototype.saveAndReload = function () {
@@ -122,7 +123,7 @@ var missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.js
 var content = fs.readFileSync(missionConfigPath, 'utf-8');
 var jsonData = JSON.parse(content);
 // 拿到任务选择和任务编辑节点
-var missionEditorChoice = document.getElementById("missionEditorChoice");
-var missionEditorContent = document.getElementById("missionEditorContent");
+var propertySelect = document.getElementById("propertySelect");
+var propertyContent = document.getElementById("propertyContent");
 // 创建任务编辑器
-var missionEditor = new MissionEditor(missionEditorChoice, missionEditorContent, jsonData);
+var missionEditor = new MissionEditor(propertySelect, propertyContent, jsonData);
