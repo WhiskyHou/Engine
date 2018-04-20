@@ -69,7 +69,13 @@ var PropertyEditor = /** @class */ (function () {
     }
     PropertyEditor.prototype.init = function () {
         var _this = this;
-        this.currentEditObject = this.data[0];
+        // 初始化当前编辑对象
+        if (this.data.length > 0) {
+            this.currentEditObject = this.data[0];
+        }
+        else {
+            this.currentEditObject = null;
+        }
         // 初始化选择器
         for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
             var object = _a[_i];
@@ -85,12 +91,14 @@ var PropertyEditor = /** @class */ (function () {
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.view);
         }
+        // 添加按钮事件
         this.saveButton.onclick = function () {
             for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
                 var propertyItem = _a[_i];
                 var temp = propertyItem.getValue();
                 _this.currentEditObject[propertyItem.key] = temp;
             }
+            _this.updata();
             _this.saveAndReload();
         };
         this.switchButton.onclick = function () {
@@ -101,6 +109,50 @@ var PropertyEditor = /** @class */ (function () {
                 propertyItem.update(_this.currentEditObject);
             }
         };
+        this.appendButton.onclick = function () {
+            var newObject = {};
+            for (var _i = 0, _a = _this.dataMetadata.propertyMetadatas; _i < _a.length; _i++) {
+                var metadata = _a[_i];
+                if (metadata.type == "primarykey") {
+                    newObject[metadata.key] = parseInt(_this.data[_this.data.length - 1][metadata.key]) + 1;
+                }
+                else {
+                    newObject[metadata.key] = metadata.default;
+                }
+            }
+            _this.data.push(newObject);
+            _this.updata();
+            _this.saveAndReload();
+        };
+        this.removeButton.onclick = function () {
+            var index = _this.data.indexOf(_this.currentEditObject);
+            if (index >= 0) {
+                _this.data.splice(index, 1);
+                _this.updata();
+            }
+            _this.saveAndReload();
+        };
+    };
+    PropertyEditor.prototype.updata = function () {
+        /**
+         * 重新加载编辑器
+         */
+        // 重新加载选择栏
+        this.propertyEditorChoice.innerText = '';
+        for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
+            var object = _a[_i];
+            var option = document.createElement('option');
+            option.value = object.id;
+            option.innerText = object.name;
+            this.propertyEditorChoice.appendChild(option);
+        }
+        // 将各个属性编辑单项回到第一个对象
+        if (this.data.length > 0) {
+            this.currentEditObject = this.data[0];
+        }
+        else {
+            this.currentEditObject = null;
+        }
     };
     PropertyEditor.prototype.updateCurrentEditObject = function (id) {
         for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
@@ -158,18 +210,9 @@ var PropertyItem = /** @class */ (function () {
         this.update(currentEditObject);
     }
     PropertyItem.prototype.update = function (currentEditObject) {
-        this.content.value = currentEditObject[this.metadata.key];
+        this.content.value = currentEditObject[this.key];
     };
     PropertyItem.prototype.getValue = function () {
-        // if (this.metadata.type == 'input') {
-        //     return this.content.value;
-        // }
-        // else if (this.metadata.type == 'primarykey') {
-        //     return this.content.value;
-        // }
-        // else if (this.metadata.type == 'dropdown') {
-        //     return this.content.value;
-        // }
         return this.content.value;
     };
     return PropertyItem;
@@ -185,7 +228,7 @@ var PropertyItem = /** @class */ (function () {
 var propertyEditorTitle = document.getElementById('propertyEditorTitle');
 var propertyEditorContainer = document.getElementById('propertyEditorContainer');
 if (propertyEditorTitle && propertyEditorContainer) {
-    propertyEditorTitle.innerText = metadastas[1].title;
-    var propertyEditor = new PropertyEditor(metadastas[1]);
+    propertyEditorTitle.innerText = metadastas[0].title;
+    var propertyEditor = new PropertyEditor(metadastas[0]);
     propertyEditorContainer.appendChild(propertyEditor.view);
 }

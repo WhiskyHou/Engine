@@ -117,7 +117,13 @@ class PropertyEditor {
     }
 
     init() {
-        this.currentEditObject = this.data[0];
+        // 初始化当前编辑对象
+        if (this.data.length > 0) {
+            this.currentEditObject = this.data[0];
+        } else {
+            this.currentEditObject = null;
+        }
+
 
         // 初始化选择器
         for (let object of this.data) {
@@ -134,11 +140,14 @@ class PropertyEditor {
             this.propertyEditorBody.appendChild(propertyItem.view);
         }
 
+
+        // 添加按钮事件
         this.saveButton.onclick = () => {
             for (let propertyItem of this.propertyItemArray) {
                 const temp = propertyItem.getValue();
                 this.currentEditObject[propertyItem.key] = temp;
             }
+            this.updata();
             this.saveAndReload();
         }
 
@@ -148,6 +157,53 @@ class PropertyEditor {
             for (let propertyItem of this.propertyItemArray) {
                 propertyItem.update(this.currentEditObject);
             }
+        }
+
+        this.appendButton.onclick = () => {
+            const newObject: any = {};
+            for (let metadata of this.dataMetadata.propertyMetadatas) {
+                if (metadata.type == "primarykey") {
+                    newObject[metadata.key] = parseInt(this.data[this.data.length - 1][metadata.key]) + 1;
+                }
+                else {
+                    newObject[metadata.key] = metadata.default;
+                }
+            }
+
+            this.data.push(newObject);
+            this.updata();
+            this.saveAndReload();
+        }
+
+        this.removeButton.onclick = () => {
+            const index = this.data.indexOf(this.currentEditObject);
+            if (index >= 0) {
+                this.data.splice(index, 1)
+                this.updata();
+            }
+            this.saveAndReload();
+        }
+    }
+
+    updata() {
+        /**
+         * 重新加载编辑器
+         */
+
+        // 重新加载选择栏
+        this.propertyEditorChoice.innerText = '';
+        for (let object of this.data) {
+            const option = document.createElement('option');
+            option.value = object.id;
+            option.innerText = object.name;
+            this.propertyEditorChoice.appendChild(option);
+        }
+
+        // 将各个属性编辑单项回到第一个对象
+        if (this.data.length > 0) {
+            this.currentEditObject = this.data[0];
+        } else {
+            this.currentEditObject = null;
         }
     }
 
@@ -221,19 +277,10 @@ class PropertyItem {
     }
 
     update(currentEditObject: any) {
-        this.content.value = currentEditObject[this.metadata.key];
+        this.content.value = currentEditObject[this.key];
     }
 
     getValue() {
-        // if (this.metadata.type == 'input') {
-        //     return this.content.value;
-        // }
-        // else if (this.metadata.type == 'primarykey') {
-        //     return this.content.value;
-        // }
-        // else if (this.metadata.type == 'dropdown') {
-        //     return this.content.value;
-        // }
         return this.content.value;
     }
 }
@@ -252,8 +299,8 @@ class PropertyItem {
 const propertyEditorTitle = document.getElementById('propertyEditorTitle');
 const propertyEditorContainer = document.getElementById('propertyEditorContainer');
 if (propertyEditorTitle && propertyEditorContainer) {
-    propertyEditorTitle.innerText = metadastas[1].title;
-    const propertyEditor = new PropertyEditor(metadastas[1]);
+    propertyEditorTitle.innerText = metadastas[0].title;
+    const propertyEditor = new PropertyEditor(metadastas[0]);
     propertyEditorContainer.appendChild(propertyEditor.view);
 }
 
