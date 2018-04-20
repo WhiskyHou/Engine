@@ -12,7 +12,7 @@ var path = __importStar(require("path"));
 /**
  * 元数据 具体数据
  */
-var metadastas = [
+var metadatas = [
     {
         filepath: path.resolve(__dirname, '../../runtime/config/mission.json'),
         prefix: 'mission',
@@ -221,18 +221,34 @@ var PropertyItem = /** @class */ (function () {
     };
     return PropertyItem;
 }());
-// 读取任务配置文件
-// const missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
-// const content = fs.readFileSync(missionConfigPath, 'utf-8');
-// const jsonData = JSON.parse(content);
-// 拿到任务选择和任务编辑节点
-// const propertySelect = document.getElementById("propertySelect");
-// const propertyContent = document.getElementById("propertyContent");
-// 创建任务编辑器
-var propertyEditorTitle = document.getElementById('propertyEditorTitle');
-var propertyEditorContainer = document.getElementById('propertyEditorContainer');
-if (propertyEditorTitle && propertyEditorContainer) {
-    propertyEditorTitle.innerText = metadastas[0].title;
-    var propertyEditor = new PropertyEditor(metadastas[0]);
-    propertyEditorContainer.appendChild(propertyEditor.view);
+/**
+ * 切换编辑器
+ */
+function changeEditor(metadata) {
+    var propertyEditorTitle = document.getElementById('propertyEditorTitle');
+    var propertyEditorContainer = document.getElementById('propertyEditorContainer');
+    if (propertyEditorTitle && propertyEditorContainer) {
+        propertyEditorTitle.innerText = metadata.title;
+        propertyEditorContainer.innerText = '';
+        var propertyEditor = new PropertyEditor(metadata);
+        propertyEditorContainer.appendChild(propertyEditor.view);
+    }
+}
+/**
+ * 初始化inspector
+ */
+var buttonGroup = document.getElementById('buttonGroup');
+if (buttonGroup) {
+    var _loop_1 = function (metadata) {
+        var button = document.createElement('button');
+        button.innerText = metadata.title;
+        buttonGroup.appendChild(button);
+        button.onclick = function () {
+            changeEditor(metadata);
+        };
+    };
+    for (var _i = 0, metadatas_1 = metadatas; _i < metadatas_1.length; _i++) {
+        var metadata = metadatas_1[_i];
+        _loop_1(metadata);
+    }
 }

@@ -30,7 +30,7 @@ interface DataMetadata {
 /**
  * 元数据 具体数据
  */
-const metadastas: DataMetadata[] = [
+const metadatas: DataMetadata[] = [
     {   // 任务编辑器 元数据
         filepath: path.resolve(__dirname, '../../runtime/config/mission.json'),
         prefix: 'mission',
@@ -55,8 +55,6 @@ const metadastas: DataMetadata[] = [
         ]
     }
 ]
-
-
 
 
 /**
@@ -289,24 +287,32 @@ class PropertyItem {
 }
 
 
-// 读取任务配置文件
-// const missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
-// const content = fs.readFileSync(missionConfigPath, 'utf-8');
-// const jsonData = JSON.parse(content);
+/**
+ * 切换编辑器
+ */
+function changeEditor(metadata: DataMetadata) {
+    const propertyEditorTitle = document.getElementById('propertyEditorTitle');
+    const propertyEditorContainer = document.getElementById('propertyEditorContainer');
+    if (propertyEditorTitle && propertyEditorContainer) {
+        propertyEditorTitle.innerText = metadata.title;
+        propertyEditorContainer.innerText = '';
 
-// 拿到任务选择和任务编辑节点
-// const propertySelect = document.getElementById("propertySelect");
-// const propertyContent = document.getElementById("propertyContent");
-
-// 创建任务编辑器
-const propertyEditorTitle = document.getElementById('propertyEditorTitle');
-const propertyEditorContainer = document.getElementById('propertyEditorContainer');
-if (propertyEditorTitle && propertyEditorContainer) {
-    propertyEditorTitle.innerText = metadastas[0].title;
-    const propertyEditor = new PropertyEditor(metadastas[0]);
-    propertyEditorContainer.appendChild(propertyEditor.view);
+        const propertyEditor = new PropertyEditor(metadata);
+        propertyEditorContainer.appendChild(propertyEditor.view);
+    }
 }
 
-
-
-
+/**
+ * 初始化inspector
+ */
+const buttonGroup = document.getElementById('buttonGroup');
+if (buttonGroup) {
+    for (const metadata of metadatas) {
+        const button = document.createElement('button');
+        button.innerText = metadata.title;
+        buttonGroup.appendChild(button);
+        button.onclick = () => {
+            changeEditor(metadata);
+        }
+    }
+}
