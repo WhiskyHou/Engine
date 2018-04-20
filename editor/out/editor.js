@@ -10,120 +10,157 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 /**
- * 任务属性编辑器
+ * 元数据 具体数据
  */
-var MissionEditor = /** @class */ (function () {
-    function MissionEditor(choice, content, data) {
-        this.arr = {};
-        this.viewChoice = choice;
-        this.viewContent = content;
-        this.jsonData = data;
-        this.initChoice(this.jsonData.mission);
-        this.initContent(this.jsonData.mission);
+var metadastas = [
+    {
+        filepath: path.resolve(__dirname, '../../runtime/config/mission.json'),
+        prefix: 'mission',
+        title: '任务编辑器',
+        propertyMetadatas: [
+            { key: 'id', description: '编号', type: 'primarykey', default: '0' },
+            { key: 'name', description: '标题', type: 'input', default: 'new mission' },
+            { key: 'needLevel', description: '限制等级', type: 'input', default: '1' },
+            { key: 'fromNpcId', description: '接受方', type: 'dropdown', default: '1', options: { filepath: path.resolve(__dirname, '../../runtime/config/npc.json'), prefix: 'npc' } },
+            { key: 'toNpcId', description: '提交方', type: 'dropdown', default: '1', options: { filepath: path.resolve(__dirname, '../../runtime/config/npc.json'), prefix: 'npc' } }
+        ]
+    },
+    {
+        filepath: path.resolve(__dirname, '../../runtime/config/npc.json'),
+        prefix: 'npc',
+        title: 'NPC编辑器',
+        propertyMetadatas: [
+            { key: 'id', description: '编号', type: 'primarykey', default: '0' },
+            { key: 'name', description: '名字', type: 'input', default: '吴' },
+            { key: 'view', description: '图片', type: 'input', default: '' },
+            { key: 'head', description: '头像', type: 'input', default: '' }
+        ]
     }
-    MissionEditor.prototype.initChoice = function (missions) {
+];
+/**
+ * 属性编辑器
+ */
+var PropertyEditor = /** @class */ (function () {
+    function PropertyEditor(dataMetadata) {
+        this.data = [];
+        this.propertyItemArray = [];
+        this.dataMetadata = dataMetadata;
+        var file = fs.readFileSync(dataMetadata.filepath, 'utf-8');
+        this.jsonData = JSON.parse(file);
+        this.data = this.jsonData[dataMetadata.prefix];
+        this.view = document.createElement('div');
+        this.propertyEditorChoice = document.createElement('select');
+        this.propertyEditorBody = document.createElement('div');
+        this.switchButton = document.createElement('button');
+        this.switchButton.innerText = '切换';
+        this.appendButton = document.createElement('button');
+        this.appendButton.innerText = '添加';
+        this.removeButton = document.createElement('button');
+        this.removeButton.innerText = '删除';
+        this.saveButton = document.createElement('button');
+        this.saveButton.innerText = '保存';
+        this.view.appendChild(this.propertyEditorChoice);
+        this.view.appendChild(this.switchButton);
+        this.view.appendChild(this.appendButton);
+        this.view.appendChild(this.removeButton);
+        this.view.appendChild(this.propertyEditorBody);
+        this.view.appendChild(this.saveButton);
+        this.init();
+    }
+    PropertyEditor.prototype.init = function () {
         var _this = this;
-        this.choiceSelect = document.createElement('select');
-        this.updateChoice(missions);
-        var button = document.createElement('button');
-        button.innerText = '切换';
-        button.onclick = function () {
-            var id = _this.choiceSelect.options[_this.choiceSelect.selectedIndex].value;
-            _this.updateContent(id);
-        };
-        this.viewChoice.appendChild(this.choiceSelect);
-        this.viewChoice.appendChild(button);
-    };
-    MissionEditor.prototype.updateChoice = function (missions) {
-        this.choiceSelect.innerText = '';
-        for (var _i = 0, missions_1 = missions; _i < missions_1.length; _i++) {
-            var mission = missions_1[_i];
-            var option = document.createElement('option');
-            option.value = mission.id;
-            option.innerText = mission.name;
-            this.choiceSelect.appendChild(option);
+        this.currentEditObject = this.data[0];
+        for (var _i = 0, _a = this.dataMetadata.propertyMetadatas; _i < _a.length; _i++) {
+            var propertyMetadata = _a[_i];
+            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            this.propertyItemArray.push(propertyItem);
+            this.propertyEditorBody.appendChild(propertyItem.view);
         }
-    };
-    MissionEditor.prototype.initContent = function (missions) {
-        var _this = this;
-        var nameContainerItem = new PropertyItem('name', '');
-        var needLevelContainerItem = new PropertyItem('needLevel', '');
-        var fromNpcContainerItem = new PropertyItem('fromNpcId', '');
-        var toNpcContainerItem = new PropertyItem('toNpcId', '');
-        var button = document.createElement('button');
-        this.viewContent.appendChild(nameContainerItem.container);
-        this.viewContent.appendChild(needLevelContainerItem.container);
-        this.viewContent.appendChild(fromNpcContainerItem.container);
-        this.viewContent.appendChild(toNpcContainerItem.container);
-        this.viewContent.appendChild(button);
-        this.arr['name'] = nameContainerItem;
-        this.arr['needLevel'] = needLevelContainerItem;
-        this.arr['fromNpcId'] = fromNpcContainerItem;
-        this.arr['toNpcId'] = toNpcContainerItem;
-        button.innerText = '保存';
-        button.onclick = function () {
-            _this.currentMission.name = _this.arr['name'].getValue();
-            _this.currentMission.needLevel = _this.arr['needLevel'].getValue();
-            _this.currentMission.fromNpcId = _this.arr['fromNpcId'].getValue();
-            _this.currentMission.toNpcId = _this.arr['toNpcId'].getValue();
-            _this.updateChoice(_this.jsonData.mission);
+        this.saveButton.onclick = function () {
+            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
+                var propertyItem = _a[_i];
+                var temp = propertyItem.getValue();
+                _this.currentEditObject[propertyItem.key] = temp;
+            }
             _this.saveAndReload();
         };
-        this.updateContent('1');
     };
-    MissionEditor.prototype.updateContent = function (id) {
-        var currentMission = null;
-        for (var _i = 0, _a = jsonData.mission; _i < _a.length; _i++) {
-            var mission = _a[_i];
-            if (mission.id == id) {
-                currentMission = mission;
-            }
-        }
-        this.currentMission = currentMission;
-        if (currentMission) {
-            this.arr['name'].update('name', currentMission.name);
-            this.arr['needLevel'].update('needLevel', currentMission.needLevel);
-            this.arr['fromNpcId'].update('fromNpcId', currentMission.fromNpcId);
-            this.arr['toNpcId'].update('toNpcId', currentMission.toNpcId);
-        }
-    };
-    MissionEditor.prototype.saveAndReload = function () {
-        var content = JSON.stringify(jsonData, null, '\t');
-        fs.writeFileSync(missionConfigPath, content);
+    PropertyEditor.prototype.saveAndReload = function () {
+        var content = JSON.stringify(this.jsonData, null, '\t');
+        fs.writeFileSync(this.dataMetadata.filepath, content);
         var runtime = document.getElementById("runtime");
         if (runtime) {
             runtime.reload();
         }
     };
-    return MissionEditor;
+    return PropertyEditor;
 }());
 /**
  * 属性编辑项
  */
 var PropertyItem = /** @class */ (function () {
-    function PropertyItem(propertyName, propertyValue) {
-        this.container = document.createElement('div');
+    function PropertyItem(metadata, currentEditObject) {
+        this.metadata = metadata;
+        this.key = metadata.key;
+        this.view = document.createElement('div');
         this.name = document.createElement('span');
-        this.content = document.createElement('input');
-        this.container.appendChild(this.name);
-        this.container.appendChild(this.content);
-        this.update(propertyName, propertyValue);
+        if (metadata.type == 'input') {
+            this.content = document.createElement('input');
+        }
+        else if (metadata.type == 'dropdown') {
+            this.content = document.createElement('select');
+            var optionMetadata = metadata.options;
+            if (optionMetadata) {
+                var file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
+                var jsonData = JSON.parse(file);
+                var items = jsonData[optionMetadata.prefix];
+                for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+                    var item = items_1[_i];
+                    var option = document.createElement('option');
+                    option.value = item.id;
+                    option.innerText = item.name;
+                    this.content.appendChild(option);
+                }
+            }
+        }
+        else if (metadata.type == 'primarykey') {
+            this.content = document.createElement('input');
+            this.content.disabled = true;
+        }
+        this.name.innerText = metadata.description;
+        this.view.appendChild(this.name);
+        this.view.appendChild(this.content);
+        this.update(currentEditObject);
     }
-    PropertyItem.prototype.update = function (propertyName, propertyValue) {
-        this.name.innerText = propertyName;
-        this.content.value = propertyValue;
+    PropertyItem.prototype.update = function (currentEditObject) {
+        this.content.value = currentEditObject[this.metadata.key];
     };
     PropertyItem.prototype.getValue = function () {
+        // if (this.metadata.type == 'input') {
+        //     return this.content.value;
+        // }
+        // else if (this.metadata.type == 'primarykey') {
+        //     return this.content.value;
+        // }
+        // else if (this.metadata.type == 'dropdown') {
+        //     return this.content.value;
+        // }
         return this.content.value;
     };
     return PropertyItem;
 }());
 // 读取任务配置文件
-var missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
-var content = fs.readFileSync(missionConfigPath, 'utf-8');
-var jsonData = JSON.parse(content);
+// const missionConfigPath = path.resolve(__dirname, '../../runtime/config/mission.json');
+// const content = fs.readFileSync(missionConfigPath, 'utf-8');
+// const jsonData = JSON.parse(content);
 // 拿到任务选择和任务编辑节点
-var propertySelect = document.getElementById("propertySelect");
-var propertyContent = document.getElementById("propertyContent");
+// const propertySelect = document.getElementById("propertySelect");
+// const propertyContent = document.getElementById("propertyContent");
 // 创建任务编辑器
-var missionEditor = new MissionEditor(propertySelect, propertyContent, jsonData);
+var propertyEditorTitle = document.getElementById('propertyEditorTitle');
+var propertyEditorContainer = document.getElementById('propertyEditorContainer');
+if (propertyEditorTitle && propertyEditorContainer) {
+    propertyEditorTitle.innerText = metadastas[1].title;
+    var propertyEditor = new PropertyEditor(metadastas[1]);
+    propertyEditorContainer.appendChild(propertyEditor.view);
+}
