@@ -119,6 +119,15 @@ class PropertyEditor {
     init() {
         this.currentEditObject = this.data[0];
 
+        // 初始化选择器
+        for (let object of this.data) {
+            const option = document.createElement('option');
+            option.value = object.id;
+            option.innerText = object.name;
+            this.propertyEditorChoice.appendChild(option);
+        }
+
+        // 初始化各个属性编辑单项
         for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
             const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
@@ -131,6 +140,22 @@ class PropertyEditor {
                 this.currentEditObject[propertyItem.key] = temp;
             }
             this.saveAndReload();
+        }
+
+        this.switchButton.onclick = () => {
+            const id = this.propertyEditorChoice.value;
+            this.updateCurrentEditObject(id);
+            for (let propertyItem of this.propertyItemArray) {
+                propertyItem.update(this.currentEditObject);
+            }
+        }
+    }
+
+    updateCurrentEditObject(id: string) {
+        for (let object of this.data) {
+            if (object.id == id) {
+                this.currentEditObject = object;
+            }
         }
     }
 

@@ -23,7 +23,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": 2,
+			"id": "2",
 			"name": "打败队长",
 			"needLevel": "2",
 			"fromNpcId": "2",

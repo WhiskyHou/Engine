@@ -70,8 +70,17 @@ var PropertyEditor = /** @class */ (function () {
     PropertyEditor.prototype.init = function () {
         var _this = this;
         this.currentEditObject = this.data[0];
-        for (var _i = 0, _a = this.dataMetadata.propertyMetadatas; _i < _a.length; _i++) {
-            var propertyMetadata = _a[_i];
+        // 初始化选择器
+        for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
+            var object = _a[_i];
+            var option = document.createElement('option');
+            option.value = object.id;
+            option.innerText = object.name;
+            this.propertyEditorChoice.appendChild(option);
+        }
+        // 初始化各个属性编辑单项
+        for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
+            var propertyMetadata = _c[_b];
             var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.view);
@@ -84,6 +93,22 @@ var PropertyEditor = /** @class */ (function () {
             }
             _this.saveAndReload();
         };
+        this.switchButton.onclick = function () {
+            var id = _this.propertyEditorChoice.value;
+            _this.updateCurrentEditObject(id);
+            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
+                var propertyItem = _a[_i];
+                propertyItem.update(_this.currentEditObject);
+            }
+        };
+    };
+    PropertyEditor.prototype.updateCurrentEditObject = function (id) {
+        for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
+            var object = _a[_i];
+            if (object.id == id) {
+                this.currentEditObject = object;
+            }
+        }
     };
     PropertyEditor.prototype.saveAndReload = function () {
         var content = JSON.stringify(this.jsonData, null, '\t');
