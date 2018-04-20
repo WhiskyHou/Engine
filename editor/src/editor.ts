@@ -205,6 +205,9 @@ class PropertyEditor {
         } else {
             this.currentEditObject = null;
         }
+        for (let propertyItem of this.propertyItemArray) {
+            propertyItem.update(this.currentEditObject);
+        }
     }
 
     updateCurrentEditObject(id: string) {

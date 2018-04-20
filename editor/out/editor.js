@@ -153,6 +153,10 @@ var PropertyEditor = /** @class */ (function () {
         else {
             this.currentEditObject = null;
         }
+        for (var _b = 0, _c = this.propertyItemArray; _b < _c.length; _b++) {
+            var propertyItem = _c[_b];
+            propertyItem.update(this.currentEditObject);
+        }
     };
     PropertyEditor.prototype.updateCurrentEditObject = function (id) {
         for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
