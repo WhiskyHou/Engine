@@ -4,7 +4,7 @@ const url = require('url')
 
 function createWindow() {
     // Create the browser window.
-    win = new BrowserWindow({ width: 1900, height: 1000 })
+    win = new BrowserWindow({ width: 1920, height: 1000 })
 
     // 然后加载应用的 index.html。
     win.loadURL(url.format({

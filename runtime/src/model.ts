@@ -189,6 +189,7 @@ class Npc {
     y: number = 0
     name: string = ''
     view: Bitmap
+    head: Bitmap
     id = 0;
 
     canAcceptMissions: Mission[] = []

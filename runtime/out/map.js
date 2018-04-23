@@ -83,9 +83,11 @@ var GameMap = /** @class */ (function (_super) {
                 this.roleContainer.addChild(monsterView);
             }
             if (item.npc == NPC) {
-                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                var npcItem = new Npc(1, 'DDF'); // TODO
+                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gaojianli);
+                var npcHead = new Bitmap(0, 0, gaojianli_head);
+                var npcItem = new Npc(1, '高渐离'); // TODO
                 npcItem.view = npcView;
+                npcItem.head = npcHead;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 var key = item.x + '_' + item.y;
@@ -93,9 +95,11 @@ var GameMap = /** @class */ (function (_super) {
                 this.roleContainer.addChild(npcView);
             }
             if (item.npc == NPC2) {
-                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                var npcItem = new Npc(2, 'DDF'); // TODO
+                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, yingzheng);
+                var npcHead = new Bitmap(0, 0, yingzheng_head);
+                var npcItem = new Npc(2, '嬴政'); // TODO
                 npcItem.view = npcView;
+                npcItem.head = npcHead;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 var key = item.x + '_' + item.y;

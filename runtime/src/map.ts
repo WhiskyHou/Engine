@@ -83,9 +83,11 @@ class GameMap extends DisplayObjectContainer {
             }
 
             if (item.npc == NPC) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                const npcItem = new Npc(1, 'DDF'); // TODO
+                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gaojianli);
+                const npcHead = new Bitmap(0, 0, gaojianli_head);
+                const npcItem = new Npc(1, '高渐离'); // TODO
                 npcItem.view = npcView;
+                npcItem.head = npcHead;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 const key = item.x + '_' + item.y;
@@ -93,9 +95,11 @@ class GameMap extends DisplayObjectContainer {
                 this.roleContainer.addChild(npcView);
             }
             if (item.npc == NPC2) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                const npcItem = new Npc(2, 'DDF'); // TODO
+                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, yingzheng);
+                const npcHead = new Bitmap(0, 0, yingzheng_head);
+                const npcItem = new Npc(2, '嬴政'); // TODO
                 npcItem.view = npcView;
+                npcItem.head = npcHead;
                 npcItem.x = item.x;
                 npcItem.y = item.y;
                 const key = item.x + '_' + item.y;

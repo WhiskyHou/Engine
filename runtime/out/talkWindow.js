@@ -18,7 +18,7 @@ var TalkWindow = /** @class */ (function (_super) {
         var _this = _super.call(this, x, y) || this;
         _this.count = 0;
         _this.view = new Bitmap(0, 0, talk_window);
-        _this.text = new TextField("", 100, 150, 40);
+        _this.text = new TextField("", 100, 200, 24);
         _this.addChild(_this.view);
         _this.addChild(_this.text);
         _this.addEventListener("onClick", function (eventData) {
@@ -41,6 +41,18 @@ var TalkWindow = /** @class */ (function (_super) {
         else {
             this.text.text = contents[this.count];
         }
+    };
+    TalkWindow.prototype.initNpcInfo = function () {
+        this.head = this.npc.head;
+        this.head.x = 60;
+        this.head.y = 60;
+        this.name = new TextField(this.npc.name, 180, 100, 20);
+        this.addChild(this.head);
+        this.addChild(this.name);
+    };
+    TalkWindow.prototype.setNpc = function (npc) {
+        this.npc = npc;
+        this.initNpcInfo();
     };
     TalkWindow.prototype.setMission = function (mission) {
         this.mission = mission;

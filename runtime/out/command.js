@@ -103,6 +103,7 @@ var TalkCommand = /** @class */ (function (_super) {
             var talkWindow_1 = new TalkWindow(100, 150);
             talkUIContainer.addChild(talkWindow_1);
             talkWindow_1.setMission(mission);
+            talkWindow_1.setNpc(this.npc);
             talkWindow_1.addEventListener("talkWiondowClose", function () {
                 talkUIContainer.deleteChild(talkWindow_1);
                 if (mission) {

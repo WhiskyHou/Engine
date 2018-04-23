@@ -106,6 +106,7 @@ class TalkCommand extends Command {
             const talkWindow = new TalkWindow(100, 150);
             talkUIContainer.addChild(talkWindow);
             talkWindow.setMission(mission);
+            talkWindow.setNpc(this.npc);
             talkWindow.addEventListener("talkWiondowClose", () => {
                 talkUIContainer.deleteChild(talkWindow);
                 if (mission) {
