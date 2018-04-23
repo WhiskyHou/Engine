@@ -3,14 +3,14 @@
 		{
 			"id": "1",
 			"name": "高渐离",
-			"view": "",
-			"head": ""
+			"view": "gaojianli.png",
+			"head": "gaojianli_head.png"
 		},
 		{
 			"id": 2,
 			"name": "嬴政",
-			"view": "",
-			"head": ""
+			"view": "yingzheng.png",
+			"head": "yingzheng_head.png"
 		}
 	]
 }

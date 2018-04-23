@@ -83,28 +83,34 @@ class GameMap extends DisplayObjectContainer {
             }
 
             if (item.npc == NPC) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gaojianli);
-                const npcHead = new Bitmap(0, 0, gaojianli_head);
-                const npcItem = new Npc(1, '高渐离'); // TODO
-                npcItem.view = npcView;
-                npcItem.head = npcHead;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+                for (let npc of npcManager.npcList) {
+                    if (npc.id == NPC) {
+                        const npcView = npc.view;
+                        const npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        const key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
             if (item.npc == NPC2) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, yingzheng);
-                const npcHead = new Bitmap(0, 0, yingzheng_head);
-                const npcItem = new Npc(2, '嬴政'); // TODO
-                npcItem.view = npcView;
-                npcItem.head = npcHead;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+                for (let npc of npcManager.npcList) {
+                    if (npc.id == NPC2) {
+                        const npcView = npc.view;
+                        const npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        const key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
         }
     }

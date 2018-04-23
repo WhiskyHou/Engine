@@ -43,6 +43,7 @@ talk_window.src = './assets/talkWindow.png';
  * 全局变量
  */
 const TILE_SIZE = 64;
+const ASSETS_PATH = "./assets/";
 
 const ROW_NUM = 6;
 const COL_NUM = 6;
@@ -54,8 +55,8 @@ const WALL_LEFT = 3;
 const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
 const KILL_DARGON_KNIFE = 6;
-const NPC = 7;
-const NPC2 = 9;
+const NPC = 1;
+const NPC2 = 2;
 const MONSTER = 8;
 
 const PLAYER_INDEX_X = 0;
@@ -66,6 +67,8 @@ const PLAYER_WALK_SPEED = 500;
 var player: User;
 var map: GameMap;
 var missionManager = new MissionManager();
+var npcManager = new NpcManager();
+npcManager.init();
 
 
 
@@ -110,6 +113,7 @@ class MenuState extends State {
 
         this.onCreatePlayer();
         missionManager.init();
+        // npcManager.init();
         fsm.replaceState(new PlayingState());
     }
 }

@@ -83,28 +83,36 @@ var GameMap = /** @class */ (function (_super) {
                 this.roleContainer.addChild(monsterView);
             }
             if (item.npc == NPC) {
-                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gaojianli);
-                var npcHead = new Bitmap(0, 0, gaojianli_head);
-                var npcItem = new Npc(1, '高渐离'); // TODO
-                npcItem.view = npcView;
-                npcItem.head = npcHead;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                var key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+                for (var _b = 0, _c = npcManager.npcList; _b < _c.length; _b++) {
+                    var npc = _c[_b];
+                    if (npc.id == NPC) {
+                        var npcView = npc.view;
+                        var npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        var key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
             if (item.npc == NPC2) {
-                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, yingzheng);
-                var npcHead = new Bitmap(0, 0, yingzheng_head);
-                var npcItem = new Npc(2, '嬴政'); // TODO
-                npcItem.view = npcView;
-                npcItem.head = npcHead;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                var key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+                for (var _d = 0, _e = npcManager.npcList; _d < _e.length; _d++) {
+                    var npc = _e[_d];
+                    if (npc.id == NPC2) {
+                        var npcView = npc.view;
+                        var npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        var key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
         }
     };

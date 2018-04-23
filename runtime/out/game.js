@@ -51,6 +51,7 @@ talk_window.src = './assets/talkWindow.png';
  * 全局变量
  */
 var TILE_SIZE = 64;
+var ASSETS_PATH = "./assets/";
 var ROW_NUM = 6;
 var COL_NUM = 6;
 var GRASS_L = 0;
@@ -60,8 +61,8 @@ var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
-var NPC = 7;
-var NPC2 = 9;
+var NPC = 1;
+var NPC2 = 2;
 var MONSTER = 8;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
@@ -69,6 +70,8 @@ var PLAYER_WALK_SPEED = 500;
 var player;
 var map;
 var missionManager = new MissionManager();
+var npcManager = new NpcManager();
+npcManager.init();
 /**
  * 开始状态
  */
@@ -82,6 +85,7 @@ var MenuState = /** @class */ (function (_super) {
             // this.onExit();
             _this.onCreatePlayer();
             missionManager.init();
+            // npcManager.init();
             fsm.replaceState(new PlayingState());
         };
         _this.title = new TextField('点击开始游戏', 200, 300, 60);
