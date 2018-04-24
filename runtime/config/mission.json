@@ -1,11 +1,11 @@
 {
 	"mission": [
 		{
-			"id": 1,
+			"id": "1",
 			"name": "捡起屠龙宝刀",
 			"needLevel": "1",
 			"fromNpcId": "1",
-			"toNpcId": "1",
+			"toNpcId": "2",
 			"canAcceptConfig": [
 				"欢迎来到新日暮里111",
 				"你的等级还很低",
@@ -23,10 +23,10 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": 2,
+			"id": "2",
 			"name": "打败队长",
 			"needLevel": "2",
-			"fromNpcId": "1",
+			"fromNpcId": "2",
 			"toNpcId": "1",
 			"canAcceptConfig": [
 				"你现在要帮我杀了美队111",

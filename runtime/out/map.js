@@ -22,7 +22,7 @@ var GameMap = /** @class */ (function (_super) {
             { x: 0, y: 2, id: GRASS_L, monster: MONSTER }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
             { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
             { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
-            { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
+            { x: 0, y: 5, id: GRASS_D, npc: NPC2 }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
         ];
         _this.equipmentConfig = {};
         _this.npcConfig = {};
@@ -82,15 +82,37 @@ var GameMap = /** @class */ (function (_super) {
                 this.monsterConfig[key] = monsterItem;
                 this.roleContainer.addChild(monsterView);
             }
-            if (item.npc) {
-                var npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                var npcItem = new Npc(1, 'DDF'); // TODO
-                npcItem.view = npcView;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                var key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+            if (item.npc == NPC) {
+                for (var _b = 0, _c = npcManager.npcList; _b < _c.length; _b++) {
+                    var npc = _c[_b];
+                    if (npc.id == NPC) {
+                        var npcView = npc.view;
+                        var npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        var key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
+            }
+            if (item.npc == NPC2) {
+                for (var _d = 0, _e = npcManager.npcList; _d < _e.length; _d++) {
+                    var npc = _e[_d];
+                    if (npc.id == NPC2) {
+                        var npcView = npc.view;
+                        var npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        var key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
         }
     };
@@ -118,12 +140,12 @@ var GameMap = /** @class */ (function (_super) {
     GameMap.prototype.deleteEquipment = function (equipment) {
         var key = equipment.x + '_' + equipment.y;
         delete this.equipmentConfig[key];
-        this.deleteChild(equipment.view);
+        this.itemContainer.deleteChild(equipment.view);
     };
     GameMap.prototype.deleteMonster = function (monster) {
         var key = monster.x + '_' + monster.y;
         delete this.monsterConfig[key];
-        this.deleteChild(monster.view);
+        this.roleContainer.deleteChild(monster.view);
     };
     return GameMap;
 }(DisplayObjectContainer));

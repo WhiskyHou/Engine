@@ -1,14 +1,16 @@
 {
-    "npc": [
-        {
-            "id": 1,
-            "name": "高渐离",
-            "view": ""
-        },
-        {
-            "id": 2,
-            "name": "阿轲",
-            "view": ""
-        }
-    ]
+	"npc": [
+		{
+			"id": "1",
+			"name": "高渐离",
+			"view": "gaojianli.png",
+			"head": "gaojianli_head.png"
+		},
+		{
+			"id": 2,
+			"name": "嬴政",
+			"view": "yingzheng.png",
+			"head": "yingzheng_head.png"
+		}
+	]
 }

@@ -33,8 +33,14 @@ var wall_middle = new Image();
 wall_middle.src = './assets/wall_middle.png';
 var wall_right = new Image();
 wall_right.src = './assets/wall_right.png';
-var gjl = new Image();
-gjl.src = './assets/npc.png';
+var gaojianli = new Image();
+gaojianli.src = './assets/gaojianli.png';
+var gaojianli_head = new Image();
+gaojianli_head.src = './assets/gaojianli_head.png';
+var yingzheng = new Image();
+yingzheng.src = './assets/yingzheng.png';
+var yingzheng_head = new Image();
+yingzheng_head.src = './assets/yingzheng_head.png';
 var captain = new Image();
 captain.src = './assets/monster.png';
 var talk_window = new Image();
@@ -45,6 +51,7 @@ talk_window.src = './assets/talkWindow.png';
  * 全局变量
  */
 var TILE_SIZE = 64;
+var ASSETS_PATH = "./assets/";
 var ROW_NUM = 6;
 var COL_NUM = 6;
 var GRASS_L = 0;
@@ -54,7 +61,8 @@ var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
-var NPC = 7;
+var NPC = 1;
+var NPC2 = 2;
 var MONSTER = 8;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
@@ -62,34 +70,8 @@ var PLAYER_WALK_SPEED = 500;
 var player;
 var map;
 var missionManager = new MissionManager();
-var missionTalkCanAcceptConfig = [
-    [],
-    [
-        "欢迎来到新日暮里",
-        "你的等级还很低",
-        "攻击力也相当低",
-        "所以我不能给你任何击杀任务",
-        "你先找到屠龙刀再回来找我"
-    ],
-    [
-        "你现在要帮我杀了美队",
-        "加油你可以的",
-        "杀完回来找我"
-    ]
-];
-var missionTalkCanSubmitConfig = [
-    [],
-    [
-        "恭喜你找到了屠龙刀",
-        "给你升一级作为奖励",
-        "你被加强了，快送"
-    ],
-    [
-        "非常感谢你替我杀了美队",
-        "再奖励你升一级吧",
-        "赶快去下一层吧勇士"
-    ]
-];
+var npcManager = new NpcManager();
+npcManager.init();
 /**
  * 开始状态
  */
@@ -103,6 +85,7 @@ var MenuState = /** @class */ (function (_super) {
             // this.onExit();
             _this.onCreatePlayer();
             missionManager.init();
+            // npcManager.init();
             fsm.replaceState(new PlayingState());
         };
         _this.title = new TextField('点击开始游戏', 200, 300, 60);

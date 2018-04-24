@@ -10,7 +10,7 @@ class GameMap extends DisplayObjectContainer {
         { x: 0, y: 2, id: GRASS_L, monster: MONSTER }, { x: 1, y: 2, id: GRASS_D, tree: TREE }, { x: 2, y: 2, id: GRASS_L }, { x: 3, y: 2, id: GRASS_D }, { x: 4, y: 2, id: GRASS_L }, { x: 5, y: 2, id: GRASS_D },
         { x: 0, y: 3, id: GRASS_D }, { x: 1, y: 3, id: GRASS_L }, { x: 2, y: 3, id: GRASS_D }, { x: 3, y: 3, id: GRASS_L, wall: WALL_LEFT }, { x: 4, y: 3, id: GRASS_D, wall: WALL_MIDDLE }, { x: 5, y: 3, id: GRASS_L, wall: WALL_RIGHT },
         { x: 0, y: 4, id: GRASS_L }, { x: 1, y: 4, id: GRASS_D }, { x: 2, y: 4, id: GRASS_L, tree: TREE }, { x: 3, y: 4, id: GRASS_D, tree: TREE }, { x: 4, y: 4, id: GRASS_L }, { x: 5, y: 4, id: GRASS_D, equipment: KILL_DARGON_KNIFE },
-        { x: 0, y: 5, id: GRASS_D }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
+        { x: 0, y: 5, id: GRASS_D, npc: NPC2 }, { x: 1, y: 5, id: GRASS_L }, { x: 2, y: 5, id: GRASS_D }, { x: 3, y: 5, id: GRASS_L }, { x: 4, y: 5, id: GRASS_D }, { x: 5, y: 5, id: GRASS_L }
     ]
 
     private equipmentConfig: { [index: string]: Equipment } = {}
@@ -82,15 +82,35 @@ class GameMap extends DisplayObjectContainer {
                 this.roleContainer.addChild(monsterView);
             }
 
-            if (item.npc) {
-                const npcView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, gjl);
-                const npcItem = new Npc(1, 'DDF'); // TODO
-                npcItem.view = npcView;
-                npcItem.x = item.x;
-                npcItem.y = item.y;
-                const key = item.x + '_' + item.y;
-                this.npcConfig[key] = npcItem;
-                this.roleContainer.addChild(npcView);
+            if (item.npc == NPC) {
+                for (let npc of npcManager.npcList) {
+                    if (npc.id == NPC) {
+                        const npcView = npc.view;
+                        const npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        const key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
+            }
+            if (item.npc == NPC2) {
+                for (let npc of npcManager.npcList) {
+                    if (npc.id == NPC2) {
+                        const npcView = npc.view;
+                        const npcHead = npc.head;
+                        npcView.x = TILE_SIZE * item.x;
+                        npcView.y = TILE_SIZE * item.y;
+                        npc.x = item.x;
+                        npc.y = item.y;
+                        const key = item.x + '_' + item.y;
+                        this.npcConfig[key] = npc;
+                        this.roleContainer.addChild(npcView);
+                    }
+                }
             }
         }
     }
@@ -119,11 +139,11 @@ class GameMap extends DisplayObjectContainer {
     deleteEquipment(equipment: Equipment) {
         const key = equipment.x + '_' + equipment.y;
         delete this.equipmentConfig[key];
-        this.deleteChild(equipment.view);
+        this.itemContainer.deleteChild(equipment.view);
     }
     deleteMonster(monster: Monster) {
         const key = monster.x + '_' + monster.y;
         delete this.monsterConfig[key];
-        this.deleteChild(monster.view);
+        this.roleContainer.deleteChild(monster.view);
     }
 }

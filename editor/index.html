@@ -9,22 +9,18 @@
 
 <body>
     <div style="display: flex">
-        <div>
+        <div id="objectTree">
             <p>gameObjectTree</p>
         </div>
 
         <webview id="runtime" style="width:1100px; height:900px;" src='../runtime/index.html'></webview>
 
-        <div>
+        <div id="inspector">
             <p>inspector</p>
+            <div id="buttonGroup"></div>
             <div style="background-color: hotpink">
-                <p>Mission Editor</p>
-                <div>
-                    <div id="missionEditorChoice">
-                    </div>
-                    <div id="missionEditorContent">
-                    </div>
-                </div>
+                <p id="propertyEditorTitle"></p>
+                <div id="propertyEditorContainer"></div>
             </div>
         </div>
     </div>
