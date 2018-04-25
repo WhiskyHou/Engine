@@ -46,8 +46,8 @@
 				"要点碧莲行不……",
 				"走走走"
 			],
-			"going": "talkWithNpc",
-			"goingFunc": "诸葛亮",
+			"going": "pass",
+			"goingFunc": "pass",
 			"reward": "levelUp"
 		},
 		{
@@ -63,7 +63,7 @@
 				"bbbb"
 			],
 			"going": "talkWithNpc",
-			"goingFunc": "诸葛亮",
+			"goingFunc": "王昭君",
 			"reward": "levelUp"
 		}
 	]

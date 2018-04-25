@@ -58,6 +58,8 @@ const KILL_DARGON_KNIFE = 6;
 const NPC1 = 1;
 const NPC2 = 2;
 const NPC3 = 3;
+const NPC4 = 4;
+const NPC5 = 5;
 const MONSTER = 8;
 
 const PLAYER_INDEX_X = 0;

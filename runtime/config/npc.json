@@ -7,7 +7,7 @@
 			"head": "gaojianli_head.png"
 		},
 		{
-			"id": 2,
+			"id": "2",
 			"name": "嬴政",
 			"view": "yingzheng.png",
 			"head": "yingzheng_head.png"
@@ -17,6 +17,18 @@
 			"name": "诸葛亮",
 			"view": "zhugeliang.png",
 			"head": "zhugeliang_head.png"
+		},
+		{
+			"id": "4",
+			"name": "王昭君",
+			"view": "wangzhaojun.png",
+			"head": "wangzhaojun_head.png"
+		},
+		{
+			"id": "5",
+			"name": "扁鹊",
+			"view": "bianque.png",
+			"head": "bianque_head.png"
 		}
 	]
 }
