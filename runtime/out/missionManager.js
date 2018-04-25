@@ -50,9 +50,20 @@ var MissionManager = /** @class */ (function (_super) {
                     mission.current++;
                 }
             };
-            var rewardFunc = function () {
-                player.levelUp();
-            };
+            var rewardFunc = void 0;
+            if (item.reward == 'levelUp') {
+                rewardFunc = function () {
+                    player.levelUp();
+                };
+            }
+            else if (item.reward == 'levelDown') {
+                rewardFunc = function () {
+                    player.levelDown();
+                };
+            }
+            else {
+                rewardFunc = function () { };
+            }
             var mission = new Mission(going, goingFunc, rewardFunc);
             mission.id = item.id;
             mission.name = item.name;

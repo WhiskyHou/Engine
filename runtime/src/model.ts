@@ -86,6 +86,10 @@ class User extends EventDispatcher {
         this.level += 1;
     }
 
+    levelDown() {
+        this.level -= 1;
+    }
+
     update() {
         this.moveSmooth();
     }

@@ -96,6 +96,9 @@ var User = /** @class */ (function (_super) {
     User.prototype.levelUp = function () {
         this.level += 1;
     };
+    User.prototype.levelDown = function () {
+        this.level -= 1;
+    };
     User.prototype.update = function () {
         this.moveSmooth();
     };
