@@ -45,8 +45,8 @@ talk_window.src = './assets/talkWindow.png';
 const TILE_SIZE = 64;
 const ASSETS_PATH = "./assets/";
 
-const ROW_NUM = 6;
-const COL_NUM = 6;
+const ROW_NUM = 8;
+const COL_NUM = 8;
 
 const GRASS_L = 0;
 const GRASS_D = 1;
@@ -55,8 +55,9 @@ const WALL_LEFT = 3;
 const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
 const KILL_DARGON_KNIFE = 6;
-const NPC = 1;
+const NPC1 = 1;
 const NPC2 = 2;
+const NPC3 = 3;
 const MONSTER = 8;
 
 const PLAYER_INDEX_X = 0;
@@ -145,8 +146,8 @@ class PlayingState extends State {
         this.missionUIContainer = new DisplayObjectContainer(16, 16);
 
         this.bg = new Bitmap(0, 0, bg);
-        this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
-        this.missionInfoUI = new MissionInfoUI(TILE_SIZE * 6, TILE_SIZE * 2);
+        this.userInfoUI = new UserInfoUI(0, TILE_SIZE * ROW_NUM);
+        this.missionInfoUI = new MissionInfoUI(TILE_SIZE * COL_NUM, TILE_SIZE * 2);
     }
 
     onEnter(): void {

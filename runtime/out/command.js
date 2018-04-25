@@ -92,6 +92,7 @@ var TalkCommand = /** @class */ (function (_super) {
     }
     TalkCommand.prototype.execute = function (callback) {
         console.log("\u5F00\u59CB\u548CNPC\uFF1A" + this.npc.toString() + "\u5BF9\u8BDD");
+        player.talk(this.npc);
         var mission = null;
         if (this.npc.canAcceptMissions.length > 0) {
             mission = this.npc.canAcceptMissions[0];

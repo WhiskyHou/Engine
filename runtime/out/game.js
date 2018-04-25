@@ -52,8 +52,8 @@ talk_window.src = './assets/talkWindow.png';
  */
 var TILE_SIZE = 64;
 var ASSETS_PATH = "./assets/";
-var ROW_NUM = 6;
-var COL_NUM = 6;
+var ROW_NUM = 8;
+var COL_NUM = 8;
 var GRASS_L = 0;
 var GRASS_D = 1;
 var TREE = 2;
@@ -61,8 +61,9 @@ var WALL_LEFT = 3;
 var WALL_MIDDLE = 4;
 var WALL_RIGHT = 5;
 var KILL_DARGON_KNIFE = 6;
-var NPC = 1;
+var NPC1 = 1;
 var NPC2 = 2;
+var NPC3 = 3;
 var MONSTER = 8;
 var PLAYER_INDEX_X = 0;
 var PLAYER_INDEX_Y = 0;
@@ -127,8 +128,8 @@ var PlayingState = /** @class */ (function (_super) {
         _this.userUIContainer = new DisplayObjectContainer(16, 16);
         _this.missionUIContainer = new DisplayObjectContainer(16, 16);
         _this.bg = new Bitmap(0, 0, bg);
-        _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
-        _this.missionInfoUI = new MissionInfoUI(TILE_SIZE * 6, TILE_SIZE * 2);
+        _this.userInfoUI = new UserInfoUI(0, TILE_SIZE * ROW_NUM);
+        _this.missionInfoUI = new MissionInfoUI(TILE_SIZE * COL_NUM, TILE_SIZE * 2);
         return _this;
     }
     PlayingState.prototype.onEnter = function () {

@@ -11,6 +11,12 @@
 			"name": "嬴政",
 			"view": "yingzheng.png",
 			"head": "yingzheng_head.png"
+		},
+		{
+			"id": "3",
+			"name": "诸葛亮",
+			"view": "zhugeliang.png",
+			"head": "zhugeliang_head.png"
 		}
 	]
 }

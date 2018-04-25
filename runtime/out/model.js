@@ -48,6 +48,9 @@ var User = /** @class */ (function (_super) {
     User.prototype.fight = function (monster) {
         this.dispatchEvent('fightWithMonster', { name: monster.name });
     };
+    User.prototype.talk = function (npc) {
+        this.dispatchEvent('talkWithNpc', { name: npc.name });
+    };
     Object.defineProperty(User.prototype, "attack", {
         get: function () {
             var equipmentAttack = 0;

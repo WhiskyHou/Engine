@@ -51,7 +51,7 @@ class MissionManager extends EventDispatcher {
             let mission = new Mission(going, goingFunc, rewardFunc);
             mission.id = item.id;
             mission.name = item.name;
-            mission.needLevel = item.needLevel
+            mission.needLevel = item.needLevel;
             mission.fromNpcId = item.fromNpcId;
             mission.toNpcId = item.toNpcId;
             mission.canAcceptContent = item.canAcceptConfig;

@@ -7,16 +7,18 @@
 			"fromNpcId": "1",
 			"toNpcId": "2",
 			"canAcceptConfig": [
-				"欢迎来到新日暮里111",
+				"欢迎来到王者大陆",
 				"你的等级还很低",
 				"攻击力也相当低",
-				"所以我不能给你任何击杀任务",
-				"你先找到屠龙刀再回来找我"
+				"所以我不能给你任务",
+				"你先找到屠龙刀",
+				"然后去找嬴政"
 			],
 			"canSubmitConfig": [
 				"恭喜你找到了屠龙刀",
 				"给你升一级作为奖励",
-				"你被加强了，快送"
+				"你回去找高渐离",
+				"快走别磨叽"
 			],
 			"going": "pickEquipment",
 			"goingFunc": "屠龙刀",
@@ -24,22 +26,44 @@
 		},
 		{
 			"id": "2",
-			"name": "打败队长",
+			"name": "寻找大师",
 			"needLevel": "2",
-			"fromNpcId": "2",
-			"toNpcId": "1",
+			"fromNpcId": "1",
+			"toNpcId": "3",
 			"canAcceptConfig": [
-				"你现在要帮我杀了美队111",
-				"加油你可以的",
-				"杀完回来找我"
+				"你怎么回来了？",
+				"屠龙刀找到了？",
+				"谁？嬴政让你回来的？",
+				"哇我想锤他",
+				"算了这次去找诸葛亮大师吧",
+				"记住了这次别回来找我"
 			],
 			"canSubmitConfig": [
-				"非常感谢你替我杀了美队",
-				"再奖励你升一级吧",
-				"赶快去下一层吧勇士"
+				"怎么又有菜鸡来了",
+				"你就是想升级吧",
+				"唉给你升一级好了",
+				"什么？你还要？",
+				"要点碧莲行不……",
+				"走走走"
 			],
-			"going": "fightWithMonster",
-			"goingFunc": "队长",
+			"going": "talkWithNpc",
+			"goingFunc": "诸葛亮",
+			"reward": "levelUp"
+		},
+		{
+			"id": "3",
+			"name": "很烦",
+			"needLevel": "3",
+			"fromNpcId": "1",
+			"toNpcId": "3",
+			"canAcceptConfig": [
+				"aaaa"
+			],
+			"canSubmitConfig": [
+				"bbbb"
+			],
+			"going": "talkWithNpc",
+			"goingFunc": "诸葛亮",
 			"reward": "levelUp"
 		}
 	]
