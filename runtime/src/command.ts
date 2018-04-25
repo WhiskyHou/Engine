@@ -92,6 +92,8 @@ class TalkCommand extends Command {
     execute(callback: Function): void {
         console.log(`开始和NPC：${this.npc.toString()}对话`)
 
+        player.talk(this.npc);
+
         let mission: Mission | null = null;
         if (this.npc.canAcceptMissions.length > 0) {
             mission = this.npc.canAcceptMissions[0];

@@ -10,6 +10,8 @@ var van2 = new Image();
 van2.src = './assets/van_stand_2.png';
 var knife = new Image();
 knife.src = './assets/kill_dargon_knife.png';
+var hp_bottle = new Image();
+hp_bottle.src = './assets/hp_bottle.png';
 var grassLight = new Image();
 grassLight.src = './assets/grass_light.jpg';
 var grassDark = new Image();
@@ -45,8 +47,8 @@ talk_window.src = './assets/talkWindow.png';
 const TILE_SIZE = 64;
 const ASSETS_PATH = "./assets/";
 
-const ROW_NUM = 6;
-const COL_NUM = 6;
+const ROW_NUM = 8;
+const COL_NUM = 8;
 
 const GRASS_L = 0;
 const GRASS_D = 1;
@@ -54,14 +56,21 @@ const TREE = 2;
 const WALL_LEFT = 3;
 const WALL_MIDDLE = 4;
 const WALL_RIGHT = 5;
-const KILL_DARGON_KNIFE = 6;
-const NPC = 1;
+
+const KILL_DARGON_KNIFE = 1;
+const HP_BOTTLE = 2;
+
+const NPC1 = 1;
 const NPC2 = 2;
-const MONSTER = 8;
+const NPC3 = 3;
+const NPC4 = 4;
+const NPC5 = 5;
+
+const MONSTER = 1;
 
 const PLAYER_INDEX_X = 0;
 const PLAYER_INDEX_Y = 0;
-const PLAYER_WALK_SPEED = 500;
+const PLAYER_WALK_SPEED = 200;
 
 
 var player: User;
@@ -145,8 +154,8 @@ class PlayingState extends State {
         this.missionUIContainer = new DisplayObjectContainer(16, 16);
 
         this.bg = new Bitmap(0, 0, bg);
-        this.userInfoUI = new UserInfoUI(0, TILE_SIZE * 6);
-        this.missionInfoUI = new MissionInfoUI(TILE_SIZE * 6, TILE_SIZE * 2);
+        this.userInfoUI = new UserInfoUI(0, TILE_SIZE * ROW_NUM);
+        this.missionInfoUI = new MissionInfoUI(TILE_SIZE * COL_NUM, TILE_SIZE * 2);
     }
 
     onEnter(): void {

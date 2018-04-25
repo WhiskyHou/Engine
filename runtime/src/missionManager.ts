@@ -45,13 +45,22 @@ class MissionManager extends EventDispatcher {
                     mission.current++;
                 }
             }
-            const rewardFunc = () => {
-                player.levelUp();
+            let rewardFunc: Function;
+            if (item.reward == 'levelUp') {
+                rewardFunc = () => {
+                    player.levelUp();
+                }
+            } else if (item.reward == 'levelDown') {
+                rewardFunc = () => {
+                    player.levelDown();
+                }
+            } else {
+                rewardFunc = () => { }
             }
             let mission = new Mission(going, goingFunc, rewardFunc);
             mission.id = item.id;
             mission.name = item.name;
-            mission.needLevel = item.needLevel
+            mission.needLevel = item.needLevel;
             mission.fromNpcId = item.fromNpcId;
             mission.toNpcId = item.toNpcId;
             mission.canAcceptContent = item.canAcceptConfig;

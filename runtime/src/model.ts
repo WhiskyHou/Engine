@@ -40,6 +40,10 @@ class User extends EventDispatcher {
         this.dispatchEvent('fightWithMonster', { name: monster.name });
     }
 
+    talk(npc: Npc) {
+        this.dispatchEvent('talkWithNpc', { name: npc.name })
+    }
+
     get attack(): number {
         let equipmentAttack = 0;
         for (let equipment of this.mounthedEquipment) {
@@ -80,6 +84,10 @@ class User extends EventDispatcher {
 
     levelUp() {
         this.level += 1;
+    }
+
+    levelDown() {
+        this.level -= 1;
     }
 
     update() {

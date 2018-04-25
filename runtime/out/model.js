@@ -48,6 +48,9 @@ var User = /** @class */ (function (_super) {
     User.prototype.fight = function (monster) {
         this.dispatchEvent('fightWithMonster', { name: monster.name });
     };
+    User.prototype.talk = function (npc) {
+        this.dispatchEvent('talkWithNpc', { name: npc.name });
+    };
     Object.defineProperty(User.prototype, "attack", {
         get: function () {
             var equipmentAttack = 0;
@@ -92,6 +95,9 @@ var User = /** @class */ (function (_super) {
     };
     User.prototype.levelUp = function () {
         this.level += 1;
+    };
+    User.prototype.levelDown = function () {
+        this.level -= 1;
     };
     User.prototype.update = function () {
         this.moveSmooth();
