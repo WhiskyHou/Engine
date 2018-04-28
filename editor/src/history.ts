@@ -5,10 +5,17 @@ class EditorHistory {
 
     private currentIndex: number = -1;
 
+    private maxLength: number = 5;
+
     add(command: Command) {
         this.commandList.push(command);
         command.execute();
         this.currentIndex++;
+
+        if (this.currentIndex > this.maxLength - 1) {
+            this.commandList.splice(0, 1);
+            this.currentIndex--;
+        }
     }
 
     remove() {

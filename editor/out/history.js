@@ -4,11 +4,16 @@ var EditorHistory = /** @class */ (function () {
     function EditorHistory() {
         this.commandList = [];
         this.currentIndex = -1;
+        this.maxLength = 5;
     }
     EditorHistory.prototype.add = function (command) {
         this.commandList.push(command);
         command.execute();
         this.currentIndex++;
+        if (this.currentIndex > this.maxLength - 1) {
+            this.commandList.splice(0, 1);
+            this.currentIndex--;
+        }
     };
     EditorHistory.prototype.remove = function () {
     };
