@@ -9,6 +9,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
+var menu = __importStar(require("./menu"));
+var history_1 = require("./history");
+menu.run();
 /**
  * 元数据 具体数据
  */
@@ -240,10 +243,10 @@ function changeEditor(metadata) {
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
     var _loop_1 = function (metadata) {
-        var button = document.createElement('button');
-        button.innerText = metadata.title;
-        buttonGroup.appendChild(button);
-        button.onclick = function () {
+        var button_1 = document.createElement('button');
+        button_1.innerText = metadata.title;
+        buttonGroup.appendChild(button_1);
+        button_1.onclick = function () {
             changeEditor(metadata);
         };
     };
@@ -251,4 +254,12 @@ if (buttonGroup) {
         var metadata = metadatas_1[_i];
         _loop_1(metadata);
     }
+}
+var count = 0;
+var button = document.getElementById('go');
+if (button) {
+    button.onclick = function () {
+        var command = new history_1.TestCommand(count, ++count);
+        history_1.editorHistory.add(command);
+    };
 }

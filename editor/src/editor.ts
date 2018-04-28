@@ -1,6 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as electron from 'electron'
+import * as menu from './menu'
+import { editorHistory, TestCommand } from './history'
+
+menu.run();
 
 /**
  * 编辑器单项item的元数据 规范
@@ -315,4 +319,15 @@ if (buttonGroup) {
             changeEditor(metadata);
         }
     }
+}
+
+
+
+let count = 0;
+const button = document.getElementById('go');
+if (button) {
+    button.onclick = () => {
+        const command = new TestCommand(count, ++count);
+        editorHistory.add(command);
+    };
 }
