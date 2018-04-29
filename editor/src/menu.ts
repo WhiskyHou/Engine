@@ -17,7 +17,9 @@ export function run() {
                 {
                     label: '保存',
                     accelerator: 'CmdOrCtrl+S',
-                    click: () => { }
+                    click: () => {
+                        editor.save();
+                    }
                 }
             ]
         },

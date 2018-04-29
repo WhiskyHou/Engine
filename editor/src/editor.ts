@@ -2,9 +2,45 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as electron from 'electron'
 import * as menu from './menu'
-import { editorHistory, TestCommand } from './history'
+import { editorHistory, TestCommand, Command } from './history'
 
 menu.run();
+
+
+/**
+ * 属性编辑命令
+ */
+class PropertyEditCommand implements Command {
+
+    object: any
+
+    from: any
+
+    to: any
+
+    key: string
+
+    inspector: PropertyEditor
+
+    input: HTMLInputElement | HTMLSelectElement
+
+
+    constructor(object: any, from: any, to: any, key: string, inspector: PropertyEditor, input: HTMLInputElement | HTMLSelectElement) {
+        this.object = object;
+        this.from = from;
+        this.to = to;
+        this.key = key;
+        this.inspector = inspector;
+        this.input = input;
+    }
+
+    execute(): void {
+
+    }
+    revert(): void {
+    }
+}
+
 
 /**
  * 编辑器单项item的元数据 规范
@@ -150,7 +186,7 @@ class PropertyEditor {
                 this.currentEditObject[propertyItem.key] = temp;
             }
             this.updata();
-            this.saveAndReload();
+            // this.saveAndReload();
         }
 
         this.switchButton.onclick = () => {
@@ -174,7 +210,7 @@ class PropertyEditor {
 
             this.data.push(newObject);
             this.updata();
-            this.saveAndReload();
+            // this.saveAndReload();
         }
 
         this.removeButton.onclick = () => {
@@ -183,7 +219,7 @@ class PropertyEditor {
                 this.data.splice(index, 1)
                 this.updata();
             }
-            this.saveAndReload();
+            // this.saveAndReload();
         }
     }
 
@@ -220,7 +256,7 @@ class PropertyEditor {
         }
     }
 
-    private saveAndReload() {
+    saveAndReload() {
         const content = JSON.stringify(this.jsonData, null, '\t');
         fs.writeFileSync(this.dataMetadata.filepath, content);
         const runtime = document.getElementById("runtime") as electron.WebviewTag;
@@ -301,14 +337,21 @@ function changeEditor(metadata: DataMetadata) {
         propertyEditorTitle.innerText = metadata.title;
         propertyEditorContainer.innerText = '';
 
-        const propertyEditor = new PropertyEditor(metadata);
+        propertyEditor = new PropertyEditor(metadata);
         propertyEditorContainer.appendChild(propertyEditor.view);
     }
 }
 
-/**
- * 初始化inspector
- */
+
+export function save() {
+    if (propertyEditor) {
+        propertyEditor.saveAndReload();
+    }
+}
+
+
+
+// 初始化inspector
 const buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
     for (const metadata of metadatas) {
@@ -320,9 +363,13 @@ if (buttonGroup) {
         }
     }
 }
+let propertyEditor: PropertyEditor;
 
 
 
+
+
+// 撤销恢复功能测试
 let count = 0;
 const button = document.getElementById('go');
 if (button) {

@@ -12,14 +12,15 @@ class EditorHistory {
         command.execute();
         this.currentIndex++;
 
+        this.remove();
+    }
+
+    // TODO:回退到中间位置再执行操作会有顺序问题
+    remove() {
         if (this.currentIndex > this.maxLength - 1) {
             this.commandList.splice(0, 1);
             this.currentIndex--;
         }
-    }
-
-    remove() {
-
     }
 
     revert(index: number) {
@@ -58,7 +59,7 @@ class EditorHistory {
 
 
 
-interface Command {
+export interface Command {
     execute(): void;
     revert(): void;
 }

@@ -13,6 +13,24 @@ var menu = __importStar(require("./menu"));
 var history_1 = require("./history");
 menu.run();
 /**
+ * 属性编辑命令
+ */
+var PropertyEditCommand = /** @class */ (function () {
+    function PropertyEditCommand(object, from, to, key, inspector, input) {
+        this.object = object;
+        this.from = from;
+        this.to = to;
+        this.key = key;
+        this.inspector = inspector;
+        this.input = input;
+    }
+    PropertyEditCommand.prototype.execute = function () {
+    };
+    PropertyEditCommand.prototype.revert = function () {
+    };
+    return PropertyEditCommand;
+}());
+/**
  * 元数据 具体数据
  */
 var metadatas = [
@@ -102,7 +120,7 @@ var PropertyEditor = /** @class */ (function () {
                 _this.currentEditObject[propertyItem.key] = temp;
             }
             _this.updata();
-            _this.saveAndReload();
+            // this.saveAndReload();
         };
         this.switchButton.onclick = function () {
             var id = _this.propertyEditorChoice.value;
@@ -125,7 +143,7 @@ var PropertyEditor = /** @class */ (function () {
             }
             _this.data.push(newObject);
             _this.updata();
-            _this.saveAndReload();
+            // this.saveAndReload();
         };
         this.removeButton.onclick = function () {
             var index = _this.data.indexOf(_this.currentEditObject);
@@ -133,7 +151,7 @@ var PropertyEditor = /** @class */ (function () {
                 _this.data.splice(index, 1);
                 _this.updata();
             }
-            _this.saveAndReload();
+            // this.saveAndReload();
         };
     };
     PropertyEditor.prototype.updata = function () {
@@ -233,13 +251,17 @@ function changeEditor(metadata) {
     if (propertyEditorTitle && propertyEditorContainer) {
         propertyEditorTitle.innerText = metadata.title;
         propertyEditorContainer.innerText = '';
-        var propertyEditor = new PropertyEditor(metadata);
+        propertyEditor = new PropertyEditor(metadata);
         propertyEditorContainer.appendChild(propertyEditor.view);
     }
 }
-/**
- * 初始化inspector
- */
+function save() {
+    if (propertyEditor) {
+        propertyEditor.saveAndReload();
+    }
+}
+exports.save = save;
+// 初始化inspector
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
     var _loop_1 = function (metadata) {
@@ -255,6 +277,8 @@ if (buttonGroup) {
         _loop_1(metadata);
     }
 }
+var propertyEditor;
+// 撤销恢复功能测试
 var count = 0;
 var button = document.getElementById('go');
 if (button) {

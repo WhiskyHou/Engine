@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron = __importStar(require("electron"));
+var editor = __importStar(require("./editor"));
 var history_1 = require("./history");
 function run() {
     var templete = [
@@ -22,7 +23,9 @@ function run() {
                 {
                     label: '保存',
                     accelerator: 'CmdOrCtrl+S',
-                    click: function () { }
+                    click: function () {
+                        editor.save();
+                    }
                 }
             ]
         },
