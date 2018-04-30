@@ -1,4 +1,14 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -12,6 +22,41 @@ var path = __importStar(require("path"));
 var menu = __importStar(require("./menu"));
 var history_1 = require("./history");
 menu.run();
+/**
+ * 事件派发器
+ */
+var EventDispatcher = /** @class */ (function () {
+    function EventDispatcher() {
+        this.listeners = [];
+    }
+    EventDispatcher.prototype.dispatchEvent = function (type, eventData) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listener = _a[_i];
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
+        }
+    };
+    EventDispatcher.prototype.addEventListener = function (type, callback) {
+        this.listeners.push({ type: type, callback: callback });
+    };
+    EventDispatcher.prototype.deleteEventListener = function (type, callback) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listener = _a[_i];
+            if (listener.type == type && listener.callback == callback) {
+                var index = this.listeners.indexOf(listener);
+                this.listeners.splice(index, 1);
+                break;
+            }
+        }
+    };
+    EventDispatcher.prototype.deleteAllEventListener = function () {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
+    };
+    return EventDispatcher;
+}());
 /**
  * 属性编辑命令
  */
@@ -105,21 +150,30 @@ var PropertyEditor = /** @class */ (function () {
             option.innerText = object.name;
             this.propertyEditorChoice.appendChild(option);
         }
+        var _loop_1 = function (propertyMetadata) {
+            var propertyItem = new PropertyItem(propertyMetadata, this_1.currentEditObject);
+            this_1.propertyItemArray.push(propertyItem);
+            this_1.propertyEditorBody.appendChild(propertyItem.view);
+            propertyItem.addEventListener('onfocus', function () {
+            });
+            propertyItem.addEventListener('onblur', function () {
+                var temp = propertyItem.getValue();
+                _this.currentEditObject[propertyItem.key] = temp;
+            });
+        };
+        var this_1 = this;
         // 初始化各个属性编辑单项
         for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
             var propertyMetadata = _c[_b];
-            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
-            this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.view);
+            _loop_1(propertyMetadata);
         }
         // 添加按钮事件
         this.saveButton.onclick = function () {
-            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
-                var propertyItem = _a[_i];
-                var temp = propertyItem.getValue();
-                _this.currentEditObject[propertyItem.key] = temp;
-            }
-            _this.updata();
+            // for (let propertyItem of this.propertyItemArray) {
+            //     const temp = propertyItem.getValue();
+            //     this.currentEditObject[propertyItem.key] = temp;
+            // }
+            // this.updata();
             // this.saveAndReload();
         };
         this.switchButton.onclick = function () {
@@ -200,17 +254,19 @@ var PropertyEditor = /** @class */ (function () {
 /**
  * 属性编辑项
  */
-var PropertyItem = /** @class */ (function () {
+var PropertyItem = /** @class */ (function (_super) {
+    __extends(PropertyItem, _super);
     function PropertyItem(metadata, currentEditObject) {
-        this.metadata = metadata;
-        this.key = metadata.key;
-        this.view = document.createElement('div');
-        this.name = document.createElement('span');
+        var _this = _super.call(this) || this;
+        _this.metadata = metadata;
+        _this.key = metadata.key;
+        _this.view = document.createElement('div');
+        _this.name = document.createElement('span');
         if (metadata.type == 'input') {
-            this.content = document.createElement('input');
+            _this.content = document.createElement('input');
         }
         else if (metadata.type == 'dropdown') {
-            this.content = document.createElement('select');
+            _this.content = document.createElement('select');
             var optionMetadata = metadata.options;
             if (optionMetadata) {
                 var file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
@@ -221,18 +277,25 @@ var PropertyItem = /** @class */ (function () {
                     var option = document.createElement('option');
                     option.value = item.id;
                     option.innerText = item.name;
-                    this.content.appendChild(option);
+                    _this.content.appendChild(option);
                 }
             }
         }
         else if (metadata.type == 'primarykey') {
-            this.content = document.createElement('input');
-            this.content.disabled = true;
+            _this.content = document.createElement('input');
+            _this.content.disabled = true;
         }
-        this.name.innerText = metadata.description;
-        this.view.appendChild(this.name);
-        this.view.appendChild(this.content);
-        this.update(currentEditObject);
+        _this.content.onfocus = function () {
+            _this.dispatchEvent('onfocus', null);
+        };
+        _this.content.onblur = function () {
+            _this.dispatchEvent('onblur', null);
+        };
+        _this.name.innerText = metadata.description;
+        _this.view.appendChild(_this.name);
+        _this.view.appendChild(_this.content);
+        _this.update(currentEditObject);
+        return _this;
     }
     PropertyItem.prototype.update = function (currentEditObject) {
         this.content.value = currentEditObject[this.key];
@@ -241,7 +304,7 @@ var PropertyItem = /** @class */ (function () {
         return this.content.value;
     };
     return PropertyItem;
-}());
+}(EventDispatcher));
 /**
  * 切换编辑器
  */
@@ -264,7 +327,7 @@ exports.save = save;
 // 初始化inspector
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
-    var _loop_1 = function (metadata) {
+    var _loop_2 = function (metadata) {
         var button_1 = document.createElement('button');
         button_1.innerText = metadata.title;
         buttonGroup.appendChild(button_1);
@@ -274,7 +337,7 @@ if (buttonGroup) {
     };
     for (var _i = 0, metadatas_1 = metadatas; _i < metadatas_1.length; _i++) {
         var metadata = metadatas_1[_i];
-        _loop_1(metadata);
+        _loop_2(metadata);
     }
 }
 var propertyEditor;

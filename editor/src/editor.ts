@@ -8,6 +8,42 @@ menu.run();
 
 
 /**
+ * 事件派发器
+ */
+class EventDispatcher {
+    private listeners: { type: string, callback: Function }[] = [];
+
+    dispatchEvent(type: string, eventData: any) {
+        for (let listener of this.listeners) {
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
+        }
+    }
+
+    addEventListener(type: string, callback: Function) {
+        this.listeners.push({ type, callback });
+    }
+
+    deleteEventListener(type: string, callback: Function) {
+        for (let listener of this.listeners) {
+            if (listener.type == type && listener.callback == callback) {
+                const index = this.listeners.indexOf(listener)
+                this.listeners.splice(index, 1)
+                break;
+            }
+        }
+    }
+
+    deleteAllEventListener() {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
+    }
+}
+
+
+/**
  * 属性编辑命令
  */
 class PropertyEditCommand implements Command {
@@ -176,16 +212,24 @@ class PropertyEditor {
             const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.view);
+
+            propertyItem.addEventListener('onfocus', () => {
+
+            });
+            propertyItem.addEventListener('onblur', () => {
+                const temp = propertyItem.getValue();
+                this.currentEditObject[propertyItem.key] = temp;
+            });
         }
 
 
         // 添加按钮事件
         this.saveButton.onclick = () => {
-            for (let propertyItem of this.propertyItemArray) {
-                const temp = propertyItem.getValue();
-                this.currentEditObject[propertyItem.key] = temp;
-            }
-            this.updata();
+            // for (let propertyItem of this.propertyItemArray) {
+            //     const temp = propertyItem.getValue();
+            //     this.currentEditObject[propertyItem.key] = temp;
+            // }
+            // this.updata();
             // this.saveAndReload();
         }
 
@@ -269,7 +313,7 @@ class PropertyEditor {
 /**
  * 属性编辑项
  */
-class PropertyItem {
+class PropertyItem extends EventDispatcher {
 
     view: HTMLElement;
 
@@ -283,6 +327,8 @@ class PropertyItem {
 
 
     constructor(metadata: PropertyMetadata, currentEditObject: any) {
+        super();
+
         this.metadata = metadata;
         this.key = metadata.key;
 
@@ -307,6 +353,13 @@ class PropertyItem {
         } else if (metadata.type == 'primarykey') {
             this.content = document.createElement('input');
             this.content.disabled = true;
+        }
+
+        this.content.onfocus = () => {
+            this.dispatchEvent('onfocus', null);
+        }
+        this.content.onblur = () => {
+            this.dispatchEvent('onblur', null);
         }
 
         this.name.innerText = metadata.description;
