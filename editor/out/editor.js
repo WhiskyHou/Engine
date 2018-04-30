@@ -70,8 +70,11 @@ var PropertyEditCommand = /** @class */ (function () {
         this.input = input;
     }
     PropertyEditCommand.prototype.execute = function () {
+        this.object[this.key] = this.to;
     };
     PropertyEditCommand.prototype.revert = function () {
+        this.object[this.key] = this.from;
+        this.input.value = this.object[this.key];
     };
     return PropertyEditCommand;
 }());
@@ -274,9 +277,15 @@ var PropertyItem = /** @class */ (function (_super) {
         }
         _this.content.onfocus = function () {
             _this.dispatchEvent('onfocus', null);
+            _this.from = _this.content.value;
         };
         _this.content.onblur = function () {
             _this.dispatchEvent('onblur', null);
+            if (_this.content.value != _this.from) {
+                _this.to = _this.content.value;
+                var command = new PropertyEditCommand(currentEditObject, _this.from, _this.to, _this.key, propertyEditor, _this.content);
+                history_1.editorHistory.add(command);
+            }
         };
         _this.name.innerText = metadata.description;
         _this.view.appendChild(_this.name);
@@ -289,6 +298,9 @@ var PropertyItem = /** @class */ (function (_super) {
     };
     PropertyItem.prototype.getValue = function () {
         return this.content.value;
+    };
+    PropertyItem.prototype.setValue = function (value) {
+        this.content.value = value;
     };
     return PropertyItem;
 }(EventDispatcher));

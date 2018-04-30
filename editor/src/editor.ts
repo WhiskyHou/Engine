@@ -71,9 +71,12 @@ class PropertyEditCommand implements Command {
     }
 
     execute(): void {
+        this.object[this.key] = this.to;
 
     }
     revert(): void {
+        this.object[this.key] = this.from;
+        this.input.value = this.object[this.key];
     }
 }
 
@@ -157,6 +160,10 @@ class PropertyEditor {
     private propertyEditorChoice: HTMLSelectElement;
 
     private propertyEditorBody: HTMLDivElement;
+
+    private from: any;
+
+    private to: any;
 
 
 
@@ -309,6 +316,11 @@ class PropertyItem extends EventDispatcher {
 
     private metadata: PropertyMetadata;
 
+    private from: any;
+
+    private to: any;
+
+
 
     constructor(metadata: PropertyMetadata, currentEditObject: any) {
         super();
@@ -341,9 +353,15 @@ class PropertyItem extends EventDispatcher {
 
         this.content.onfocus = () => {
             this.dispatchEvent('onfocus', null);
+            this.from = this.content.value;
         }
         this.content.onblur = () => {
             this.dispatchEvent('onblur', null);
+            if (this.content.value != this.from) {
+                this.to = this.content.value;
+                const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
+                editorHistory.add(command);
+            }
         }
 
         this.name.innerText = metadata.description;
@@ -360,6 +378,10 @@ class PropertyItem extends EventDispatcher {
 
     getValue() {
         return this.content.value;
+    }
+
+    setValue(value: any) {
+        this.content.value = value;
     }
 }
 
