@@ -72,7 +72,7 @@ class PropertyEditCommand implements Command {
 
     execute(): void {
         this.object[this.key] = this.to;
-
+        propertyEditor.saveState = false;
     }
     revert(): void {
         this.object[this.key] = this.from;
@@ -161,9 +161,7 @@ class PropertyEditor {
 
     private propertyEditorBody: HTMLDivElement;
 
-    private from: any;
-
-    private to: any;
+    private hasSaved: boolean;
 
 
 
@@ -221,13 +219,16 @@ class PropertyEditor {
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.view);
 
-            propertyItem.addEventListener('onfocus', () => {
 
-            });
-            propertyItem.addEventListener('onblur', () => {
-                const temp = propertyItem.getValue();
-                this.currentEditObject[propertyItem.key] = temp;
-            });
+            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
+            //
+            // propertyItem.addEventListener('onfocus', () => {
+
+            // });
+            // propertyItem.addEventListener('onblur', () => {
+            //     // const temp = propertyItem.getValue();
+            //     // this.currentEditObject[propertyItem.key] = temp;
+            // });
         }
 
 
@@ -297,6 +298,16 @@ class PropertyEditor {
         const runtime = document.getElementById("runtime") as electron.WebviewTag;
         if (runtime) {
             runtime.reload()
+        }
+        this.saveState = true;
+    }
+
+    set saveState(save: boolean) {
+        this.hasSaved = save;
+        if (this.hasSaved) {
+            menu.changeTitle('Engine');
+        } else {
+            menu.changeTitle('尚未保存 *');
         }
     }
 }

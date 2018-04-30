@@ -71,6 +71,7 @@ var PropertyEditCommand = /** @class */ (function () {
     }
     PropertyEditCommand.prototype.execute = function () {
         this.object[this.key] = this.to;
+        propertyEditor.saveState = false;
     };
     PropertyEditCommand.prototype.revert = function () {
         this.object[this.key] = this.from;
@@ -156,22 +157,20 @@ var PropertyEditor = /** @class */ (function () {
                 propertyItem.update(_this.currentEditObject);
             }
         };
-        var _loop_1 = function (propertyMetadata) {
-            var propertyItem = new PropertyItem(propertyMetadata, this_1.currentEditObject);
-            this_1.propertyItemArray.push(propertyItem);
-            this_1.propertyEditorBody.appendChild(propertyItem.view);
-            propertyItem.addEventListener('onfocus', function () {
-            });
-            propertyItem.addEventListener('onblur', function () {
-                var temp = propertyItem.getValue();
-                _this.currentEditObject[propertyItem.key] = temp;
-            });
-        };
-        var this_1 = this;
         // 初始化各个属性编辑单项
         for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
             var propertyMetadata = _c[_b];
-            _loop_1(propertyMetadata);
+            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            this.propertyItemArray.push(propertyItem);
+            this.propertyEditorBody.appendChild(propertyItem.view);
+            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
+            //
+            // propertyItem.addEventListener('onfocus', () => {
+            // });
+            // propertyItem.addEventListener('onblur', () => {
+            //     // const temp = propertyItem.getValue();
+            //     // this.currentEditObject[propertyItem.key] = temp;
+            // });
         }
         // 添加按钮事件
         this.appendButton.onclick = function () {
@@ -238,7 +237,21 @@ var PropertyEditor = /** @class */ (function () {
         if (runtime) {
             runtime.reload();
         }
+        this.saveState = true;
     };
+    Object.defineProperty(PropertyEditor.prototype, "saveState", {
+        set: function (save) {
+            this.hasSaved = save;
+            if (this.hasSaved) {
+                menu.changeTitle('Engine');
+            }
+            else {
+                menu.changeTitle('尚未保存 *');
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     return PropertyEditor;
 }());
 /**
@@ -326,7 +339,7 @@ exports.save = save;
 // 初始化inspector
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
-    var _loop_2 = function (metadata) {
+    var _loop_1 = function (metadata) {
         var button_1 = document.createElement('button');
         button_1.innerText = metadata.title;
         buttonGroup.appendChild(button_1);
@@ -336,7 +349,7 @@ if (buttonGroup) {
     };
     for (var _i = 0, metadatas_1 = metadatas; _i < metadatas_1.length; _i++) {
         var metadata = metadatas_1[_i];
-        _loop_2(metadata);
+        _loop_1(metadata);
     }
 }
 var propertyEditor;

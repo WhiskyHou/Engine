@@ -2,7 +2,7 @@
 	"mission": [
 		{
 			"id": "1",
-			"name": "捡起屠龙宝刀",
+			"name": "捡起屠龙宝刀1",
 			"needLevel": "1",
 			"fromNpcId": "1",
 			"toNpcId": "2",
