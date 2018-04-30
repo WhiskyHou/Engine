@@ -117,20 +117,14 @@ var PropertyEditor = /** @class */ (function () {
         this.view = document.createElement('div');
         this.propertyEditorChoice = document.createElement('select');
         this.propertyEditorBody = document.createElement('div');
-        this.switchButton = document.createElement('button');
-        this.switchButton.innerText = '切换';
         this.appendButton = document.createElement('button');
         this.appendButton.innerText = '添加';
         this.removeButton = document.createElement('button');
         this.removeButton.innerText = '删除';
-        this.saveButton = document.createElement('button');
-        this.saveButton.innerText = '保存';
         this.view.appendChild(this.propertyEditorChoice);
-        this.view.appendChild(this.switchButton);
         this.view.appendChild(this.appendButton);
         this.view.appendChild(this.removeButton);
         this.view.appendChild(this.propertyEditorBody);
-        this.view.appendChild(this.saveButton);
         this.init();
     }
     PropertyEditor.prototype.init = function () {
@@ -150,6 +144,15 @@ var PropertyEditor = /** @class */ (function () {
             option.innerText = object.name;
             this.propertyEditorChoice.appendChild(option);
         }
+        // 选择器改变后更新所有属性单项的数据
+        this.propertyEditorChoice.onchange = function () {
+            var id = _this.propertyEditorChoice.value;
+            _this.updateCurrentEditObject(id);
+            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
+                var propertyItem = _a[_i];
+                propertyItem.update(_this.currentEditObject);
+            }
+        };
         var _loop_1 = function (propertyMetadata) {
             var propertyItem = new PropertyItem(propertyMetadata, this_1.currentEditObject);
             this_1.propertyItemArray.push(propertyItem);
@@ -168,22 +171,6 @@ var PropertyEditor = /** @class */ (function () {
             _loop_1(propertyMetadata);
         }
         // 添加按钮事件
-        this.saveButton.onclick = function () {
-            // for (let propertyItem of this.propertyItemArray) {
-            //     const temp = propertyItem.getValue();
-            //     this.currentEditObject[propertyItem.key] = temp;
-            // }
-            // this.updata();
-            // this.saveAndReload();
-        };
-        this.switchButton.onclick = function () {
-            var id = _this.propertyEditorChoice.value;
-            _this.updateCurrentEditObject(id);
-            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
-                var propertyItem = _a[_i];
-                propertyItem.update(_this.currentEditObject);
-            }
-        };
         this.appendButton.onclick = function () {
             var newObject = {};
             for (var _i = 0, _a = _this.dataMetadata.propertyMetadatas; _i < _a.length; _i++) {

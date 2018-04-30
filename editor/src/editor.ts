@@ -148,13 +148,9 @@ class PropertyEditor {
 
     private dataMetadata: DataMetadata;
 
-    private switchButton: HTMLElement;
-
     private appendButton: HTMLElement;
 
     private removeButton: HTMLElement;
-
-    private saveButton: HTMLElement;
 
     private propertyItemArray: PropertyItem[] = []
 
@@ -175,17 +171,13 @@ class PropertyEditor {
         this.view = document.createElement('div');
         this.propertyEditorChoice = document.createElement('select');
         this.propertyEditorBody = document.createElement('div');
-        this.switchButton = document.createElement('button'); this.switchButton.innerText = '切换';
         this.appendButton = document.createElement('button'); this.appendButton.innerText = '添加';
         this.removeButton = document.createElement('button'); this.removeButton.innerText = '删除';
-        this.saveButton = document.createElement('button'); this.saveButton.innerText = '保存';
 
         this.view.appendChild(this.propertyEditorChoice);
-        this.view.appendChild(this.switchButton);
         this.view.appendChild(this.appendButton);
         this.view.appendChild(this.removeButton);
         this.view.appendChild(this.propertyEditorBody);
-        this.view.appendChild(this.saveButton);
 
         this.init();
     }
@@ -207,6 +199,15 @@ class PropertyEditor {
             this.propertyEditorChoice.appendChild(option);
         }
 
+        // 选择器改变后更新所有属性单项的数据
+        this.propertyEditorChoice.onchange = () => {
+            const id = this.propertyEditorChoice.value;
+            this.updateCurrentEditObject(id);
+            for (let propertyItem of this.propertyItemArray) {
+                propertyItem.update(this.currentEditObject);
+            }
+        }
+
         // 初始化各个属性编辑单项
         for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
             const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
@@ -224,23 +225,6 @@ class PropertyEditor {
 
 
         // 添加按钮事件
-        this.saveButton.onclick = () => {
-            // for (let propertyItem of this.propertyItemArray) {
-            //     const temp = propertyItem.getValue();
-            //     this.currentEditObject[propertyItem.key] = temp;
-            // }
-            // this.updata();
-            // this.saveAndReload();
-        }
-
-        this.switchButton.onclick = () => {
-            const id = this.propertyEditorChoice.value;
-            this.updateCurrentEditObject(id);
-            for (let propertyItem of this.propertyItemArray) {
-                propertyItem.update(this.currentEditObject);
-            }
-        }
-
         this.appendButton.onclick = () => {
             const newObject: any = {};
             for (let metadata of this.dataMetadata.propertyMetadatas) {

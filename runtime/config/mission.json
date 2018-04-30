@@ -115,7 +115,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "5",
+			"id": "6",
 			"name": "肃清地图",
 			"needLevel": "4",
 			"fromNpcId": "3",
@@ -133,7 +133,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "6",
+			"id": "7",
 			"name": "和扁鹊聊天",
 			"needLevel": "5",
 			"fromNpcId": "3",
@@ -152,7 +152,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "7",
+			"id": "8",
 			"name": "和嬴政聊天",
 			"needLevel": "6",
 			"fromNpcId": "5",
@@ -171,7 +171,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "8",
+			"id": "9",
 			"name": "和王昭君聊天",
 			"needLevel": "7",
 			"fromNpcId": "2",
@@ -191,7 +191,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "9",
+			"id": "10",
 			"name": "找诸葛亮谈话",
 			"needLevel": "8",
 			"fromNpcId": "4",
@@ -211,7 +211,7 @@
 			"reward": "levelUp"
 		},
 		{
-			"id": "10",
+			"id": "11",
 			"name": "砍高渐离的大招",
 			"needLevel": "9",
 			"fromNpcId": "3",
