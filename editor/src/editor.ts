@@ -1,6 +1,85 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as electron from 'electron'
+import * as menu from './menu'
+import { editorHistory, TestCommand, Command } from './history'
+
+menu.run();
+
+
+/**
+ * 事件派发器
+ */
+class EventDispatcher {
+    private listeners: { type: string, callback: Function }[] = [];
+
+    dispatchEvent(type: string, eventData: any) {
+        for (let listener of this.listeners) {
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
+        }
+    }
+
+    addEventListener(type: string, callback: Function) {
+        this.listeners.push({ type, callback });
+    }
+
+    deleteEventListener(type: string, callback: Function) {
+        for (let listener of this.listeners) {
+            if (listener.type == type && listener.callback == callback) {
+                const index = this.listeners.indexOf(listener)
+                this.listeners.splice(index, 1)
+                break;
+            }
+        }
+    }
+
+    deleteAllEventListener() {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
+    }
+}
+
+
+/**
+ * 属性编辑命令
+ */
+class PropertyEditCommand implements Command {
+
+    object: any
+
+    from: any
+
+    to: any
+
+    key: string
+
+    inspector: PropertyEditor
+
+    input: HTMLInputElement | HTMLSelectElement
+
+
+    constructor(object: any, from: any, to: any, key: string, inspector: PropertyEditor, input: HTMLInputElement | HTMLSelectElement) {
+        this.object = object;
+        this.from = from;
+        this.to = to;
+        this.key = key;
+        this.inspector = inspector;
+        this.input = input;
+    }
+
+    execute(): void {
+        this.object[this.key] = this.to;
+        propertyEditor.saveState = false;
+    }
+    revert(): void {
+        this.object[this.key] = this.from;
+        this.input.value = this.object[this.key];
+    }
+}
+
 
 /**
  * 编辑器单项item的元数据 规范
@@ -72,19 +151,17 @@ class PropertyEditor {
 
     private dataMetadata: DataMetadata;
 
-    private switchButton: HTMLElement;
-
     private appendButton: HTMLElement;
 
     private removeButton: HTMLElement;
-
-    private saveButton: HTMLElement;
 
     private propertyItemArray: PropertyItem[] = []
 
     private propertyEditorChoice: HTMLSelectElement;
 
     private propertyEditorBody: HTMLDivElement;
+
+    private hasSaved: boolean;
 
 
 
@@ -99,17 +176,13 @@ class PropertyEditor {
         this.view = document.createElement('div');
         this.propertyEditorChoice = document.createElement('select');
         this.propertyEditorBody = document.createElement('div');
-        this.switchButton = document.createElement('button'); this.switchButton.innerText = '切换';
         this.appendButton = document.createElement('button'); this.appendButton.innerText = '添加';
         this.removeButton = document.createElement('button'); this.removeButton.innerText = '删除';
-        this.saveButton = document.createElement('button'); this.saveButton.innerText = '保存';
 
         this.view.appendChild(this.propertyEditorChoice);
-        this.view.appendChild(this.switchButton);
         this.view.appendChild(this.appendButton);
         this.view.appendChild(this.removeButton);
         this.view.appendChild(this.propertyEditorBody);
-        this.view.appendChild(this.saveButton);
 
         this.init();
     }
@@ -131,25 +204,8 @@ class PropertyEditor {
             this.propertyEditorChoice.appendChild(option);
         }
 
-        // 初始化各个属性编辑单项
-        for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
-            const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
-            this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.view);
-        }
-
-
-        // 添加按钮事件
-        this.saveButton.onclick = () => {
-            for (let propertyItem of this.propertyItemArray) {
-                const temp = propertyItem.getValue();
-                this.currentEditObject[propertyItem.key] = temp;
-            }
-            this.updata();
-            this.saveAndReload();
-        }
-
-        this.switchButton.onclick = () => {
+        // 选择器改变后更新所有属性单项的数据
+        this.propertyEditorChoice.onchange = () => {
             const id = this.propertyEditorChoice.value;
             this.updateCurrentEditObject(id);
             for (let propertyItem of this.propertyItemArray) {
@@ -157,6 +213,26 @@ class PropertyEditor {
             }
         }
 
+        // 初始化各个属性编辑单项
+        for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
+            const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            this.propertyItemArray.push(propertyItem);
+            this.propertyEditorBody.appendChild(propertyItem.view);
+
+
+            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
+            //
+            // propertyItem.addEventListener('onfocus', () => {
+
+            // });
+            // propertyItem.addEventListener('onblur', () => {
+            //     // const temp = propertyItem.getValue();
+            //     // this.currentEditObject[propertyItem.key] = temp;
+            // });
+        }
+
+
+        // 添加按钮事件
         this.appendButton.onclick = () => {
             const newObject: any = {};
             for (let metadata of this.dataMetadata.propertyMetadatas) {
@@ -170,7 +246,7 @@ class PropertyEditor {
 
             this.data.push(newObject);
             this.updata();
-            this.saveAndReload();
+            // this.saveAndReload();
         }
 
         this.removeButton.onclick = () => {
@@ -179,7 +255,7 @@ class PropertyEditor {
                 this.data.splice(index, 1)
                 this.updata();
             }
-            this.saveAndReload();
+            // this.saveAndReload();
         }
     }
 
@@ -216,12 +292,22 @@ class PropertyEditor {
         }
     }
 
-    private saveAndReload() {
+    saveAndReload() {
         const content = JSON.stringify(this.jsonData, null, '\t');
         fs.writeFileSync(this.dataMetadata.filepath, content);
         const runtime = document.getElementById("runtime") as electron.WebviewTag;
         if (runtime) {
             runtime.reload()
+        }
+        this.saveState = true;
+    }
+
+    set saveState(save: boolean) {
+        this.hasSaved = save;
+        if (this.hasSaved) {
+            menu.changeTitle('Engine');
+        } else {
+            menu.changeTitle('尚未保存 *');
         }
     }
 }
@@ -229,7 +315,7 @@ class PropertyEditor {
 /**
  * 属性编辑项
  */
-class PropertyItem {
+class PropertyItem extends EventDispatcher {
 
     view: HTMLElement;
 
@@ -241,8 +327,15 @@ class PropertyItem {
 
     private metadata: PropertyMetadata;
 
+    private from: any;
+
+    private to: any;
+
+
 
     constructor(metadata: PropertyMetadata, currentEditObject: any) {
+        super();
+
         this.metadata = metadata;
         this.key = metadata.key;
 
@@ -269,6 +362,19 @@ class PropertyItem {
             this.content.disabled = true;
         }
 
+        this.content.onfocus = () => {
+            this.dispatchEvent('onfocus', null);
+            this.from = this.content.value;
+        }
+        this.content.onblur = () => {
+            this.dispatchEvent('onblur', null);
+            if (this.content.value != this.from) {
+                this.to = this.content.value;
+                const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
+                editorHistory.add(command);
+            }
+        }
+
         this.name.innerText = metadata.description;
 
         this.view.appendChild(this.name);
@@ -284,6 +390,10 @@ class PropertyItem {
     getValue() {
         return this.content.value;
     }
+
+    setValue(value: any) {
+        this.content.value = value;
+    }
 }
 
 
@@ -297,14 +407,21 @@ function changeEditor(metadata: DataMetadata) {
         propertyEditorTitle.innerText = metadata.title;
         propertyEditorContainer.innerText = '';
 
-        const propertyEditor = new PropertyEditor(metadata);
+        propertyEditor = new PropertyEditor(metadata);
         propertyEditorContainer.appendChild(propertyEditor.view);
     }
 }
 
-/**
- * 初始化inspector
- */
+
+export function save() {
+    if (propertyEditor) {
+        propertyEditor.saveAndReload();
+    }
+}
+
+
+
+// 初始化inspector
 const buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
     for (const metadata of metadatas) {
@@ -315,4 +432,19 @@ if (buttonGroup) {
             changeEditor(metadata);
         }
     }
+}
+let propertyEditor: PropertyEditor;
+
+
+
+
+
+// 撤销恢复功能测试
+let count = 0;
+const button = document.getElementById('go');
+if (button) {
+    button.onclick = () => {
+        const command = new TestCommand(count, ++count);
+        editorHistory.add(command);
+    };
 }

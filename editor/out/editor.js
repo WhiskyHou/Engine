@@ -1,4 +1,14 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -9,6 +19,66 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
+var menu = __importStar(require("./menu"));
+var history_1 = require("./history");
+menu.run();
+/**
+ * 事件派发器
+ */
+var EventDispatcher = /** @class */ (function () {
+    function EventDispatcher() {
+        this.listeners = [];
+    }
+    EventDispatcher.prototype.dispatchEvent = function (type, eventData) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listener = _a[_i];
+            if (listener.type == type) {
+                listener.callback(eventData);
+            }
+        }
+    };
+    EventDispatcher.prototype.addEventListener = function (type, callback) {
+        this.listeners.push({ type: type, callback: callback });
+    };
+    EventDispatcher.prototype.deleteEventListener = function (type, callback) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listener = _a[_i];
+            if (listener.type == type && listener.callback == callback) {
+                var index = this.listeners.indexOf(listener);
+                this.listeners.splice(index, 1);
+                break;
+            }
+        }
+    };
+    EventDispatcher.prototype.deleteAllEventListener = function () {
+        if (this.listeners.length > 0) {
+            this.listeners.splice(0);
+        }
+    };
+    return EventDispatcher;
+}());
+/**
+ * 属性编辑命令
+ */
+var PropertyEditCommand = /** @class */ (function () {
+    function PropertyEditCommand(object, from, to, key, inspector, input) {
+        this.object = object;
+        this.from = from;
+        this.to = to;
+        this.key = key;
+        this.inspector = inspector;
+        this.input = input;
+    }
+    PropertyEditCommand.prototype.execute = function () {
+        this.object[this.key] = this.to;
+        propertyEditor.saveState = false;
+    };
+    PropertyEditCommand.prototype.revert = function () {
+        this.object[this.key] = this.from;
+        this.input.value = this.object[this.key];
+    };
+    return PropertyEditCommand;
+}());
 /**
  * 元数据 具体数据
  */
@@ -51,20 +121,14 @@ var PropertyEditor = /** @class */ (function () {
         this.view = document.createElement('div');
         this.propertyEditorChoice = document.createElement('select');
         this.propertyEditorBody = document.createElement('div');
-        this.switchButton = document.createElement('button');
-        this.switchButton.innerText = '切换';
         this.appendButton = document.createElement('button');
         this.appendButton.innerText = '添加';
         this.removeButton = document.createElement('button');
         this.removeButton.innerText = '删除';
-        this.saveButton = document.createElement('button');
-        this.saveButton.innerText = '保存';
         this.view.appendChild(this.propertyEditorChoice);
-        this.view.appendChild(this.switchButton);
         this.view.appendChild(this.appendButton);
         this.view.appendChild(this.removeButton);
         this.view.appendChild(this.propertyEditorBody);
-        this.view.appendChild(this.saveButton);
         this.init();
     }
     PropertyEditor.prototype.init = function () {
@@ -84,24 +148,8 @@ var PropertyEditor = /** @class */ (function () {
             option.innerText = object.name;
             this.propertyEditorChoice.appendChild(option);
         }
-        // 初始化各个属性编辑单项
-        for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
-            var propertyMetadata = _c[_b];
-            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
-            this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.view);
-        }
-        // 添加按钮事件
-        this.saveButton.onclick = function () {
-            for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
-                var propertyItem = _a[_i];
-                var temp = propertyItem.getValue();
-                _this.currentEditObject[propertyItem.key] = temp;
-            }
-            _this.updata();
-            _this.saveAndReload();
-        };
-        this.switchButton.onclick = function () {
+        // 选择器改变后更新所有属性单项的数据
+        this.propertyEditorChoice.onchange = function () {
             var id = _this.propertyEditorChoice.value;
             _this.updateCurrentEditObject(id);
             for (var _i = 0, _a = _this.propertyItemArray; _i < _a.length; _i++) {
@@ -109,6 +157,22 @@ var PropertyEditor = /** @class */ (function () {
                 propertyItem.update(_this.currentEditObject);
             }
         };
+        // 初始化各个属性编辑单项
+        for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
+            var propertyMetadata = _c[_b];
+            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            this.propertyItemArray.push(propertyItem);
+            this.propertyEditorBody.appendChild(propertyItem.view);
+            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
+            //
+            // propertyItem.addEventListener('onfocus', () => {
+            // });
+            // propertyItem.addEventListener('onblur', () => {
+            //     // const temp = propertyItem.getValue();
+            //     // this.currentEditObject[propertyItem.key] = temp;
+            // });
+        }
+        // 添加按钮事件
         this.appendButton.onclick = function () {
             var newObject = {};
             for (var _i = 0, _a = _this.dataMetadata.propertyMetadatas; _i < _a.length; _i++) {
@@ -122,7 +186,7 @@ var PropertyEditor = /** @class */ (function () {
             }
             _this.data.push(newObject);
             _this.updata();
-            _this.saveAndReload();
+            // this.saveAndReload();
         };
         this.removeButton.onclick = function () {
             var index = _this.data.indexOf(_this.currentEditObject);
@@ -130,7 +194,7 @@ var PropertyEditor = /** @class */ (function () {
                 _this.data.splice(index, 1);
                 _this.updata();
             }
-            _this.saveAndReload();
+            // this.saveAndReload();
         };
     };
     PropertyEditor.prototype.updata = function () {
@@ -173,23 +237,39 @@ var PropertyEditor = /** @class */ (function () {
         if (runtime) {
             runtime.reload();
         }
+        this.saveState = true;
     };
+    Object.defineProperty(PropertyEditor.prototype, "saveState", {
+        set: function (save) {
+            this.hasSaved = save;
+            if (this.hasSaved) {
+                menu.changeTitle('Engine');
+            }
+            else {
+                menu.changeTitle('尚未保存 *');
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     return PropertyEditor;
 }());
 /**
  * 属性编辑项
  */
-var PropertyItem = /** @class */ (function () {
+var PropertyItem = /** @class */ (function (_super) {
+    __extends(PropertyItem, _super);
     function PropertyItem(metadata, currentEditObject) {
-        this.metadata = metadata;
-        this.key = metadata.key;
-        this.view = document.createElement('div');
-        this.name = document.createElement('span');
+        var _this = _super.call(this) || this;
+        _this.metadata = metadata;
+        _this.key = metadata.key;
+        _this.view = document.createElement('div');
+        _this.name = document.createElement('span');
         if (metadata.type == 'input') {
-            this.content = document.createElement('input');
+            _this.content = document.createElement('input');
         }
         else if (metadata.type == 'dropdown') {
-            this.content = document.createElement('select');
+            _this.content = document.createElement('select');
             var optionMetadata = metadata.options;
             if (optionMetadata) {
                 var file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
@@ -200,18 +280,31 @@ var PropertyItem = /** @class */ (function () {
                     var option = document.createElement('option');
                     option.value = item.id;
                     option.innerText = item.name;
-                    this.content.appendChild(option);
+                    _this.content.appendChild(option);
                 }
             }
         }
         else if (metadata.type == 'primarykey') {
-            this.content = document.createElement('input');
-            this.content.disabled = true;
+            _this.content = document.createElement('input');
+            _this.content.disabled = true;
         }
-        this.name.innerText = metadata.description;
-        this.view.appendChild(this.name);
-        this.view.appendChild(this.content);
-        this.update(currentEditObject);
+        _this.content.onfocus = function () {
+            _this.dispatchEvent('onfocus', null);
+            _this.from = _this.content.value;
+        };
+        _this.content.onblur = function () {
+            _this.dispatchEvent('onblur', null);
+            if (_this.content.value != _this.from) {
+                _this.to = _this.content.value;
+                var command = new PropertyEditCommand(currentEditObject, _this.from, _this.to, _this.key, propertyEditor, _this.content);
+                history_1.editorHistory.add(command);
+            }
+        };
+        _this.name.innerText = metadata.description;
+        _this.view.appendChild(_this.name);
+        _this.view.appendChild(_this.content);
+        _this.update(currentEditObject);
+        return _this;
     }
     PropertyItem.prototype.update = function (currentEditObject) {
         this.content.value = currentEditObject[this.key];
@@ -219,8 +312,11 @@ var PropertyItem = /** @class */ (function () {
     PropertyItem.prototype.getValue = function () {
         return this.content.value;
     };
+    PropertyItem.prototype.setValue = function (value) {
+        this.content.value = value;
+    };
     return PropertyItem;
-}());
+}(EventDispatcher));
 /**
  * 切换编辑器
  */
@@ -230,20 +326,24 @@ function changeEditor(metadata) {
     if (propertyEditorTitle && propertyEditorContainer) {
         propertyEditorTitle.innerText = metadata.title;
         propertyEditorContainer.innerText = '';
-        var propertyEditor = new PropertyEditor(metadata);
+        propertyEditor = new PropertyEditor(metadata);
         propertyEditorContainer.appendChild(propertyEditor.view);
     }
 }
-/**
- * 初始化inspector
- */
+function save() {
+    if (propertyEditor) {
+        propertyEditor.saveAndReload();
+    }
+}
+exports.save = save;
+// 初始化inspector
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
     var _loop_1 = function (metadata) {
-        var button = document.createElement('button');
-        button.innerText = metadata.title;
-        buttonGroup.appendChild(button);
-        button.onclick = function () {
+        var button_1 = document.createElement('button');
+        button_1.innerText = metadata.title;
+        buttonGroup.appendChild(button_1);
+        button_1.onclick = function () {
             changeEditor(metadata);
         };
     };
@@ -251,4 +351,14 @@ if (buttonGroup) {
         var metadata = metadatas_1[_i];
         _loop_1(metadata);
     }
+}
+var propertyEditor;
+// 撤销恢复功能测试
+var count = 0;
+var button = document.getElementById('go');
+if (button) {
+    button.onclick = function () {
+        var command = new history_1.TestCommand(count, ++count);
+        history_1.editorHistory.add(command);
+    };
 }
