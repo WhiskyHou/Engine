@@ -33,6 +33,9 @@ function getConfigPath() {
     }
     return configFilepath;
 }
+/**
+ *
+ */
 function parseConfig() {
     var content = fs.readFileSync(configFilepath, 'utf-8');
     var config = JSON.parse(content);
@@ -41,12 +44,16 @@ function parseConfig() {
 }
 var configFilepath = getConfigPath();
 var historyUrl = parseConfig();
-var historyDiv = document.getElementById('history');
-if (historyDiv) {
-    var item = document.createElement('button');
-    item.innerText = historyUrl;
-    item.onclick = function () {
-        ipcRenderer.send('onclick', historyUrl);
-    };
-    historyDiv.appendChild(item);
+if (historyUrl) {
+    var historyDiv = document.getElementById('history');
+    if (historyDiv) {
+        var item = document.createElement('button');
+        item.innerText = historyUrl;
+        item.onclick = function () {
+            ipcRenderer.send('onclick', historyUrl);
+        };
+        historyDiv.appendChild(item);
+    }
+}
+else {
 }

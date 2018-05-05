@@ -53,12 +53,7 @@ function onSelectProject(gameURL) {
 }
 
 
-function initEditor() {
-    const content = fs.readFileSync(configFilepath, 'utf-8');
-    const config = JSON.parse(content);
-
-    const gameUrl = config.gameUrl;
-
+function initEditor(gameUrl) {
     if (gameUrl) {
         openEditorWindow(gameUrl);
     }
@@ -76,7 +71,8 @@ function initLauncher() {
 
     ipcMain.on('onclick', function (event, arg) {
         console.log(arg);
-        initEditor()
+        initEditor(arg);
+        // window.close();
     })
 
     window.openDevTools()

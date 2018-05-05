@@ -31,6 +31,9 @@ function getConfigPath() {
 }
 
 
+/**
+ * 
+ */
 function parseConfig() {
     const content = fs.readFileSync(configFilepath, 'utf-8');
     const config = JSON.parse(content);
@@ -44,13 +47,19 @@ const configFilepath = getConfigPath();
 
 const historyUrl = parseConfig();
 
-const historyDiv = document.getElementById('history');
-if (historyDiv) {
-    const item = document.createElement('button');
-    item.innerText = historyUrl;
-    item.onclick = () => {
-        ipcRenderer.send('onclick', historyUrl);
+if (historyUrl) {
+    const historyDiv = document.getElementById('history');
+    if (historyDiv) {
+        const item = document.createElement('button');
+        item.innerText = historyUrl;
+        item.onclick = () => {
+            ipcRenderer.send('onclick', historyUrl);
+        }
+        historyDiv.appendChild(item);
     }
-
-    historyDiv.appendChild(item);
 }
+else {
+
+}
+
+
