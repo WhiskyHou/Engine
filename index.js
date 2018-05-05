@@ -1,6 +1,5 @@
-const { app, BrowserWindow, dialog } = require('electron')
+const { app, BrowserWindow, dialog, Menu, ipcMain } = require('electron')
 const path = require('path')
-const url = require('url')
 const fs = require('fs')
 
 
@@ -62,11 +61,25 @@ function initEditor() {
 
     if (gameUrl) {
         openEditorWindow(gameUrl);
-
     }
     else {
         openSelectWindow(onSelectProject);
     }
+}
+
+
+function initLauncher() {
+    Menu.setApplicationMenu(null)
+
+    window = new BrowserWindow({ width: 800, height: 500 });
+    window.loadURL('file://' + __dirname + '/launcher/index.html');
+
+    ipcMain.on('onclick', function (event, arg) {
+        console.log(arg);
+        initEditor()
+    })
+
+    window.openDevTools()
 }
 
 // function createWindow() {
@@ -84,4 +97,4 @@ function initEditor() {
 
 const configFilepath = getConfigPath();
 
-app.on('ready', initEditor)
+app.on('ready', initLauncher)
