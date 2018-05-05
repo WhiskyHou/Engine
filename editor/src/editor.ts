@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as electron from 'electron'
 import * as menu from './menu'
 import { editorHistory, TestCommand, Command } from './history'
+import { URLSearchParams } from 'url';
 
 menu.run();
 
@@ -419,6 +420,21 @@ export function save() {
     }
 }
 
+
+
+
+
+// 初始化webView
+const webView = document.getElementById('runtime');
+if (webView) {
+    // search 属性是一个可读可写的字符串，可设置或返回当前 URL 的查询部分（问号 ? 之后的部分
+    const search = location.search;
+    // 解析获得 gameUrl 的值，就是该项目的地址
+    const param = new URLSearchParams(search);
+    const gameUrl = decodeURIComponent(param.get('gameUrl') as string);
+    // 设置预览窗口的 url
+    webView.setAttribute('src', gameUrl + "/index.html");
+}
 
 
 // 初始化inspector
