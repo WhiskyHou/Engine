@@ -4,14 +4,7 @@ const electron = require('electron')
 const path = require('path')
 
 
-const ipcRenderer = electron.ipcRenderer
 
-const button = document.getElementById('button');
-if (button) {
-    button.onclick = () => {
-        ipcRenderer.send('onclick', 'go');
-    }
-}
 
 /**
  * 获取历史记录
@@ -32,7 +25,7 @@ function getConfigPath() {
 
 
 /**
- * 
+ * 从app.json解析出历史项目文件夹地址
  */
 function parseConfig() {
     const content = fs.readFileSync(configFilepath, 'utf-8');
@@ -42,13 +35,48 @@ function parseConfig() {
     return gameUrl;
 }
 
+/**
+ * 打开文件夹选择窗口
+ */
+function openSelectWindow(callback: any) {
+    electron.remote.dialog.showOpenDialog({
+        title: "选项项目文件夹",
+        properties: ["openDirectory"]
+    }, (dirs) => {
+        if (dirs) {
+            callback(dirs[0])
+        }
+    });
+}
+
+
+/**
+ * 选择文件夹的回调函数，用来检测选择的文件夹是否是项目文件
+ */
+function onSelectProject(gameURL: string) {
+    if (fs.existsSync(gameURL + "/engineproj.json")) {
+        const data = { gameUrl: gameURL };
+        fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t'));
+        // openEditorWindow(gameURL);
+        ipcRenderer.send('onclick', gameURL);
+    }
+    else {
+        electron.remote.dialog.showMessageBox({ message: "此目录非项目文件" })
+        // openSelectWindow(onSelectProject)
+    }
+}
+
+
+
+
+const ipcRenderer = electron.ipcRenderer;
 
 const configFilepath = getConfigPath();
 
 const historyUrl = parseConfig();
 
 if (historyUrl) {
-    const historyDiv = document.getElementById('history');
+    const historyDiv = document.getElementById('historyTab');
     if (historyDiv) {
         const item = document.createElement('button');
         item.innerText = historyUrl;
@@ -58,8 +86,10 @@ if (historyUrl) {
         historyDiv.appendChild(item);
     }
 }
-else {
 
+const openButton = document.getElementById('openTabButton');
+if (openButton) {
+    openButton.onclick = () => {
+        openSelectWindow(onSelectProject);
+    }
 }
-
-
