@@ -56,30 +56,56 @@ function onSelectProject(gameURL) {
         var data = { gameUrl: gameURL };
         fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t'));
         // openEditorWindow(gameURL);
-        ipcRenderer.send('onclick', gameURL);
+        ipcRenderer.send('open', gameURL);
     }
     else {
         electron.remote.dialog.showMessageBox({ message: "此目录非项目文件" });
         // openSelectWindow(onSelectProject)
     }
 }
+// 进程通信
 var ipcRenderer = electron.ipcRenderer;
+// 记录文件
 var configFilepath = getConfigPath();
+// 历史项目地址
 var historyUrl = parseConfig();
+// 构建历史项目选择
 if (historyUrl) {
     var historyDiv = document.getElementById('historyTab');
     if (historyDiv) {
         var item = document.createElement('button');
         item.innerText = historyUrl;
         item.onclick = function () {
-            ipcRenderer.send('onclick', historyUrl);
+            ipcRenderer.send('open', historyUrl);
         };
         historyDiv.appendChild(item);
     }
 }
+// 构建打开现有项目
 var openButton = document.getElementById('openTabButton');
 if (openButton) {
     openButton.onclick = function () {
         openSelectWindow(onSelectProject);
+    };
+}
+// 构建新建项目
+var createButton = document.getElementById('createProj');
+var projName = document.getElementById('projName');
+var projPath = document.getElementById('projPath');
+if (createButton && projName && projPath) {
+    createButton.onclick = function () {
+        var name = projName.value;
+        var path = projPath.value;
+        if (name && path) {
+            var url = path + '/' + name;
+            if (!fs.existsSync(url)) {
+                fs.mkdirSync(url);
+            }
+            var projFileUrl = url + '/engineproj.json';
+            fs.writeFileSync(projFileUrl, '{}', 'utf-8');
+            var indexHtmlUrl = url + '/index.html';
+            fs.writeFileSync(indexHtmlUrl, '<p>This is a new project</p>');
+            ipcRenderer.send('open', url);
+        }
     };
 }

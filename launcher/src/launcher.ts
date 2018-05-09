@@ -58,7 +58,7 @@ function onSelectProject(gameURL: string) {
         const data = { gameUrl: gameURL };
         fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t'));
         // openEditorWindow(gameURL);
-        ipcRenderer.send('onclick', gameURL);
+        ipcRenderer.send('open', gameURL);
     }
     else {
         electron.remote.dialog.showMessageBox({ message: "此目录非项目文件" })
@@ -68,28 +68,56 @@ function onSelectProject(gameURL: string) {
 
 
 
-
+// 进程通信
 const ipcRenderer = electron.ipcRenderer;
-
+// 记录文件
 const configFilepath = getConfigPath();
-
+// 历史项目地址
 const historyUrl = parseConfig();
 
+
+// 构建历史项目选择
 if (historyUrl) {
     const historyDiv = document.getElementById('historyTab');
     if (historyDiv) {
         const item = document.createElement('button');
         item.innerText = historyUrl;
         item.onclick = () => {
-            ipcRenderer.send('onclick', historyUrl);
+            ipcRenderer.send('open', historyUrl);
         }
         historyDiv.appendChild(item);
     }
 }
 
+// 构建打开现有项目
 const openButton = document.getElementById('openTabButton');
 if (openButton) {
     openButton.onclick = () => {
         openSelectWindow(onSelectProject);
+    }
+}
+
+// 构建新建项目
+const createButton = document.getElementById('createProj');
+const projName = document.getElementById('projName') as HTMLInputElement;
+const projPath = document.getElementById('projPath') as HTMLInputElement;
+if (createButton && projName && projPath) {
+    createButton.onclick = () => {
+        const name = projName.value;
+        const path = projPath.value;
+        if (name && path) {
+            const url = path + '/' + name;
+            if (!fs.existsSync(url)) {
+                fs.mkdirSync(url);
+            }
+
+            const projFileUrl = url + '/engineproj.json';
+            fs.writeFileSync(projFileUrl, '{}', 'utf-8');
+
+            const indexHtmlUrl = url + '/index.html';
+            fs.writeFileSync(indexHtmlUrl, '<p>This is a new project</p>');
+
+            ipcRenderer.send('open', url);
+        }
     }
 }
