@@ -105,6 +105,8 @@ if (createButton && projName && projPath) {
             fs.writeFileSync(projFileUrl, '{}', 'utf-8');
             var indexHtmlUrl = url + '/index.html';
             fs.writeFileSync(indexHtmlUrl, '<p>This is a new project</p>');
+            var data = { gameUrl: url };
+            fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t'));
             ipcRenderer.send('open', url);
         }
     };

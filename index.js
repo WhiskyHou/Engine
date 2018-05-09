@@ -18,8 +18,8 @@ function getConfigPath() {
 
 
 function initEditor(gameUrl) {
-    const data = { gameUrl: gameUrl };
-    fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t', 'utf-8'));
+    // const data = { gameUrl: gameUrl };
+    // fs.writeFileSync(configFilepath, JSON.stringify(data, null, '\t', 'utf-8'));
 
     window = new BrowserWindow({ width: 1920, height: 1000 });
     const editorUrl = 'file://' + __dirname + '/editor/index.html?gameUrl=' + encodeURIComponent(gameUrl);
@@ -41,6 +41,6 @@ function initLauncher() {
 }
 
 
-const configFilepath = getConfigPath();
+// const configFilepath = getConfigPath();
 
 app.on('ready', initLauncher)
