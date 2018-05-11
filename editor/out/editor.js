@@ -59,8 +59,8 @@ var metadatas = [
         propertyMetadatas: [
             { key: 'id', description: '编号', type: 'primarykey', default: '0' },
             { key: 'name', description: '名字', type: 'input', default: '吴' },
-            { key: 'view', description: '图片', type: 'input', default: '' },
-            { key: 'head', description: '头像', type: 'input', default: '' }
+            { key: 'view', description: '图片', type: 'image', default: '' },
+            { key: 'head', description: '头像', type: 'image', default: '' }
         ]
     },
     {

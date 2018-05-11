@@ -18,6 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
+var electron = __importStar(require("electron"));
+var path = __importStar(require("path"));
+var project_1 = require("./project");
 function createPropertyItem(metadata, currentObject) {
     var propertyItem;
     var propertyType = metadata.type;
@@ -29,6 +32,9 @@ function createPropertyItem(metadata, currentObject) {
     }
     else if (propertyType == 'primarykey') {
         propertyItem = new PrimarykeyPropertyItem(metadata, currentObject);
+    }
+    else if (propertyType == 'image') {
+        propertyItem = new ImageSelectPropertyItem(metadata, currentObject);
     }
     else {
         throw 'failed';
@@ -138,4 +144,51 @@ var PrimarykeyPropertyItem = /** @class */ (function (_super) {
         this.view.value = value;
     };
     return PrimarykeyPropertyItem;
+}(PropertyItem));
+var ImageSelectPropertyItem = /** @class */ (function (_super) {
+    __extends(ImageSelectPropertyItem, _super);
+    function ImageSelectPropertyItem(metadata, currentObject) {
+        return _super.call(this, metadata, currentObject) || this;
+    }
+    ImageSelectPropertyItem.prototype.createView = function () {
+        var _this = this;
+        var view = document.createElement('div');
+        this.button = document.createElement('button');
+        this.image = document.createElement('img');
+        view.appendChild(this.button);
+        view.appendChild(this.image);
+        this.button.innerText = '选择图片';
+        this.image.src = '';
+        this.image.height = this.image.width = 48;
+        var defaultPath = project_1.project.projectRoot;
+        this.button.onclick = function () {
+            electron.remote.dialog.showOpenDialog({
+                title: "选择图片",
+                defaultPath: defaultPath,
+                filters: [
+                    { name: 'Images', extensions: ['jpg', 'png', "jpeg"] }
+                ]
+            }, function (dirs) {
+                if (dirs) {
+                    var filename = dirs[0];
+                    // "a\b\c\d"  (split '\\' )=>  ["a","b","c","d"] (join '/' )=> "a/b/c/d"
+                    var relativePath = path.relative(defaultPath, filename).split("\\").join("/");
+                    _this.submit(relativePath);
+                    _this.updateView(relativePath);
+                }
+            });
+        };
+        return view;
+    };
+    ImageSelectPropertyItem.prototype.updateView = function (value) {
+        if (value) {
+            var root = project_1.project.projectRoot;
+            var src = path.join(root, value);
+            this.image.src = src;
+        }
+        else {
+            this.image.src = '';
+        }
+    };
+    return ImageSelectPropertyItem;
 }(PropertyItem));

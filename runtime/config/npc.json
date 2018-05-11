@@ -3,32 +3,32 @@
 		{
 			"id": "1",
 			"name": "高渐离",
-			"view": "gaojianli.png",
-			"head": "gaojianli_head.png"
+			"view": "assets/gaojianli.png",
+			"head": "assets/gaojianli_head.png"
 		},
 		{
 			"id": "2",
 			"name": "嬴政",
-			"view": "yingzheng.png",
-			"head": "yingzheng_head.png"
+			"view": "assets/yingzheng.png",
+			"head": "assets/yingzheng_head.png"
 		},
 		{
 			"id": "3",
 			"name": "诸葛亮",
-			"view": "zhugeliang.png",
-			"head": "zhugeliang_head.png"
+			"view": "assets/zhugeliang.png",
+			"head": "assets/zhugeliang_head.png"
 		},
 		{
 			"id": "4",
 			"name": "王昭君",
-			"view": "wangzhaojun.png",
-			"head": "wangzhaojun_head.png"
+			"view": "assets/wangzhaojun.png",
+			"head": "assets/wangzhaojun_head.png"
 		},
 		{
 			"id": "5",
 			"name": "扁鹊",
-			"view": "bianque.png",
-			"head": "bianque_head.png"
+			"view": "assets/bianque.png",
+			"head": "assets/bianque_head.png"
 		}
 	]
 }

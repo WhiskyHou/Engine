@@ -1,5 +1,8 @@
 import { PropertyMetadata } from "./editor"
 import * as fs from 'fs'
+import * as electron from 'electron'
+import * as path from 'path'
+import { project } from "./project";
 
 
 export function createPropertyItem(metadata: PropertyMetadata, currentObject: any): PropertyItem {
@@ -9,11 +12,17 @@ export function createPropertyItem(metadata: PropertyMetadata, currentObject: an
 
     if (propertyType == 'input') {
         propertyItem = new TextPropertyItem(metadata, currentObject);
-    } else if (propertyType == 'dropdown') {
+    }
+    else if (propertyType == 'dropdown') {
         propertyItem = new DropdownPropertyItem(metadata, currentObject);
-    } else if (propertyType == 'primarykey') {
+    }
+    else if (propertyType == 'primarykey') {
         propertyItem = new PrimarykeyPropertyItem(metadata, currentObject);
-    } else {
+    }
+    else if (propertyType == 'image') {
+        propertyItem = new ImageSelectPropertyItem(metadata, currentObject);
+    }
+    else {
         throw 'failed';
     }
 
@@ -152,5 +161,63 @@ class PrimarykeyPropertyItem extends PropertyItem {
 
     updateView(value: any): void {
         (this.view as HTMLInputElement).value = value;
+    }
+}
+
+
+class ImageSelectPropertyItem extends PropertyItem {
+
+    button: HTMLElement
+
+    image: HTMLImageElement
+
+
+    constructor(metadata: PropertyMetadata, currentObject: any) {
+        super(metadata, currentObject);
+    }
+
+    createView(): HTMLElement {
+        const view = document.createElement('div');
+
+        this.button = document.createElement('button')
+        this.image = document.createElement('img')
+
+        view.appendChild(this.button);
+        view.appendChild(this.image);
+
+        this.button.innerText = '选择图片';
+        this.image.src = '';
+        this.image.height = this.image.width = 48;
+
+        const defaultPath = project.projectRoot;
+        this.button.onclick = () => {
+            electron.remote.dialog.showOpenDialog({
+                title: "选择图片",
+                defaultPath,
+                filters: [
+                    { name: 'Images', extensions: ['jpg', 'png', "jpeg"] }
+                ]
+            }, (dirs) => {
+                if (dirs) {
+                    const filename = dirs[0];
+                    // "a\b\c\d"  (split '\\' )=>  ["a","b","c","d"] (join '/' )=> "a/b/c/d"
+                    const relativePath = path.relative(defaultPath, filename).split("\\").join("/");
+                    this.submit(relativePath)
+                    this.updateView(relativePath);
+                }
+            });
+        }
+
+        return view;
+    }
+
+    updateView(value: any) {
+        if (value) {
+            const root = project.projectRoot;
+            const src = path.join(root, value);
+            this.image.src = src;
+        } else {
+            this.image.src = ''
+        }
     }
 }
