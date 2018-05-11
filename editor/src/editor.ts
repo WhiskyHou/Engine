@@ -39,7 +39,7 @@ class PropertyEditCommand implements Command {
 
     execute(): void {
         this.object[this.key] = this.to;
-
+        this.input.updateView(this.to);
         propertyEditor.saveState = false;
     }
     revert(): void {

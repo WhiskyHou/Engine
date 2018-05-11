@@ -28,6 +28,7 @@ var PropertyEditCommand = /** @class */ (function () {
     }
     PropertyEditCommand.prototype.execute = function () {
         this.object[this.key] = this.to;
+        this.input.updateView(this.to);
         propertyEditor.saveState = false;
     };
     PropertyEditCommand.prototype.revert = function () {
