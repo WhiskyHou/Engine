@@ -28,18 +28,11 @@ var PropertyEditCommand = /** @class */ (function () {
     }
     PropertyEditCommand.prototype.execute = function () {
         this.object[this.key] = this.to;
-        this.input.value = this.to;
         propertyEditor.saveState = false;
-        console.log('execute');
-        console.log(this.key);
-        console.log(this.from, this.to);
     };
     PropertyEditCommand.prototype.revert = function () {
         this.object[this.key] = this.from;
-        this.input.value = this.from;
-        console.log('revert');
-        console.log(this.key);
-        console.log(this.from, this.to);
+        this.input.updateView(this.from);
     };
     return PropertyEditCommand;
 }());
@@ -127,13 +120,29 @@ var PropertyEditor = /** @class */ (function () {
                 propertyItem.update(_this.currentEditObject);
             }
         };
+        var _loop_1 = function (propertyMetadata) {
+            // const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            var propertyItem = propertyItem_1.createPropertyItem(propertyMetadata, this_1.currentEditObject);
+            propertyItem.setOnSubmitFunction(function (from, to) {
+                var command = new PropertyEditCommand(_this.currentEditObject, from, to, propertyMetadata.key, propertyEditor, propertyItem);
+                history_1.editorHistory.add(command);
+            });
+            this_1.propertyItemArray.push(propertyItem);
+            this_1.propertyEditorBody.appendChild(propertyItem.getView());
+            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
+            //
+            // propertyItem.addEventListener('onfocus', () => {
+            // });
+            // propertyItem.addEventListener('onblur', () => {
+            //     // const temp = propertyItem.getValue();
+            //     // this.currentEditObject[propertyItem.key] = temp;
+            // });
+        };
+        var this_1 = this;
         // 初始化各个属性编辑单项
         for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
             var propertyMetadata = _c[_b];
-            // const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
-            var propertyItem = propertyItem_1.createPropertyItem(propertyMetadata, this.currentEditObject);
-            this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.getView());
+            _loop_1(propertyMetadata);
         }
         // 添加按钮事件
         this.appendButton.onclick = function () {
@@ -324,7 +333,7 @@ if (webView) {
 // 初始化inspector
 var buttonGroup = document.getElementById('buttonGroup');
 if (buttonGroup) {
-    var _loop_1 = function (metadata) {
+    var _loop_2 = function (metadata) {
         var button_1 = document.createElement('button');
         button_1.innerText = metadata.title;
         buttonGroup.appendChild(button_1);
@@ -334,7 +343,7 @@ if (buttonGroup) {
     };
     for (var _i = 0, metadatas_1 = metadatas; _i < metadatas_1.length; _i++) {
         var metadata = metadatas_1[_i];
-        _loop_1(metadata);
+        _loop_2(metadata);
     }
 }
 var propertyEditor;

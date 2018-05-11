@@ -1,4 +1,5 @@
-import { PropertyMetadata } from "./editor";
+import { PropertyMetadata } from "./editor"
+import * as fs from 'fs'
 
 
 export function createPropertyItem(metadata: PropertyMetadata, currentObject: any): PropertyItem {
@@ -21,37 +22,63 @@ export function createPropertyItem(metadata: PropertyMetadata, currentObject: an
 
 export abstract class PropertyItem {
 
+    protected title: HTMLElement
+
     protected view: HTMLElement
 
-    private metadata: PropertyMetadata
+    protected metadata: PropertyMetadata
 
-    private currentObject: any
+    protected currentObject: any
 
     protected from: any
 
-    private onSubmit: Function
+    private onSubmit: (from: any, to: any) => void
 
 
     constructor(metadata: PropertyMetadata, currentObject: any) {
         this.metadata = metadata;
         this.currentObject = currentObject;
 
-        const title = document.createElement('span');
-        title.innerText = metadata.description;
-        const content = this.onCreateView();
+        this.title = document.createElement('span');
+        this.title.innerText = metadata.description;
 
-        this.view = document.createElement('div');
-        this.view.appendChild(title);
-        this.view.appendChild(content);
+        this.view = this.createView();
+    }
+
+    setOnSubmitFunction(onSubmit: (from: any, to: any) => void) {
+        this.onSubmit = onSubmit;
+    }
+
+    submit(to: any) {
+        if (to != this.from) {
+            this.onSubmit(this.from, to);
+            this.from = to;
+        }
     }
 
     getView() {
-        return this.view;
+        const container = document.createElement('div');
+        container.appendChild(this.title);
+        container.appendChild(this.view);
+        this.initValue();
+        return container;
     }
 
-    abstract onCreateView(): HTMLElement;
+    initValue() {
+        const propertyKey = this.metadata.key;
+        const value = this.currentObject[propertyKey];
+        this.updateView(value);
+        this.from = value;
+    }
 
-    abstract update(currentObject: any): void;
+    update(currentObject: any) {
+        this.currentObject = currentObject;
+        this.initValue();
+    }
+
+    abstract createView(): HTMLElement;
+
+    abstract updateView(value: any): void;
 }
 
 
@@ -61,14 +88,18 @@ class TextPropertyItem extends PropertyItem {
         super(metadata, currentObject);
     }
 
-    onCreateView(): HTMLElement {
+    createView(): HTMLElement {
         const view = document.createElement('input');
-
+        view.onblur = () => {
+            const to = view.value;
+            this.submit(to);
+        }
 
         return view;
     }
 
-    update(currentObject: any): void {
+    updateView(value: any): void {
+        (this.view as HTMLInputElement).value = value;
     }
 }
 
@@ -78,14 +109,31 @@ class DropdownPropertyItem extends PropertyItem {
         super(metadata, currentObject);
     }
 
-    onCreateView(): HTMLElement {
+    createView(): HTMLElement {
         const view = document.createElement('select');
+        const optionMetadata = this.metadata.options;
+        if (optionMetadata) {
+            const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
+            const jsonData = JSON.parse(file);
+            const items = jsonData[optionMetadata.prefix];
+            for (let item of items) {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.innerText = item.name;
+                view.appendChild(option);
+            }
+        }
 
+        view.onchange = () => {
+            const to = view.value;
+            this.submit(to);
+        }
 
         return view;
     }
 
-    update(currentObject: any): void {
+    updateView(value: any): void {
+        (this.view as HTMLSelectElement).value = value;
     }
 }
 
@@ -95,14 +143,14 @@ class PrimarykeyPropertyItem extends PropertyItem {
         super(metadata, currentObject);
     }
 
-    onCreateView(): HTMLElement {
+    createView(): HTMLElement {
         const view = document.createElement('input');
         view.disabled = true;
-
 
         return view;
     }
 
-    update(currentObject: any): void {
+    updateView(value: any): void {
+        (this.view as HTMLInputElement).value = value;
     }
 }

@@ -25,10 +25,10 @@ class PropertyEditCommand implements Command {
 
     inspector: PropertyEditor
 
-    input: HTMLInputElement | HTMLSelectElement
+    input: PropertyItem
 
 
-    constructor(object: any, from: any, to: any, key: string, inspector: PropertyEditor, input: HTMLInputElement | HTMLSelectElement) {
+    constructor(object: any, from: any, to: any, key: string, inspector: PropertyEditor, input: PropertyItem) {
         this.object = object;
         this.from = from;
         this.to = to;
@@ -39,18 +39,12 @@ class PropertyEditCommand implements Command {
 
     execute(): void {
         this.object[this.key] = this.to;
-        this.input.value = this.to;
+
         propertyEditor.saveState = false;
-        console.log('execute');
-        console.log(this.key);
-        console.log(this.from, this.to);
     }
     revert(): void {
         this.object[this.key] = this.from;
-        this.input.value = this.from;
-        console.log('revert');
-        console.log(this.key);
-        console.log(this.from, this.to);
+        this.input.updateView(this.from);
     }
 }
 
@@ -199,6 +193,10 @@ class PropertyEditor {
         for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
             // const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
             const propertyItem = createPropertyItem(propertyMetadata, this.currentEditObject);
+            propertyItem.setOnSubmitFunction((from: any, to: any) => {
+                const command = new PropertyEditCommand(this.currentEditObject, from, to, propertyMetadata.key, propertyEditor, propertyItem);
+                editorHistory.add(command);
+            })
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.getView());
 
