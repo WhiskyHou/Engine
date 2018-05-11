@@ -1,14 +1,4 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -22,42 +12,8 @@ var path = __importStar(require("path"));
 var menu = __importStar(require("./menu"));
 var history_1 = require("./history");
 var url_1 = require("url");
+var propertyItem_1 = require("./propertyItem");
 menu.run();
-/**
- * 事件派发器
- */
-var EventDispatcher = /** @class */ (function () {
-    function EventDispatcher() {
-        this.listeners = [];
-    }
-    EventDispatcher.prototype.dispatchEvent = function (type, eventData) {
-        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
-            var listener = _a[_i];
-            if (listener.type == type) {
-                listener.callback(eventData);
-            }
-        }
-    };
-    EventDispatcher.prototype.addEventListener = function (type, callback) {
-        this.listeners.push({ type: type, callback: callback });
-    };
-    EventDispatcher.prototype.deleteEventListener = function (type, callback) {
-        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
-            var listener = _a[_i];
-            if (listener.type == type && listener.callback == callback) {
-                var index = this.listeners.indexOf(listener);
-                this.listeners.splice(index, 1);
-                break;
-            }
-        }
-    };
-    EventDispatcher.prototype.deleteAllEventListener = function () {
-        if (this.listeners.length > 0) {
-            this.listeners.splice(0);
-        }
-    };
-    return EventDispatcher;
-}());
 /**
  * 属性编辑命令
  */
@@ -113,6 +69,12 @@ var metadatas = [
             { key: 'view', description: '图片', type: 'input', default: '' },
             { key: 'head', description: '头像', type: 'input', default: '' }
         ]
+    },
+    {
+        filepath: path.resolve(__dirname, '../../runtime/config/map.json'),
+        prefix: 'map',
+        title: '地图编辑器',
+        propertyMetadatas: []
     }
 ];
 /**
@@ -168,9 +130,10 @@ var PropertyEditor = /** @class */ (function () {
         // 初始化各个属性编辑单项
         for (var _b = 0, _c = this.dataMetadata.propertyMetadatas; _b < _c.length; _b++) {
             var propertyMetadata = _c[_b];
-            var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            // const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            var propertyItem = propertyItem_1.createPropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.view);
+            this.propertyEditorBody.appendChild(propertyItem.getView());
         }
         // 添加按钮事件
         this.appendButton.onclick = function () {
@@ -197,10 +160,12 @@ var PropertyEditor = /** @class */ (function () {
             // this.saveAndReload();
         };
     };
+    /**
+     * 添加 或 删除一个对象的时候调用
+     *
+     * 重新加载编辑器
+     */
     PropertyEditor.prototype.updata = function () {
-        /**
-         * 重新加载编辑器
-         */
         // 重新加载选择栏
         this.propertyEditorChoice.innerText = '';
         for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
@@ -222,6 +187,9 @@ var PropertyEditor = /** @class */ (function () {
             propertyItem.update(this.currentEditObject);
         }
     };
+    /**
+     * 通过 id 来更新当前编辑的对象
+     */
     PropertyEditor.prototype.updateCurrentEditObject = function (id) {
         for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
             var object = _a[_i];
@@ -230,6 +198,9 @@ var PropertyEditor = /** @class */ (function () {
             }
         }
     };
+    /**
+     * 保存到文件 刷新runtime窗口
+     */
     PropertyEditor.prototype.saveAndReload = function () {
         var content = JSON.stringify(this.jsonData, null, '\t');
         fs.writeFileSync(this.dataMetadata.filepath, content);
@@ -240,6 +211,9 @@ var PropertyEditor = /** @class */ (function () {
         this.saveState = true;
     };
     Object.defineProperty(PropertyEditor.prototype, "saveState", {
+        /**
+         * 是否保存的状态
+         */
         set: function (save) {
             this.hasSaved = save;
             if (this.hasSaved) {
@@ -257,66 +231,66 @@ var PropertyEditor = /** @class */ (function () {
 /**
  * 属性编辑项
  */
-var PropertyItem = /** @class */ (function (_super) {
-    __extends(PropertyItem, _super);
-    function PropertyItem(metadata, currentEditObject) {
-        var _this = _super.call(this) || this;
-        _this.metadata = metadata;
-        _this.key = metadata.key;
-        _this.view = document.createElement('div');
-        _this.name = document.createElement('span');
-        if (metadata.type == 'input') {
-            _this.content = document.createElement('input');
-        }
-        else if (metadata.type == 'dropdown') {
-            _this.content = document.createElement('select');
-            var optionMetadata = metadata.options;
-            if (optionMetadata) {
-                var file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
-                var jsonData = JSON.parse(file);
-                var items = jsonData[optionMetadata.prefix];
-                for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-                    var item = items_1[_i];
-                    var option = document.createElement('option');
-                    option.value = item.id;
-                    option.innerText = item.name;
-                    _this.content.appendChild(option);
-                }
-            }
-        }
-        else if (metadata.type == 'primarykey') {
-            _this.content = document.createElement('input');
-            _this.content.disabled = true;
-        }
-        _this.content.onfocus = function () {
-            _this.dispatchEvent('onfocus', null);
-            _this.from = _this.content.value;
-        };
-        _this.content.onblur = function () {
-            _this.dispatchEvent('onblur', null);
-            if (_this.content.value != _this.from) {
-                _this.to = _this.content.value;
-                var command = new PropertyEditCommand(currentEditObject, _this.from, _this.to, _this.key, propertyEditor, _this.content);
-                history_1.editorHistory.add(command);
-            }
-        };
-        _this.name.innerText = metadata.description;
-        _this.view.appendChild(_this.name);
-        _this.view.appendChild(_this.content);
-        _this.update(currentEditObject);
-        return _this;
-    }
-    PropertyItem.prototype.update = function (currentEditObject) {
-        this.content.value = currentEditObject[this.key];
-    };
-    PropertyItem.prototype.getValue = function () {
-        return this.content.value;
-    };
-    PropertyItem.prototype.setValue = function (value) {
-        this.content.value = value;
-    };
-    return PropertyItem;
-}(EventDispatcher));
+// class PropertyItem {
+//     view: HTMLElement;
+//     key: string;
+//     private name: HTMLSpanElement;
+//     private content: HTMLInputElement | HTMLSelectElement;
+//     private metadata: PropertyMetadata;
+//     private from: any;
+//     private to: any;
+//     constructor(metadata: PropertyMetadata, currentEditObject: any) {
+//         this.metadata = metadata;
+//         this.key = metadata.key;
+//         this.view = document.createElement('div');
+//         this.name = document.createElement('span');
+//         if (metadata.type == 'input') {
+//             this.content = document.createElement('input');
+//         } else if (metadata.type == 'dropdown') {
+//             this.content = document.createElement('select');
+//             const optionMetadata = metadata.options;
+//             if (optionMetadata) {
+//                 const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
+//                 const jsonData = JSON.parse(file);
+//                 const items = jsonData[optionMetadata.prefix];
+//                 for (let item of items) {
+//                     const option = document.createElement('option');
+//                     option.value = item.id;
+//                     option.innerText = item.name;
+//                     this.content.appendChild(option);
+//                 }
+//             }
+//         } else if (metadata.type == 'primarykey') {
+//             this.content = document.createElement('input');
+//             this.content.disabled = true;
+//         }
+//         this.content.onfocus = () => {
+//             // this.dispatchEvent('onfocus', null);
+//             this.from = this.content.value;
+//         }
+//         this.content.onblur = () => {
+//             // this.dispatchEvent('onblur', null);
+//             if (this.content.value != this.from) {
+//                 this.to = this.content.value;
+//                 const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
+//                 editorHistory.add(command);
+//             }
+//         }
+//         this.name.innerText = metadata.description;
+//         this.view.appendChild(this.name);
+//         this.view.appendChild(this.content);
+//         this.update(currentEditObject);
+//     }
+//     update(currentEditObject: any) {
+//         this.content.value = currentEditObject[this.key];
+//     }
+//     getValue() {
+//         return this.content.value;
+//     }
+//     setValue(value: any) {
+//         this.content.value = value;
+//     }
+// }
 /**
  * 切换编辑器
  */

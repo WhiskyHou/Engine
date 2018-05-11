@@ -3,45 +3,11 @@ import * as path from 'path'
 import * as electron from 'electron'
 import * as menu from './menu'
 import { editorHistory, TestCommand, Command } from './history'
-import { URLSearchParams } from 'url';
+import { URLSearchParams } from 'url'
+import { PropertyItem, createPropertyItem } from './propertyItem'
 
 menu.run();
 
-
-/**
- * 事件派发器
- */
-class EventDispatcher {
-    private listeners: { type: string, callback: Function }[] = [];
-
-    dispatchEvent(type: string, eventData: any) {
-        for (let listener of this.listeners) {
-            if (listener.type == type) {
-                listener.callback(eventData);
-            }
-        }
-    }
-
-    addEventListener(type: string, callback: Function) {
-        this.listeners.push({ type, callback });
-    }
-
-    deleteEventListener(type: string, callback: Function) {
-        for (let listener of this.listeners) {
-            if (listener.type == type && listener.callback == callback) {
-                const index = this.listeners.indexOf(listener)
-                this.listeners.splice(index, 1)
-                break;
-            }
-        }
-    }
-
-    deleteAllEventListener() {
-        if (this.listeners.length > 0) {
-            this.listeners.splice(0);
-        }
-    }
-}
 
 
 /**
@@ -92,7 +58,7 @@ class PropertyEditCommand implements Command {
 /**
  * 编辑器单项item的元数据 规范
  */
-interface PropertyMetadata {
+export interface PropertyMetadata {
     key: string;
     description: string;
     type: "input" | "dropdown" | "primarykey";
@@ -139,6 +105,14 @@ const metadatas: DataMetadata[] = [
             { key: 'name', description: '名字', type: 'input', default: '吴' },
             { key: 'view', description: '图片', type: 'input', default: '' },
             { key: 'head', description: '头像', type: 'input', default: '' }
+        ]
+    },
+    {   // 地图编辑器 元数据
+        filepath: path.resolve(__dirname, '../../runtime/config/map.json'),
+        prefix: 'map',
+        title: '地图编辑器',
+        propertyMetadatas: [
+
         ]
     }
 ]
@@ -223,15 +197,15 @@ class PropertyEditor {
 
         // 初始化各个属性编辑单项
         for (let propertyMetadata of this.dataMetadata.propertyMetadatas) {
-            const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            // const propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
+            const propertyItem = createPropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
-            this.propertyEditorBody.appendChild(propertyItem.view);
+            this.propertyEditorBody.appendChild(propertyItem.getView());
 
 
             // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
             //
             // propertyItem.addEventListener('onfocus', () => {
-
             // });
             // propertyItem.addEventListener('onblur', () => {
             //     // const temp = propertyItem.getValue();
@@ -267,10 +241,14 @@ class PropertyEditor {
         }
     }
 
+
+    /**
+     * 添加 或 删除一个对象的时候调用
+     * 
+     * 重新加载编辑器
+     */
     updata() {
-        /**
-         * 重新加载编辑器
-         */
+
 
         // 重新加载选择栏
         this.propertyEditorChoice.innerText = '';
@@ -292,6 +270,10 @@ class PropertyEditor {
         }
     }
 
+
+    /**
+     * 通过 id 来更新当前编辑的对象
+     */
     updateCurrentEditObject(id: string) {
         for (let object of this.data) {
             if (object.id == id) {
@@ -300,6 +282,10 @@ class PropertyEditor {
         }
     }
 
+
+    /**
+     * 保存到文件 刷新runtime窗口
+     */
     saveAndReload() {
         const content = JSON.stringify(this.jsonData, null, '\t');
         fs.writeFileSync(this.dataMetadata.filepath, content);
@@ -310,6 +296,10 @@ class PropertyEditor {
         this.saveState = true;
     }
 
+
+    /**
+     * 是否保存的状态
+     */
     set saveState(save: boolean) {
         this.hasSaved = save;
         if (this.hasSaved) {
@@ -323,86 +313,85 @@ class PropertyEditor {
 /**
  * 属性编辑项
  */
-class PropertyItem extends EventDispatcher {
+// class PropertyItem {
 
-    view: HTMLElement;
+//     view: HTMLElement;
 
-    key: string;
+//     key: string;
 
-    private name: HTMLSpanElement;
+//     private name: HTMLSpanElement;
 
-    private content: HTMLInputElement | HTMLSelectElement;
+//     private content: HTMLInputElement | HTMLSelectElement;
 
-    private metadata: PropertyMetadata;
+//     private metadata: PropertyMetadata;
 
-    private from: any;
+//     private from: any;
 
-    private to: any;
+//     private to: any;
 
 
 
-    constructor(metadata: PropertyMetadata, currentEditObject: any) {
-        super();
+//     constructor(metadata: PropertyMetadata, currentEditObject: any) {
 
-        this.metadata = metadata;
-        this.key = metadata.key;
+//         this.metadata = metadata;
+//         this.key = metadata.key;
 
-        this.view = document.createElement('div');
-        this.name = document.createElement('span');
-        if (metadata.type == 'input') {
-            this.content = document.createElement('input');
-        } else if (metadata.type == 'dropdown') {
-            this.content = document.createElement('select');
-            const optionMetadata = metadata.options;
-            if (optionMetadata) {
-                const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
-                const jsonData = JSON.parse(file);
-                const items = jsonData[optionMetadata.prefix];
-                for (let item of items) {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.innerText = item.name;
-                    this.content.appendChild(option);
-                }
-            }
-        } else if (metadata.type == 'primarykey') {
-            this.content = document.createElement('input');
-            this.content.disabled = true;
-        }
+//         this.view = document.createElement('div');
+//         this.name = document.createElement('span');
+//         if (metadata.type == 'input') {
+//             this.content = document.createElement('input');
+//         } else if (metadata.type == 'dropdown') {
+//             this.content = document.createElement('select');
+//             const optionMetadata = metadata.options;
+//             if (optionMetadata) {
+//                 const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
+//                 const jsonData = JSON.parse(file);
+//                 const items = jsonData[optionMetadata.prefix];
+//                 for (let item of items) {
+//                     const option = document.createElement('option');
+//                     option.value = item.id;
+//                     option.innerText = item.name;
+//                     this.content.appendChild(option);
+//                 }
+//             }
+//         } else if (metadata.type == 'primarykey') {
+//             this.content = document.createElement('input');
+//             this.content.disabled = true;
+//         }
 
-        this.content.onfocus = () => {
-            this.dispatchEvent('onfocus', null);
-            this.from = this.content.value;
-        }
-        this.content.onblur = () => {
-            this.dispatchEvent('onblur', null);
-            if (this.content.value != this.from) {
-                this.to = this.content.value;
-                const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
-                editorHistory.add(command);
-            }
-        }
+//         this.content.onfocus = () => {
+//             // this.dispatchEvent('onfocus', null);
+//             this.from = this.content.value;
+//         }
+//         this.content.onblur = () => {
+//             // this.dispatchEvent('onblur', null);
+//             if (this.content.value != this.from) {
+//                 this.to = this.content.value;
+//                 const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
+//                 editorHistory.add(command);
+//             }
+//         }
 
-        this.name.innerText = metadata.description;
+//         this.name.innerText = metadata.description;
 
-        this.view.appendChild(this.name);
-        this.view.appendChild(this.content);
+//         this.view.appendChild(this.name);
+//         this.view.appendChild(this.content);
 
-        this.update(currentEditObject);
-    }
+//         this.update(currentEditObject);
+//     }
 
-    update(currentEditObject: any) {
-        this.content.value = currentEditObject[this.key];
-    }
+//     update(currentEditObject: any) {
+//         this.content.value = currentEditObject[this.key];
+//     }
 
-    getValue() {
-        return this.content.value;
-    }
+//     getValue() {
+//         return this.content.value;
+//     }
 
-    setValue(value: any) {
-        this.content.value = value;
-    }
-}
+//     setValue(value: any) {
+//         this.content.value = value;
+//     }
+// }
 
 
 /**
