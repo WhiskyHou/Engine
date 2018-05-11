@@ -15,7 +15,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
     result["default"] = mod;
     return result;
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
@@ -72,11 +72,18 @@ var PropertyEditCommand = /** @class */ (function () {
     }
     PropertyEditCommand.prototype.execute = function () {
         this.object[this.key] = this.to;
+        this.input.value = this.to;
         propertyEditor.saveState = false;
+        console.log('execute');
+        console.log(this.key);
+        console.log(this.from, this.to);
     };
     PropertyEditCommand.prototype.revert = function () {
         this.object[this.key] = this.from;
-        this.input.value = this.object[this.key];
+        this.input.value = this.from;
+        console.log('revert');
+        console.log(this.key);
+        console.log(this.from, this.to);
     };
     return PropertyEditCommand;
 }());
@@ -164,14 +171,6 @@ var PropertyEditor = /** @class */ (function () {
             var propertyItem = new PropertyItem(propertyMetadata, this.currentEditObject);
             this.propertyItemArray.push(propertyItem);
             this.propertyEditorBody.appendChild(propertyItem.view);
-            // 啥玩意儿？？？获得焦点不知道写啥，离开焦点更新数据也能在item里面做了，我这还监听个毛线……
-            //
-            // propertyItem.addEventListener('onfocus', () => {
-            // });
-            // propertyItem.addEventListener('onblur', () => {
-            //     // const temp = propertyItem.getValue();
-            //     // this.currentEditObject[propertyItem.key] = temp;
-            // });
         }
         // 添加按钮事件
         this.appendButton.onclick = function () {

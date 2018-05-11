@@ -73,11 +73,18 @@ class PropertyEditCommand implements Command {
 
     execute(): void {
         this.object[this.key] = this.to;
+        this.input.value = this.to;
         propertyEditor.saveState = false;
+        console.log('execute');
+        console.log(this.key);
+        console.log(this.from, this.to);
     }
     revert(): void {
         this.object[this.key] = this.from;
-        this.input.value = this.object[this.key];
+        this.input.value = this.from;
+        console.log('revert');
+        console.log(this.key);
+        console.log(this.from, this.to);
     }
 }
 

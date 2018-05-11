@@ -41,11 +41,13 @@ var EditorHistory = /** @class */ (function () {
         if (this.currentIndex >= 0) {
             this.revert(this.currentIndex - 1);
         }
+        console.log('history_revert');
     };
     EditorHistory.prototype.redoOnce = function () {
         if (this.currentIndex < this.commandList.length - 1) {
             this.redo(this.currentIndex + 1);
         }
+        console.log('history_redo');
     };
     return EditorHistory;
 }());

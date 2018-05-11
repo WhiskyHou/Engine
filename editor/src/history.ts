@@ -47,12 +47,14 @@ class EditorHistory {
         if (this.currentIndex >= 0) {
             this.revert(this.currentIndex - 1);
         }
+        console.log('history_revert');
     }
 
     redoOnce() {
         if (this.currentIndex < this.commandList.length - 1) {
             this.redo(this.currentIndex + 1);
         }
+        console.log('history_redo')
     }
 
 }
