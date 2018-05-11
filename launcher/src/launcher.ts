@@ -98,6 +98,7 @@ if (openButton) {
 }
 
 // 构建新建项目
+// TODO：新建项目初始化文件结构
 const createButton = document.getElementById('createProj');
 const projName = document.getElementById('projName') as HTMLInputElement;
 const projPath = document.getElementById('projPath') as HTMLInputElement;

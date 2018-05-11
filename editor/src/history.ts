@@ -12,7 +12,7 @@ class EditorHistory {
         command.execute();
         this.currentIndex++;
 
-        this.remove();
+        // this.remove();
     }
 
     // TODO:回退到中间位置再执行操作会有顺序问题
