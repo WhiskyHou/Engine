@@ -221,3 +221,16 @@ class ImageSelectPropertyItem extends PropertyItem {
         }
     }
 }
+
+class GameMapPropertyItem extends PropertyItem {
+    createView(): HTMLElement {
+        const view = document.createElement('div');
+
+
+
+        return view;
+    }
+    updateView(value: any): void {
+
+    }
+}

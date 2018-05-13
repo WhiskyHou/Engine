@@ -447,6 +447,11 @@ let propertyEditor: PropertyEditor;
 
 
 
+setTimeout(() => {
+    const runtimeDiv = document.getElementById("runtime") as electron.WebviewTag;
+    runtimeDiv.openDevTools();
+}, 500)
+
 
 
 // 撤销恢复功能测试

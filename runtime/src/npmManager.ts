@@ -23,8 +23,8 @@ class NpcManager extends EventDispatcher {
         for (let item of config.npc) {
             const id = parseInt(item.id);
             const name = item.name;
-            const viewPath = ASSETS_PATH + item.view;
-            const headPath = ASSETS_PATH + item.head;
+            const viewPath = item.view;
+            const headPath = item.head;
             let viewImg = new Image();
             viewImg.src = viewPath;
             let headImg = new Image();

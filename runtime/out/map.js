@@ -40,82 +40,103 @@ var GameMap = /** @class */ (function (_super) {
     }
     // 好像只调用了一次…… 初始化……
     GameMap.prototype.init = function () {
+        var _this = this;
         this.grid = new astar.Grid(COL_NUM, ROW_NUM);
-        for (var _i = 0, _a = this.config; _i < _a.length; _i++) {
-            var item = _a[_i];
-            var img = item.id == GRASS_L ? grassLight : grassDark;
-            var tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
-            this.grid.setWalkable(item.x, item.y, true);
-            this.tileContainer.addChild(tile);
-            if (item.tree) {
-                var tile_1 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
-                this.grid.setWalkable(item.x, item.y, false);
-                this.tileContainer.addChild(tile_1);
-            }
-            if (item.wall) {
-                var img_1 = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
-                var tile_2 = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img_1);
-                this.grid.setWalkable(item.x, item.y, false);
-                this.tileContainer.addChild(tile_2);
-            }
-            if (item.equipment) {
-                var id = item.equipment;
-                if (id == KILL_DARGON_KNIFE) {
-                    var equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
-                    var equipmentTiem = new Equipment();
-                    equipmentTiem.view = equipmentView;
-                    equipmentTiem.name = '屠龙刀';
-                    equipmentTiem.attack = 35;
-                    equipmentTiem.x = item.x;
-                    equipmentTiem.y = item.y;
-                    var key = item.x + '_' + item.y;
-                    this.equipmentConfig[key] = equipmentTiem;
-                    this.itemContainer.addChild(equipmentView);
-                }
-                else if (id == HP_BOTTLE) {
-                    // TODO
-                    var equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, hp_bottle);
-                    var equipmentTiem = new Equipment();
-                    equipmentTiem.view = equipmentView;
-                    equipmentTiem.name = '扁鹊的药瓶';
-                    equipmentTiem.attack = 0;
-                    equipmentTiem.x = item.x;
-                    equipmentTiem.y = item.y;
-                    var key = item.x + '_' + item.y;
-                    this.equipmentConfig[key] = equipmentTiem;
-                    this.itemContainer.addChild(equipmentView);
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", "config/map.json");
+        xhr.send();
+        var obj;
+        xhr.onload = function () {
+            obj = JSON.parse(xhr.response);
+            for (var _i = 0, _a = obj.map[0].tile; _i < _a.length; _i++) {
+                var row = _a[_i];
+                for (var _b = 0, row_1 = row; _b < row_1.length; _b++) {
+                    var item = row_1[_b];
+                    // console.log(row);
+                    // console.log(row.index, item.index);
+                    // TODO: 都是0和1，找了半天最后全绘制到前两列了
+                    var x = row.indexOf(item);
+                    var y = obj.map[0].tile.indexOf(row);
+                    var img = item == GRASS_L ? grassLight : grassDark;
+                    var tile = new Bitmap(TILE_SIZE * x, TILE_SIZE * y, img);
+                    _this.grid.setWalkable(x, y, true);
+                    _this.tileContainer.addChild(tile);
+                    // console.log(row.index, item.index);
                 }
             }
-            if (item.monster) {
-                var monsterView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, captain);
-                var monsterItem = new Monster();
-                monsterItem.name = '队长';
-                monsterItem.view = monsterView;
-                monsterItem.hp = 120;
-                monsterItem.x = item.x;
-                monsterItem.y = item.y;
-                var key = item.x + '_' + item.y;
-                this.monsterConfig[key] = monsterItem;
-                this.roleContainer.addChild(monsterView);
-            }
-            if (item.npc) {
-                var id = item.npc;
-                for (var _b = 0, _c = npcManager.npcList; _b < _c.length; _b++) {
-                    var npc = _c[_b];
-                    if (npc.id == id) {
-                        var npcView = npc.view;
-                        var npcHead = npc.head;
-                        npcView.x = TILE_SIZE * item.x;
-                        npcView.y = TILE_SIZE * item.y;
-                        npc.x = item.x;
-                        npc.y = item.y;
-                        var key = item.x + '_' + item.y;
-                        this.npcConfig[key] = npc;
-                        this.roleContainer.addChild(npcView);
-                    }
-                }
-            }
-        }
+        };
+        // for (let item of this.config) {
+        //     const img = item.id == GRASS_L ? grassLight : grassDark;
+        //     const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
+        //     this.grid.setWalkable(item.x, item.y, true);
+        //     this.tileContainer.addChild(tile);
+        //     if (item.tree) {
+        //         const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, tree);
+        //         this.grid.setWalkable(item.x, item.y, false);
+        //         this.tileContainer.addChild(tile);
+        //     }
+        //     if (item.wall) {
+        //         const img = item.wall == WALL_MIDDLE ? wall_middle : (item.wall == WALL_LEFT ? wall_left : wall_right);
+        //         const tile = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, img);
+        //         this.grid.setWalkable(item.x, item.y, false);
+        //         this.tileContainer.addChild(tile);
+        //     }
+        //     if (item.equipment) {
+        //         const id = item.equipment;
+        //         if (id == KILL_DARGON_KNIFE) {
+        //             const equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, knife);
+        //             const equipmentTiem = new Equipment();
+        //             equipmentTiem.view = equipmentView;
+        //             equipmentTiem.name = '屠龙刀'
+        //             equipmentTiem.attack = 35;
+        //             equipmentTiem.x = item.x;
+        //             equipmentTiem.y = item.y;
+        //             const key = item.x + '_' + item.y;
+        //             this.equipmentConfig[key] = equipmentTiem;
+        //             this.itemContainer.addChild(equipmentView);
+        //         } else if (id == HP_BOTTLE) {
+        //             // TODO
+        //             const equipmentView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, hp_bottle);
+        //             const equipmentTiem = new Equipment();
+        //             equipmentTiem.view = equipmentView;
+        //             equipmentTiem.name = '扁鹊的药瓶'
+        //             equipmentTiem.attack = 0;
+        //             equipmentTiem.x = item.x;
+        //             equipmentTiem.y = item.y;
+        //             const key = item.x + '_' + item.y;
+        //             this.equipmentConfig[key] = equipmentTiem;
+        //             this.itemContainer.addChild(equipmentView);
+        //         }
+        //     }
+        //     if (item.monster) {
+        //         const monsterView = new Bitmap(TILE_SIZE * item.x, TILE_SIZE * item.y, captain);
+        //         const monsterItem = new Monster();
+        //         monsterItem.name = '队长';
+        //         monsterItem.view = monsterView;
+        //         monsterItem.hp = 120;
+        //         monsterItem.x = item.x;
+        //         monsterItem.y = item.y;
+        //         const key = item.x + '_' + item.y;
+        //         this.monsterConfig[key] = monsterItem;
+        //         this.roleContainer.addChild(monsterView);
+        //     }
+        //     if (item.npc) {
+        //         const id = item.npc;
+        //         for (let npc of npcManager.npcList) {
+        //             if (npc.id == id) {
+        //                 const npcView = npc.view;
+        //                 const npcHead = npc.head;
+        //                 npcView.x = TILE_SIZE * item.x;
+        //                 npcView.y = TILE_SIZE * item.y;
+        //                 npc.x = item.x;
+        //                 npc.y = item.y;
+        //                 const key = item.x + '_' + item.y;
+        //                 this.npcConfig[key] = npc;
+        //                 this.roleContainer.addChild(npcView);
+        //             }
+        //         }
+        //     }
+        // }
     };
     GameMap.prototype.getNodeInfo = function (row, col) {
         for (var _i = 0, _a = this.config; _i < _a.length; _i++) {

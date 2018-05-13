@@ -15,7 +15,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
     result["default"] = mod;
     return result;
-};
+}
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
 var electron = __importStar(require("electron"));
@@ -191,4 +191,17 @@ var ImageSelectPropertyItem = /** @class */ (function (_super) {
         }
     };
     return ImageSelectPropertyItem;
+}(PropertyItem));
+var GameMapPropertyItem = /** @class */ (function (_super) {
+    __extends(GameMapPropertyItem, _super);
+    function GameMapPropertyItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    GameMapPropertyItem.prototype.createView = function () {
+        var view = document.createElement('div');
+        return view;
+    };
+    GameMapPropertyItem.prototype.updateView = function (value) {
+    };
+    return GameMapPropertyItem;
 }(PropertyItem));
