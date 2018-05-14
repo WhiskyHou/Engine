@@ -48,20 +48,30 @@ var GameMap = /** @class */ (function (_super) {
         var obj;
         xhr.onload = function () {
             obj = JSON.parse(xhr.response);
-            for (var _i = 0, _a = obj.map[0].tile; _i < _a.length; _i++) {
-                var row = _a[_i];
-                for (var _b = 0, row_1 = row; _b < row_1.length; _b++) {
-                    var item = row_1[_b];
-                    // console.log(row);
-                    // console.log(row.index, item.index);
-                    // TODO: 都是0和1，找了半天最后全绘制到前两列了
-                    var x = row.indexOf(item);
-                    var y = obj.map[0].tile.indexOf(row);
-                    var img = item == GRASS_L ? grassLight : grassDark;
-                    var tile = new Bitmap(TILE_SIZE * x, TILE_SIZE * y, img);
-                    _this.grid.setWalkable(x, y, true);
+            var mapTile = obj.map[0].tile;
+            for (var i = 0; i < mapTile.length; i++) {
+                var row = mapTile[i];
+                for (var j = 0; j < row.length; j++) {
+                    var item = row[j];
+                    var img = new Image();
+                    img.src = item;
+                    var tile = new Bitmap(TILE_SIZE * j, TILE_SIZE * i, img);
+                    _this.grid.setWalkable(j, i, true);
                     _this.tileContainer.addChild(tile);
-                    // console.log(row.index, item.index);
+                }
+            }
+            var mapItem = obj.map[0].item;
+            for (var i = 0; i < mapItem.length; i++) {
+                var row = mapItem[i];
+                for (var j = 0; j < row.length; j++) {
+                    var item = row[j];
+                    if (item) {
+                        var img = new Image();
+                        img.src = item;
+                        var building = new Bitmap(TILE_SIZE * j, TILE_SIZE * i, img);
+                        _this.grid.setWalkable(j, i, false);
+                        _this.tileContainer.addChild(building);
+                    }
                 }
             }
         };

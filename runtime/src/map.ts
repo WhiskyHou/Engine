@@ -45,21 +45,31 @@ class GameMap extends DisplayObjectContainer {
         xhr.onload = () => {
             obj = JSON.parse(xhr.response);
 
-            for (let row of obj.map[0].tile) {
-                for (let item of row) {
-                    // console.log(row);
-                    // console.log(row.index, item.index);
-
-                    // TODO: 都是0和1，找了半天最后全绘制到前两列了
-                    const x = (row as number[]).indexOf(item);
-                    const y = (obj.map[0].tile as number[][]).indexOf(row);
-
-                    const img = item == GRASS_L ? grassLight : grassDark;
-                    const tile = new Bitmap(TILE_SIZE * x, TILE_SIZE * y, img);
-                    this.grid.setWalkable(x, y, true);
+            const mapTile = obj.map[0].tile as string[][];
+            for (let i = 0; i < mapTile.length; i++) {
+                const row = mapTile[i];
+                for (let j = 0; j < row.length; j++) {
+                    const item = row[j];
+                    const img = new Image()
+                    img.src = item;
+                    const tile = new Bitmap(TILE_SIZE * j, TILE_SIZE * i, img);
+                    this.grid.setWalkable(j, i, true);
                     this.tileContainer.addChild(tile);
+                }
+            }
 
-                    // console.log(row.index, item.index);
+            const mapItem = obj.map[0].item as string[][];
+            for (let i = 0; i < mapItem.length; i++) {
+                const row = mapItem[i];
+                for (let j = 0; j < row.length; j++) {
+                    const item = row[j];
+                    if (item) {
+                        const img = new Image();
+                        img.src = item;
+                        const building = new Bitmap(TILE_SIZE * j, TILE_SIZE * i, img);
+                        this.grid.setWalkable(j, i, false);
+                        this.tileContainer.addChild(building);
+                    }
                 }
             }
         }

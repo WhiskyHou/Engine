@@ -21,7 +21,7 @@ class MissionManager extends EventDispatcher {
         xhr.send();
         xhr.onload = () => {
             const obj = JSON.parse(xhr.response)
-            console.log(xhr.response)
+            // console.log(xhr.response)
             this.parseFromConfig(obj);
         }
 
