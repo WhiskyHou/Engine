@@ -22,6 +22,9 @@ export function createPropertyItem(metadata: PropertyMetadata, currentObject: an
     else if (propertyType == 'image') {
         propertyItem = new ImageSelectPropertyItem(metadata, currentObject);
     }
+    else if (propertyType == 'mapTile') {
+        propertyItem = new GameMapTilePropertyItem(metadata, currentObject);
+    }
     else {
         throw 'failed';
     }
@@ -222,11 +225,38 @@ class ImageSelectPropertyItem extends PropertyItem {
     }
 }
 
-class GameMapPropertyItem extends PropertyItem {
+class GameMapTilePropertyItem extends PropertyItem {
+
+    button: { [index: string]: HTMLButtonElement }
+
+    img: HTMLImageElement[][]
+
+    tile: string[][]
+
+    constructor(metadata: any, currentObject: any) {
+        super(metadata, currentObject);
+    }
+
     createView(): HTMLElement {
         const view = document.createElement('div');
 
+        this.tile = this.currentObject.tile as string[][]
 
+        this.button = {}
+
+        for (let i = 0; i < this.tile.length; i++) {
+            const row = this.tile[i];
+            const rowDiv = document.createElement('div');
+            for (let j = 0; j < row.length; j++) {
+                const item = row[j];
+                const button = document.createElement('button');
+                button.innerText = (i + 1).toString() + ',' + (j + 1).toString();
+                rowDiv.appendChild(button);
+                const key = i + '_' + j;
+                this.button[key] = button;
+            }
+            view.appendChild(rowDiv);
+        }
 
         return view;
     }

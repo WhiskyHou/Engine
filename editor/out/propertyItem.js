@@ -36,6 +36,9 @@ function createPropertyItem(metadata, currentObject) {
     else if (propertyType == 'image') {
         propertyItem = new ImageSelectPropertyItem(metadata, currentObject);
     }
+    else if (propertyType == 'mapTile') {
+        propertyItem = new GameMapTilePropertyItem(metadata, currentObject);
+    }
     else {
         throw 'failed';
     }
@@ -192,16 +195,31 @@ var ImageSelectPropertyItem = /** @class */ (function (_super) {
     };
     return ImageSelectPropertyItem;
 }(PropertyItem));
-var GameMapPropertyItem = /** @class */ (function (_super) {
-    __extends(GameMapPropertyItem, _super);
-    function GameMapPropertyItem() {
-        return _super !== null && _super.apply(this, arguments) || this;
+var GameMapTilePropertyItem = /** @class */ (function (_super) {
+    __extends(GameMapTilePropertyItem, _super);
+    function GameMapTilePropertyItem(metadata, currentObject) {
+        return _super.call(this, metadata, currentObject) || this;
     }
-    GameMapPropertyItem.prototype.createView = function () {
+    GameMapTilePropertyItem.prototype.createView = function () {
         var view = document.createElement('div');
+        this.tile = this.currentObject.tile;
+        this.button = {};
+        for (var i = 0; i < this.tile.length; i++) {
+            var row = this.tile[i];
+            var rowDiv = document.createElement('div');
+            for (var j = 0; j < row.length; j++) {
+                var item = row[j];
+                var button = document.createElement('button');
+                button.innerText = (i + 1).toString() + ',' + (j + 1).toString();
+                rowDiv.appendChild(button);
+                var key = i + '_' + j;
+                this.button[key] = button;
+            }
+            view.appendChild(rowDiv);
+        }
         return view;
     };
-    GameMapPropertyItem.prototype.updateView = function (value) {
+    GameMapTilePropertyItem.prototype.updateView = function (value) {
     };
-    return GameMapPropertyItem;
+    return GameMapTilePropertyItem;
 }(PropertyItem));

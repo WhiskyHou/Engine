@@ -55,7 +55,7 @@ class PropertyEditCommand implements Command {
 export interface PropertyMetadata {
     key: string;
     description: string;
-    type: "input" | "dropdown" | "primarykey" | "image";
+    type: "input" | "dropdown" | "primarykey" | "image" | "mapTile";
     default: any;
     options?: {
         // dropdown类型的才有这个
@@ -96,7 +96,7 @@ const metadatas: DataMetadata[] = [
         title: 'NPC编辑器',
         propertyMetadatas: [
             { key: 'id', description: '编号', type: 'primarykey', default: '0' },
-            { key: 'name', description: '名字', type: 'input', default: '吴' },
+            { key: 'name', description: '名字', type: 'input', default: 'null' },
             { key: 'view', description: '图片', type: 'image', default: '' },
             { key: 'head', description: '头像', type: 'image', default: '' }
         ]
@@ -106,7 +106,11 @@ const metadatas: DataMetadata[] = [
         prefix: 'map',
         title: '地图编辑器',
         propertyMetadatas: [
-
+            { key: 'id', description: '编号', type: 'primarykey', default: '0' },
+            { key: 'name', description: '名字', type: 'input', default: 'null' },
+            { key: 'row', description: '行', type: 'primarykey', default: '0' },
+            { key: 'col', description: '列', type: 'primarykey', default: '0' },
+            { key: 'tile', description: '地面', type: 'mapTile', default: '' }
         ]
     }
 ]
@@ -308,88 +312,92 @@ class PropertyEditor {
     }
 }
 
+
+
 /**
  * 属性编辑项
  */
-// class PropertyItem {
+/*
+class PropertyItem {
 
-//     view: HTMLElement;
+    view: HTMLElement;
 
-//     key: string;
+    key: string;
 
-//     private name: HTMLSpanElement;
+    private name: HTMLSpanElement;
 
-//     private content: HTMLInputElement | HTMLSelectElement;
+    private content: HTMLInputElement | HTMLSelectElement;
 
-//     private metadata: PropertyMetadata;
+    private metadata: PropertyMetadata;
 
-//     private from: any;
+    private from: any;
 
-//     private to: any;
+    private to: any;
 
 
 
-//     constructor(metadata: PropertyMetadata, currentEditObject: any) {
+    constructor(metadata: PropertyMetadata, currentEditObject: any) {
 
-//         this.metadata = metadata;
-//         this.key = metadata.key;
+        this.metadata = metadata;
+        this.key = metadata.key;
 
-//         this.view = document.createElement('div');
-//         this.name = document.createElement('span');
-//         if (metadata.type == 'input') {
-//             this.content = document.createElement('input');
-//         } else if (metadata.type == 'dropdown') {
-//             this.content = document.createElement('select');
-//             const optionMetadata = metadata.options;
-//             if (optionMetadata) {
-//                 const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
-//                 const jsonData = JSON.parse(file);
-//                 const items = jsonData[optionMetadata.prefix];
-//                 for (let item of items) {
-//                     const option = document.createElement('option');
-//                     option.value = item.id;
-//                     option.innerText = item.name;
-//                     this.content.appendChild(option);
-//                 }
-//             }
-//         } else if (metadata.type == 'primarykey') {
-//             this.content = document.createElement('input');
-//             this.content.disabled = true;
-//         }
+        this.view = document.createElement('div');
+        this.name = document.createElement('span');
+        if (metadata.type == 'input') {
+            this.content = document.createElement('input');
+        } else if (metadata.type == 'dropdown') {
+            this.content = document.createElement('select');
+            const optionMetadata = metadata.options;
+            if (optionMetadata) {
+                const file = fs.readFileSync(optionMetadata.filepath, 'utf-8');
+                const jsonData = JSON.parse(file);
+                const items = jsonData[optionMetadata.prefix];
+                for (let item of items) {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.innerText = item.name;
+                    this.content.appendChild(option);
+                }
+            }
+        } else if (metadata.type == 'primarykey') {
+            this.content = document.createElement('input');
+            this.content.disabled = true;
+        }
 
-//         this.content.onfocus = () => {
-//             // this.dispatchEvent('onfocus', null);
-//             this.from = this.content.value;
-//         }
-//         this.content.onblur = () => {
-//             // this.dispatchEvent('onblur', null);
-//             if (this.content.value != this.from) {
-//                 this.to = this.content.value;
-//                 const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
-//                 editorHistory.add(command);
-//             }
-//         }
+        this.content.onfocus = () => {
+            // this.dispatchEvent('onfocus', null);
+            this.from = this.content.value;
+        }
+        this.content.onblur = () => {
+            // this.dispatchEvent('onblur', null);
+            if (this.content.value != this.from) {
+                this.to = this.content.value;
+                const command = new PropertyEditCommand(currentEditObject, this.from, this.to, this.key, propertyEditor, this.content);
+                editorHistory.add(command);
+            }
+        }
 
-//         this.name.innerText = metadata.description;
+        this.name.innerText = metadata.description;
 
-//         this.view.appendChild(this.name);
-//         this.view.appendChild(this.content);
+        this.view.appendChild(this.name);
+        this.view.appendChild(this.content);
 
-//         this.update(currentEditObject);
-//     }
+        this.update(currentEditObject);
+    }
 
-//     update(currentEditObject: any) {
-//         this.content.value = currentEditObject[this.key];
-//     }
+    update(currentEditObject: any) {
+        this.content.value = currentEditObject[this.key];
+    }
 
-//     getValue() {
-//         return this.content.value;
-//     }
+    getValue() {
+        return this.content.value;
+    }
 
-//     setValue(value: any) {
-//         this.content.value = value;
-//     }
-// }
+    setValue(value: any) {
+        this.content.value = value;
+    }
+}
+*/
 
 
 /**
@@ -408,6 +416,9 @@ function changeEditor(metadata: DataMetadata) {
 }
 
 
+/**
+ * 保存到文件
+ */
 export function save() {
     if (propertyEditor) {
         propertyEditor.saveAndReload();
